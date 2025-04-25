@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+markitdown-env/
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# IDE / Editor specific
+.idea/
+.vscode/ 
