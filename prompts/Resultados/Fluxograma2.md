@@ -1,4 +1,5 @@
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear"}}}%%
 flowchart TD
     %% Nós iniciais
     A0(("Início"))
