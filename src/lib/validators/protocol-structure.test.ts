@@ -5,6 +5,7 @@ import type {
   ProtocolSectionData,
 } from "@/types/protocol";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
+import type { ValidationIssue } from "@/types/validation";
 
 // Helper to create mock protocol content
 const createMockProtocolContent = (
@@ -23,80 +24,95 @@ const createMockProtocolContent = (
   return fullContent;
 };
 
-// Helper to create minimal valid protocol content
+// Helper to create minimal valid protocol content based on SECTION_DEFINITIONS
 const createMinimalValidContent = (): ProtocolFullContent => {
   const content: ProtocolFullContent = {};
   SECTION_DEFINITIONS.forEach((def) => {
     content[def.sectionNumber.toString()] = {
       sectionNumber: def.sectionNumber,
       title: def.titlePT,
-      content: def.example || "Conteúdo de exemplo.",
+      content: def.example ?? "Conteúdo de exemplo.", // Use example or default
     };
   });
   return content;
 };
 
 describe("validateProtocolStructure", () => {
-  it("should return no issues for a structurally valid protocol", () => {
+  it("should return no issues for a structurally valid protocol", async () => {
     const validContent = createMinimalValidContent();
-    const issues = validateProtocolStructure(validContent);
+    const issues = await validateProtocolStructure(validContent);
     expect(issues).toEqual([]);
   });
 
-  it("should detect if not all 13 sections are present", () => {
+  it("should detect if not all 13 sections are present", async () => {
     const partialContent: Partial<ProtocolFullContent> =
       createMinimalValidContent();
     delete partialContent["13"]; // Remove one section
-    const issues = validateProtocolStructure(
+    const issues = await validateProtocolStructure(
       partialContent as ProtocolFullContent,
     );
     expect(issues).toContainEqual(
       expect.objectContaining({
         ruleId: "STRUCTURE_001",
         message:
-          "O protocolo deve conter exatamente 13 seções. Encontradas: 12.",
+          "O protocolo deve conter exatamente 13 seções válidas (numeradas de 1 a 13). Encontradas: 12 seções válidas.",
         severity: "error",
       }),
     );
   });
 
-  it("should detect if sections are incorrectly numbered or keys don't match sectionNumber", () => {
+  it("should detect if sections are incorrectly numbered or keys don't match sectionNumber", async () => {
     const misnumberedContent: ProtocolFullContent = {
       ...createMinimalValidContent(),
-      "14": { sectionNumber: 14, title: "Título Seção 14", content: "..." }, // Invalid key
     };
+    // Create an invalid scenario: remove section 1, add section 14
     delete misnumberedContent["1"];
+    misnumberedContent["14"] = {
+      sectionNumber: 14,
+      title: "Título Seção 14",
+      content: "...",
+    };
 
-    const issues = validateProtocolStructure(misnumberedContent);
-    expect(issues).toContainEqual(
+    const issuesMisnumbered =
+      await validateProtocolStructure(misnumberedContent);
+    expect(issuesMisnumbered).toContainEqual(
       expect.objectContaining({
-        ruleId: "STRUCTURE_001", // Still detects 13 total keys, but wrong numbers
+        ruleId: "STRUCTURE_001",
         severity: "error",
+      }),
+    );
+    expect(issuesMisnumbered).toContainEqual(
+      expect.objectContaining({
+        ruleId: "STRUCTURE_003",
+        message: `A seção com chave "14" é inválida: ou a chave está fora do intervalo esperado (1-13), ou seu 'sectionNumber' interno (14) não corresponde à chave, ou a seção está malformada. Título esperado (se a chave fosse válida): Título Desconhecido / Chave Inválida.`,
+        severity: "error",
+        sectionNumber: 14,
       }),
     );
 
     const contentWithMismatchKey = createMinimalValidContent();
     contentWithMismatchKey["1"] = {
-      // Correct key
-      sectionNumber: 2, // Incorrect internal sectionNumber
+      sectionNumber: 2,
       title: "Título Seção 1",
       content: "Conteúdo",
     };
-    const issuesMismatch = validateProtocolStructure(contentWithMismatchKey);
+    const issuesMismatch = await validateProtocolStructure(
+      contentWithMismatchKey,
+    );
     expect(issuesMismatch).toContainEqual(
       expect.objectContaining({
         ruleId: "STRUCTURE_003",
         sectionNumber: 1,
-        message: `A seção com chave "1" não corresponde ao seu campo 'sectionNumber' interno ou está malformada.`,
+        message: `A seção com chave "1" é inválida: ou a chave está fora do intervalo esperado (1-13), ou seu 'sectionNumber' interno (2) não corresponde à chave, ou a seção está malformada. Título esperado (se a chave fosse válida): ${SECTION_DEFINITIONS[0].titlePT}.`,
         severity: "error",
       }),
     );
   });
 
-  it("should detect missing or empty section titles", () => {
+  it("should detect missing or empty section titles", async () => {
     const contentWithMissingTitle = createMinimalValidContent();
     contentWithMissingTitle["3"]!.title = "";
-    const issues = validateProtocolStructure(contentWithMissingTitle);
+    const issues = await validateProtocolStructure(contentWithMissingTitle);
     expect(issues).toContainEqual(
       expect.objectContaining({
         ruleId: "STRUCTURE_004",
@@ -108,14 +124,14 @@ describe("validateProtocolStructure", () => {
     );
   });
 
-  it("should detect incorrect content format for structured sections (e.g., Section 1 not an object)", () => {
+  it("should detect incorrect content format for structured sections (e.g., Section 1 not an object)", async () => {
     const contentWithInvalidFormat = createMinimalValidContent();
     contentWithInvalidFormat["1"]!.content =
       "Isto não é um objeto JSON como esperado para a Seção 1.";
-    const issues = validateProtocolStructure(contentWithInvalidFormat);
+    const issues = await validateProtocolStructure(contentWithInvalidFormat);
     expect(issues).toContainEqual(
       expect.objectContaining({
-        ruleId: "STRUCTURE_005A",
+        ruleId: "STRUCTURE_CONTENT_EXPECTED_OBJECT",
         sectionNumber: 1,
         field: "content",
         message: `O conteúdo da Seção 1 (Identificação do Protocolo) deveria ser um objeto JSON estruturado, mas foi encontrado: string.`,
@@ -124,69 +140,41 @@ describe("validateProtocolStructure", () => {
     );
   });
 
-  it("should detect incorrect content format for sections expecting an array (e.g., Section 8)", () => {
+  it("should detect incorrect content format for sections expecting an array (e.g., Section 8)", async () => {
     const contentWithInvalidFormat = createMinimalValidContent();
-    // Section 8 example is an array of objects. Let's make it a string.
-    if (
-      SECTION_DEFINITIONS.find((s) => s.sectionNumber === 8)?.example instanceof
-      Array
-    ) {
+    const section8Def = SECTION_DEFINITIONS.find((s) => s.sectionNumber === 8);
+    if (section8Def && Array.isArray(section8Def.example)) {
       contentWithInvalidFormat["8"]!.content =
         "Isto não é um array como esperado para a Seção 8.";
-      const issues = validateProtocolStructure(contentWithInvalidFormat);
+      const issues = await validateProtocolStructure(contentWithInvalidFormat);
       expect(issues).toContainEqual(
         expect.objectContaining({
-          ruleId: "STRUCTURE_005B",
+          ruleId: "STRUCTURE_CONTENT_EXPECTED_ARRAY",
           sectionNumber: 8,
           field: "content",
-          message: `O conteúdo da Seção 8 (Manejo de Complicações) deveria ser um array JSON, mas foi encontrado: string.`,
+          message: `O conteúdo da Seção 8 (${section8Def.titlePT}) deveria ser um array JSON, mas foi encontrado: string.`,
           severity: "error",
         }),
       );
     } else {
-      // Skip this specific test if Section 8 example isn't an array in current definitions
-      // This ensures test robustness if SECTION_DEFINITIONS change.
       console.warn(
-        "Skipping STRUCTURE_005B test for Section 8 as its example is not an array.",
+        "Skipping STRUCTURE_CONTENT_EXPECTED_ARRAY test for Section 8 as its example type is not an array in SECTION_DEFINITIONS.",
       );
       expect(true).toBe(true);
     }
   });
 
-  it("should pass if structured sections have correct basic format (object/array)", async () => {
+  it("should pass if structured sections have correct basic format (object/array based on SECTION_DEFINITIONS)", async () => {
     const validContent = createMinimalValidContent();
-    // Ensure section 1 (example is object) is an object
-    validContent["1"]!.content = {
-      codigoProtocolo: "TEST-001",
-      tituloCompleto: "Protocolo de Teste",
-      versao: "1.0",
-      origemOrganizacao: "Teste Corp",
-      dataElaboracao: "2023-01-01",
-      dataUltimaRevisao: "2023-01-01",
-      dataProximaRevisao: "2025-01-01",
-      ambitoAplicacao: "Testes",
-    };
-    // Ensure section 8 (example is array) is an array
-    if (
-      SECTION_DEFINITIONS.find((s) => s.sectionNumber === 8)?.example instanceof
-      Array
-    ) {
-      validContent["8"]!.content = [
-        {
-          complicacao: "Teste",
-          identificacaoSinaisSintomas: ["Sinal1"],
-          manejoRecomendado: "Manejo Teste",
-        },
-      ];
-    }
-
     const issues = await validateProtocolStructure(validContent);
+    const formatIssues = issues.filter(
+      (issue: ValidationIssue) =>
+        issue.ruleId === "STRUCTURE_CONTENT_EXPECTED_OBJECT" ||
+        issue.ruleId === "STRUCTURE_CONTENT_EXPECTED_ARRAY",
+    );
     expect(
-      issues.find(
-        (issue) =>
-          issue.ruleId === "STRUCTURE_005A" ||
-          issue.ruleId === "STRUCTURE_005B",
-      ),
-    ).toBeUndefined();
+      formatIssues,
+      `Found format issues: ${JSON.stringify(formatIssues, null, 2)}`,
+    ).toEqual([]);
   });
 });

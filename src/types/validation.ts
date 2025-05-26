@@ -11,7 +11,13 @@ export interface ValidationIssue {
   field?: string; // Specific field within a section or node
   message: string; // User-friendly error/warning message in PT-BR
   severity: ValidationSeverity;
-  category?: string; // Optional category for grouping issues
+  category?:
+    | "STRUCTURE"
+    | "COMPLETENESS"
+    | "OBJECTIVITY"
+    | "MEDICATION"
+    | "FLOWCHART_CONSISTENCY"
+    | "CONTENT_SPECIFIC";
   details?: Record<string, any>; // Additional details about the issue
   // E.g., for a medication issue: { medicationName: "Dipirona", expected: "500mg", found: "5g" }
 }
@@ -31,10 +37,10 @@ export interface ValidationReport {
 
 /**
  * A generic function signature for individual validation checks.
- * Each validator will implement this.
+ * Each validator will implement this. Can be sync or async.
  * @param protocolContent The full content of the protocol (all 13 sections).
  * @param protocolFlowchart Optional flowchart data for cross-validation.
- * @returns An array of ValidationIssue found by this specific validator.
+ * @returns An array of ValidationIssue found by this specific validator, or a Promise resolving to it.
  */
 export type ValidatorFunction = (
   protocolContent: ProtocolFullContent,

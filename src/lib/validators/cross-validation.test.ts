@@ -1,89 +1,157 @@
 import { describe, it, expect } from "vitest";
-import { validateCrossConsistency } from "./cross-validation";
-import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
+import { validateCompleteness } from "./completeness";
+import type {
+  ProtocolFullContent,
+  ProtocolSectionData,
+} from "@/types/protocol";
+import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
+import type { ValidationIssue } from "@/types/validation";
 
 // Helper to create mock protocol content
-const createMockProtocolContent = (): ProtocolFullContent => {
-  const content: ProtocolFullContent = {};
-  for (let i = 1; i <= 13; i++) {
-    content[i.toString()] = {
+const createMockProtocolContent = (
+  sections: Record<string, Partial<ProtocolSectionData>>,
+  sectionCount = 13,
+): ProtocolFullContent => {
+  const fullContent: ProtocolFullContent = {};
+  for (let i = 1; i <= sectionCount; i++) {
+    const key = i.toString();
+    fullContent[key] = {
       sectionNumber: i,
-      title: `Seção ${i}`,
+      title: `Título Seção ${i}`,
       content: `Conteúdo da Seção ${i}`,
+      ...(sections[key] || {}),
     };
   }
-  // Example decision in text for Section 7 for potential cross-validation
-  if (content["7"]) {
-    content["7"]!.content = {
-      medidasGerais: [],
-      tratamentoPacientesInstaveis: {
-        medicamentos: [
-          {
-            name: "Atropina",
-            dose: "1mg",
-            route: "IV",
-            frequency: "Repetir",
-            notes: "Se FC < 50 bpm e instável",
-          },
-        ],
-        intervencoesNaoFarmacologicas: [],
-      },
-      narrativaAdicional:
-        "Se paciente apresentar PAS < 90 mmHg, considerar Dopamina.",
+  return fullContent;
+};
+
+const createMinimalValidContent = (): ProtocolFullContent => {
+  const content: ProtocolFullContent = {};
+  SECTION_DEFINITIONS.forEach((def) => {
+    content[def.sectionNumber.toString()] = {
+      sectionNumber: def.sectionNumber,
+      title: def.titlePT,
+      content: def.example || "Conteúdo de exemplo.", // Use example or default
     };
-  }
+  });
   return content;
 };
 
-const createMockFlowchartData = (
-  hasMatchingDecision = true,
-): FlowchartData => ({
-  nodes: hasMatchingDecision
-    ? [
-        {
-          id: "node1",
-          type: "decision",
-          data: { criteria: "PAS < 90 mmHg" },
-          position: { x: 0, y: 0 },
-        },
-        {
-          id: "node2",
-          type: "action",
-          data: { title: "Considerar Dopamina" },
-          position: { x: 0, y: 0 },
-        },
-      ]
-    : [
-        {
-          id: "node1",
-          type: "decision",
-          data: { criteria: "Febre > 38°C" }, // Mismatching criteria
-          position: { x: 0, y: 0 },
-        },
-      ],
-  edges: hasMatchingDecision
-    ? [{ id: "edge1", source: "node1", target: "node2", label: "Sim" }]
-    : [],
-});
+describe("validateCompleteness", () => {
+  describe("checkAllSectionsHaveContent", () => {
+    it("should return no issues if all sections have content", async () => {
+      const validContent = createMinimalValidContent();
+      const issues = await validateCompleteness(validContent);
+      // Filter for COMPLETENESS_001 issues only for this specific sub-test
+      const sectionContentIssues = issues.filter(
+        (issue: ValidationIssue) => issue.ruleId === "COMPLETENESS_001",
+      );
+      expect(sectionContentIssues).toEqual([]);
+    });
 
-describe("validateCrossConsistency", () => {
-  it("should return no issues for a consistent protocol and flowchart (placeholder)", () => {
-    const protocolContent = createMockProtocolContent();
-    const flowchartData = createMockFlowchartData(true); // Consistent
-    const issues = validateCrossConsistency(protocolContent, flowchartData);
-    // As current implementation of cross-validation rules are placeholders,
-    // we expect no issues. This test will need to be updated when rules are implemented.
-    expect(issues).toEqual([]);
+    it("should return an issue if a section has null content", async () => {
+      const content = createMinimalValidContent();
+      content["5"]!.content = null as any;
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_001",
+          sectionNumber: 5,
+          severity: "error",
+        }),
+      );
+    });
+
+    it("should return an issue if a section has an empty string as content", async () => {
+      const content = createMinimalValidContent();
+      content["2"]!.content = "   "; // Whitespace only
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_001",
+          sectionNumber: 2,
+          severity: "error",
+        }),
+      );
+    });
+
+    it("should return an issue if a section has an empty object as content", async () => {
+      const content = createMinimalValidContent();
+      content["1"]!.content = {}; // Assuming section 1 could be an object
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_001",
+          sectionNumber: 1,
+          severity: "error",
+        }),
+      );
+    });
+
+    it("should return an issue if a section has an empty array as content", async () => {
+      const content = createMinimalValidContent();
+      content["8"]!.content = []; // Assuming section 8 could be an array
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_001",
+          sectionNumber: 8,
+          severity: "error",
+        }),
+      );
+    });
   });
 
-  it("should return an empty array if flowchart data is not provided", () => {
-    const protocolContent = createMockProtocolContent();
-    const issues = validateCrossConsistency(protocolContent, undefined);
-    expect(issues).toEqual([]);
-  });
+  describe("checkRequiredFieldsInSection1", () => {
+    it("should return no issues if Section 1 has all required fields", async () => {
+      const validContent = createMinimalValidContent(); // This already has a valid section 1
+      const issues = await validateCompleteness(validContent);
+      const section1FieldIssues = issues.filter(
+        (issue: ValidationIssue) => issue.ruleId === "COMPLETENESS_002",
+      );
+      expect(section1FieldIssues).toEqual([]);
+    });
 
-  // TODO: Add more tests once actual cross-validation rules are implemented.
-  // For example:
-  // it("should detect a decision point in text not present in flowchart", () => { ... });
-  // it("should detect a flowchart decision node not reflected in text", () => { ... });
+    it("should return an issue if a required field in Section 1 is missing", async () => {
+      const content = createMinimalValidContent();
+      const section1Content = content["1"]!.content as Record<string, any>;
+      delete section1Content.codigoProtocolo;
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_002",
+          sectionNumber: 1,
+          field: "codigoProtocolo",
+          severity: "error",
+        }),
+      );
+    });
+
+    it("should return an issue if a required field in Section 1 is empty", async () => {
+      const content = createMinimalValidContent();
+      (content["1"]!.content as Record<string, any>).tituloCompleto = "  ";
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_002",
+          sectionNumber: 1,
+          field: "tituloCompleto",
+          severity: "error",
+        }),
+      );
+    });
+
+    it("should return format issue if Section 1 content is not an object", async () => {
+      const content = createMinimalValidContent();
+      content["1"]!.content = "Not an object";
+      const issues = await validateCompleteness(content);
+      expect(issues).toContainEqual(
+        expect.objectContaining({
+          ruleId: "COMPLETENESS_002_FORMAT",
+          sectionNumber: 1,
+          severity: "error",
+        }),
+      );
+    });
+  });
 });

@@ -4,10 +4,7 @@
  * These validators check if all required parts of the protocol are filled in,
  * avoiding empty sections or missing critical information.
  */
-import type {
-  ProtocolFullContent,
-  ProtocolSectionData,
-} from "@/types/protocol";
+import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
 import type {
   ValidationIssue,
   ValidatorFunction,
@@ -69,13 +66,33 @@ const checkRequiredFieldsInSection1: ValidatorFunction = (
   const section1 = protocolContent["1"];
   const section1Def = SECTION_DEFINITIONS.find((sd) => sd.sectionNumber === 1);
 
+  if (!section1Def) {
+    // This is a fallback, ideally SECTION_DEFINITIONS should always have section 1
+    if (section1) {
+      // Only push if section 1 content exists but its definition is missing
+      issues.push({
+        ruleId: "COMPLETENESS_002_DEFINITION_MISSING",
+        sectionNumber: 1,
+        message:
+          "A definição da Seção 1 (Identificação do Protocolo) não foi encontrada. Não é possível validar campos obrigatórios.",
+        severity: "error",
+        category: "COMPLETENESS", // Added category
+      });
+    }
+    return issues; // Cannot proceed without section1Def
+  }
+
   if (
     section1 &&
     typeof section1.content === "object" &&
-    section1.content !== null &&
-    section1Def
+    section1.content !== null
   ) {
     const content = section1.content as Record<string, any>;
+    // section1Def is guaranteed to be defined here.
+    // We also know for section 1, example is an object.
+    const exampleFields = section1Def.example as Record<string, any>;
+
+    // Define requiredFields directly as strings, matching the known structure of Section 1's example
     const requiredFields: string[] = [
       "codigoProtocolo",
       "tituloCompleto",
@@ -88,6 +105,14 @@ const checkRequiredFieldsInSection1: ValidatorFunction = (
     ];
 
     for (const field of requiredFields) {
+      // Check if the field, known to be a string, exists as a key in exampleFields
+      // This is more of a sanity check for the definition itself, or could be removed if trusted.
+      if (exampleFields && !(field in exampleFields)) {
+        // This case should ideally not happen if SECTION_DEFINITIONS[0].example is correctly defined.
+        // console.warn(`Field ${field} from requiredFields is not in section1Def.example for section 1.`);
+        // Continue or handle as a different kind of error if necessary.
+      }
+
       if (
         !content[field] ||
         (typeof content[field] === "string" &&
@@ -112,15 +137,12 @@ const checkRequiredFieldsInSection1: ValidatorFunction = (
       message:
         "O conteúdo da Seção 1 não está no formato de objeto esperado, impedindo a verificação de campos obrigatórios.",
       severity: "error",
-      category: "COMPLETENESS",
+      category: "COMPLETENESS", // Added category
     });
   }
   // If section1 itself is missing, STRUCTURAL_001 handles it.
   return issues;
 };
-
-// Add more completeness checks, e.g., ensuring objective criteria are defined,
-// medication dosages are specific, etc.
 
 export const COMPLETENESS_VALIDATION_RULES: ValidationRuleDefinition[] = [
   {
@@ -142,18 +164,22 @@ export const COMPLETENESS_VALIDATION_RULES: ValidationRuleDefinition[] = [
 
 /**
  * Validates the completeness of the protocol content.
+ * This function is now async to accommodate potentially async rules.
  * @param protocolContent The full content of the protocol.
  * @returns An array of validation issues.
  */
-export const validateCompleteness: ValidatorFunction = (
-  protocolContent,
-  _protocolFlowchart, // Flowchart not used for these completeness checks
-): ValidationIssue[] => {
+export const validateCompleteness = async (
+  protocolContent: ProtocolFullContent,
+  _protocolFlowchart?: FlowchartData,
+): Promise<ValidationIssue[]> => {
   let allIssues: ValidationIssue[] = [];
   for (const rule of COMPLETENESS_VALIDATION_RULES) {
-    const result = rule.check(protocolContent);
-    // Since our completeness rules are synchronous, we can safely cast
-    allIssues = allIssues.concat(result as ValidationIssue[]);
+    // Await rule.check as ValidatorFunction can now return a Promise
+    const ruleIssuesResult = await rule.check(
+      protocolContent,
+      _protocolFlowchart,
+    );
+    allIssues = allIssues.concat(ruleIssuesResult);
   }
   return allIssues;
 };

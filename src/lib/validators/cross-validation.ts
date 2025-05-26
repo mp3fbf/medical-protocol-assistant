@@ -20,19 +20,7 @@ const checkTextDecisionsInFlowchart: ValidatorFunction = (
   _protocolFlowchart,
 ): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
-  // TODO: Implement logic. For example:
-  // 1. Parse text to identify decision points (e.g., "Se PAS < 90 mmHg, então...").
-  // 2. Check if each decision point has a corresponding 'decision' node in the flowchart
-  //    with matching criteria.
-  // if (someTextDecisionMissingInFlowchart) {
-  //   issues.push({
-  //     ruleId: "CROSS_VALIDATION_001",
-  //     message: "Decisão textual 'XYZ' não encontrada no fluxograma.",
-  //     severity: "error",
-  //     category: "FLOWCHART_CONSISTENCY",
-  //     // Potentially add sectionNumber or specific text snippet
-  //   });
-  // }
+  // TODO: Implement logic.
   return issues;
 };
 
@@ -43,15 +31,6 @@ const checkFlowchartDecisionsInText: ValidatorFunction = (
 ): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
   // TODO: Implement logic.
-  // if (someFlowchartDecisionNotInText) {
-  //   issues.push({
-  //     ruleId: "CROSS_VALIDATION_002",
-  //     message: "Nó de decisão 'ABC' do fluxograma não tem correspondência clara no texto.",
-  //     severity: "error",
-  //     category: "FLOWCHART_CONSISTENCY",
-  //     // Potentially add flowchart node ID
-  //   });
-  // }
   return issues;
 };
 
@@ -72,31 +51,30 @@ export const CROSS_VALIDATION_RULES: ValidationRuleDefinition[] = [
     category: "FLOWCHART_CONSISTENCY",
     check: checkFlowchartDecisionsInText,
   },
-  // Add more rules: medication consistency, conditional criteria matching, etc.
 ];
 
 /**
  * Validates consistency between protocol text and flowchart.
+ * This function is async to accommodate potentially async rules.
  * @param protocolContent The full content of the protocol.
  * @param protocolFlowchart The flowchart data.
  * @returns An array of validation issues.
  */
-export const validateCrossConsistency: ValidatorFunction = async (
-  protocolContent,
-  protocolFlowchart,
+export const validateCrossConsistency = async (
+  protocolContent: ProtocolFullContent,
+  protocolFlowchart?: FlowchartData,
 ): Promise<ValidationIssue[]> => {
-  // This function will be more meaningful once flowchart data structure is defined
-  // and flowchart generation/editing is implemented.
   if (!protocolFlowchart) {
-    // If no flowchart data is provided, we might return specific warnings or skip these checks.
-    // For now, skipping if no flowchart data.
     return [];
   }
 
   let allIssues: ValidationIssue[] = [];
   for (const rule of CROSS_VALIDATION_RULES) {
-    const ruleIssues = await rule.check(protocolContent, protocolFlowchart);
-    allIssues = allIssues.concat(ruleIssues);
+    const ruleIssuesResult = await rule.check(
+      protocolContent,
+      protocolFlowchart,
+    );
+    allIssues = allIssues.concat(ruleIssuesResult);
   }
   return allIssues;
 };
