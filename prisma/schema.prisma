@@ -1,32 +1,72 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model AuditLog {
+  id           String   @id
+  timestamp    DateTime @default(now())
+  userId       String?
+  action       String
+  resourceType String?
+  resourceId   String?
+  details      Json?
+  ipAddress    String?
+  User         User?    @relation(fields: [userId], references: [id])
+
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([userId])
 }
 
-enum UserRole {
-  CREATOR
-  REVIEWER
-  ADMIN
+model Protocol {
+  id              String            @id
+  code            String            @unique
+  title           String
+  condition       String
+  status          ProtocolStatus    @default(DRAFT)
+  createdById     String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  User            User              @relation(fields: [createdById], references: [id])
+  ProtocolVersion ProtocolVersion[]
+
+  @@index([condition])
+  @@index([createdById])
+  @@index([status])
+}
+
+model ProtocolVersion {
+  id             String   @id
+  protocolId     String
+  versionNumber  Int
+  content        Json
+  flowchart      Json
+  createdById    String
+  createdAt      DateTime @default(now())
+  changelogNotes String?
+  User           User     @relation(fields: [createdById], references: [id])
+  Protocol       Protocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
+  @@unique([protocolId, versionNumber])
+  @@index([createdById])
+  @@index([protocolId])
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String
-  role      UserRole   @default(CREATOR)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  protocols Protocol[] @relation("CreatedProtocols")
-
-  protocolVersions ProtocolVersion[] @relation("VersionCreator")
-  auditLogs        AuditLog[]
+  id              String            @id
+  email           String            @unique
+  name            String
+  role            UserRole          @default(CREATOR)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  AuditLog        AuditLog[]
+  Protocol        Protocol[]
+  ProtocolVersion ProtocolVersion[]
 }
 
 enum ProtocolStatus {
@@ -36,54 +76,8 @@ enum ProtocolStatus {
   ARCHIVED
 }
 
-model Protocol {
-  id         String   @id @default(uuid())
-  code       String   @unique // e.g., "BRADI-001"
-  title      String
-  condition  String // Medical condition this protocol addresses
-  status     ProtocolStatus @default(DRAFT)
-  createdBy  User     @relation("CreatedProtocols", fields: [createdById], references: [id])
-  createdById String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  versions ProtocolVersion[]
-
-  @@index([createdById])
-  @@index([status])
-  @@index([condition])
-}
-
-model ProtocolVersion {
-  id             String   @id @default(uuid())
-  protocol       Protocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  protocolId     String
-  versionNumber  Int
-  content        Json // Stores the 13 sections and their content
-  flowchart      Json // Stores flowchart nodes and edges
-  createdBy      User     @relation("VersionCreator", fields: [createdById], references: [id])
-  createdById    String
-  createdAt      DateTime @default(now())
-  changelogNotes String? // Optional notes describing changes in this version
-
-  @@unique([protocolId, versionNumber])
-  @@index([protocolId])
-  @@index([createdById])
-}
-
-// Generic audit log for important system events
-model AuditLog {
-  id           String    @id @default(uuid())
-  timestamp    DateTime  @default(now())
-  userId       String? // Optional: ID of the user performing the action
-  user         User?     @relation(fields: [userId], references: [id])
-  action       String // e.g., "PROTOCOL_CREATED", "USER_LOGIN_FAILED", "SECTION_UPDATED"
-  resourceType String? // e.g., "Protocol", "User", "ProtocolVersion"
-  resourceId   String? // ID of the affected resource
-  details      Json? // Any additional details relevant to the audit event
-  ipAddress    String?
-
-  @@index([userId])
-  @@index([action])
-  @@index([resourceType, resourceId])
+enum UserRole {
+  CREATOR
+  REVIEWER
+  ADMIN
 }

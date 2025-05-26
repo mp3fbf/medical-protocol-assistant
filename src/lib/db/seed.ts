@@ -32,9 +32,11 @@ async function main() {
   if (!existingAdmin) {
     const adminUser = await prisma.user.create({
       data: {
+        id: crypto.randomUUID(),
         email: adminEmail,
         name: "Admin User",
         role: UserRole.ADMIN,
+        updatedAt: new Date(),
         // Note: Password hashing should be implemented in user creation logic, not directly in seed for plaintext.
         // For simplicity in seed, we are not hashing.
         // In a real application, you'd hash the password here or have a more secure setup.

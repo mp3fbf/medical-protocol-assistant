@@ -103,7 +103,7 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 
 <project_rules>
 
-````md
+`````md
 # Medical Protocol Assistant - Project Rules
 
 ## Core Principles
@@ -188,6 +188,8 @@ graph LR
     H -->|Yes| I[Export Documents]
     I --> J[Upload to Jira]
 ````
+`````
+
 ````
 
 ### High-Level Architecture
@@ -1276,7 +1278,7 @@ export default function () {
   - Manual research input option
   - Multiple research source fallbacks</technical_specification>
 
-<implementation_plan>  
+<implementation_plan>
 {{# Implementation Plan
 
 ## Project Foundation
@@ -1345,7 +1347,7 @@ export default function () {
   - **Step Dependencies**: Step 4
   - **User Instructions**: Generate NEXTAUTH_SECRET with `openssl rand -base64 32` and add to .env.local. Ensure `NEXTAUTH_URL` is set.
 
-- [ ] **Step 6 – Role-Based Access Control** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 6 – Role-Based Access Control** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Implement RBAC system with creator/reviewer/admin roles.
   - **Files**:
     - `src/lib/auth/rbac.ts`: role validation and permission checking
@@ -1357,7 +1359,7 @@ export default function () {
 
 ## Core API Layer
 
-- [ ] **Step 7 – tRPC Server Setup** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 7 – tRPC Server Setup** (Effort: M, Risk: Low, Rollback: Safe)
 
   - **Task**: Configure tRPC with context, middleware, and basic router structure.
   - **Files**:
@@ -1593,18 +1595,18 @@ export default function () {
     - `docs/examples/itu-protocol.md`: complex flowchart example
     - `docs/deployment.md`: deployment and maintenance guide
   - **Step Dependencies**: Step 25
-  - **User Instructions**: Review documentation for accuracy and completeness}}  
+  - **User Instructions**: Review documentation for accuracy and completeness}}
     </implementation_plan>
 
-<existing_code>  
-{{YOUR_CODE}}  
+<existing_code>
+{{YOUR_CODE}}
 </existing_code>
 
 ---
 
 ## ❷ Think first – private reasoning
 
-Enclose all internal thoughts in **`<codegen_planning>`** tags.  
+Enclose all internal thoughts in **`<codegen_planning>`** tags.
 Decide:
 
 1. The **next unchecked step** in the Implementation Plan.
@@ -1621,11 +1623,13 @@ End **`</codegen_planning>`** before emitting files; content inside the tags is 
 For **every file you create or modify**, supply **full contents** using the template below—one file after another.
 
 ````
+
 Here's what I did and why: <concise rationale for this file>
 Filepath: path/to/file.ext
+
 ```<language>
 <ENTIRE FILE CONTENTS>
-````
+```
 
 ```
 

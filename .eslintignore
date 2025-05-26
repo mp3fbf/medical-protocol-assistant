@@ -1,0 +1,13 @@
+# Generated database types that cause ESLint issues
+src/types/database.ts
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env* 
