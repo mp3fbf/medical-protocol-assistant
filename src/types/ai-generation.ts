@@ -3,8 +3,8 @@
  */
 import type {
   AIResearchData,
-  AISectionGenerationOutput as BaseAISectionOutput,
-} from "@/lib/ai/types";
+  AIResearchFinding, // Ensure AIResearchFinding is also imported or defined if used directly
+} from "@/lib/ai/types"; // Assuming base types are here
 import type {
   ProtocolFullContent,
   ProtocolSectionData,
@@ -19,19 +19,21 @@ export interface AIProtocolSectionInput {
   medicalCondition: string;
   sectionNumber: number; // 1-13
   sectionTitle?: string; // Optional: user can pre-fill title
-  researchFindings?: AIResearchData["findings"]; // Relevant research findings
+  researchFindings?: AIResearchFinding[]; // Relevant research findings from AIResearchData
   previousSectionsContent?: Partial<ProtocolFullContent>; // Content of sections already generated/filled
   specificInstructions?: string; // User-provided specific instructions for this section
 }
 
 /**
  * Output from generating a single protocol section using AI.
- * Extends the base output to ensure sectionNumber and title are present.
+ * This should align with the structure of ProtocolSectionData.
  */
-export interface AIProtocolSectionOutput extends BaseAISectionOutput {
+export interface AIProtocolSectionOutput {
   sectionNumber: number;
   title: string;
   content: ProtocolSectionData["content"]; // String or structured JSON
+  explanation?: string; // AI's explanation of how it generated the content
+  confidenceScore?: number;
 }
 
 /**
@@ -76,5 +78,5 @@ export interface StandardSectionDefinition {
   description: string; // Brief description of what this section should contain
   // Specific structural requirements or fields for this section, as a JSON schema-like object or descriptive text
   contentSchemaDescription: string;
-  example?: Record<string, any>; // Example JSON output for this section's content
+  example?: Record<string, any> | Array<Record<string, any>> | string; // Example JSON output or text for this section's content
 }

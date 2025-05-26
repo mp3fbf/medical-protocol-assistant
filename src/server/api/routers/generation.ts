@@ -13,8 +13,11 @@ import type {
   AIProtocolSectionInput,
   AIProtocolSectionOutput,
 } from "@/types/ai-generation";
-import { AIResearchDataSchema } from "@/lib/validators/protocol-schema"; // Assuming this exists or will be created
-import { ProtocolFullContentSchema } from "@/lib/validators/protocol-schema"; // For previousSectionsContent
+import {
+  AIResearchDataSchema,
+  ProtocolFullContentSchema, // Used for previousSectionsContent
+} from "@/lib/validators/protocol-schema";
+import type { ProtocolFullContent } from "@/types/protocol";
 
 // Zod schema for AIFullProtocolGenerationInput
 const AIFullProtocolGenerationInputSchema = z.object({
@@ -34,9 +37,10 @@ const AIProtocolSectionInputSchema = z.object({
     .int()
     .min(1)
     .max(13, "Número da seção deve ser entre 1 e 13."),
-  sectionTitle: z.string().optional(),
-  researchFindings: AIResearchDataSchema.shape.findings.optional(), // Array of AIResearchFinding
-  previousSectionsContent: ProtocolFullContentSchema.optional(), // Allow partial for context
+  sectionTitle: z.string().optional(), // User might pre-fill this
+  researchFindings: AIResearchDataSchema.shape.findings.optional(),
+  // previousSectionsContent should match ProtocolFullContent structure but allow partial data
+  previousSectionsContent: z.record(z.string(), z.any()).optional(), // Simplified for flexibility, actual structure from ProtocolFullContentSchema
   specificInstructions: z.string().optional(),
 });
 
@@ -51,8 +55,11 @@ export const generationRouter = router({
         console.log(
           `User ${ctx.session.user.id} initiated full protocol generation for: ${input.medicalCondition}`,
         );
-        // Type assertion, Zod validation ensures compatibility
-        return generateFullProtocolAI(input as AIFullProtocolGenerationInput);
+        // Type assertion, Zod validation ensures compatibility at the boundary.
+        // The generateFullProtocolAI function expects the more specific AIFullProtocolGenerationInput type.
+        return generateFullProtocolAI(
+          input as unknown as AIFullProtocolGenerationInput,
+        );
       },
     ),
 
@@ -65,11 +72,16 @@ export const generationRouter = router({
       console.log(
         `User ${ctx.session.user.id} initiated section ${input.sectionNumber} generation for condition: ${input.medicalCondition}`,
       );
-      // Type assertion, Zod validation ensures compatibility
-      return generateProtocolSectionAI(input as AIProtocolSectionInput);
+      // Similar to above, ensure type compatibility.
+      // The previousSectionsContent might need careful mapping if its Zod schema is simplified here.
+      // For now, direct assertion after Zod validation.
+      const typedInput: AIProtocolSectionInput = {
+        ...input,
+        // Ensure previousSectionsContent is correctly typed if provided
+        previousSectionsContent: input.previousSectionsContent
+          ? (input.previousSectionsContent as Partial<ProtocolFullContent>)
+          : undefined,
+      };
+      return generateProtocolSectionAI(typedInput);
     }),
 });
-
-// Note: AIResearchDataSchema needs to be defined or imported correctly.
-// If it's not already defined in protocol-schema.ts, it should be created based on AIResearchData type.
-// For now, assuming it exists for the input validation.

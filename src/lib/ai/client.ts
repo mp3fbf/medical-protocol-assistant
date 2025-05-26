@@ -13,9 +13,9 @@ let openaiInstance: OpenAI | null = null;
 
 /**
  * Retrieves the singleton OpenAI client instance.
- * Throws an error if the OpenAI API key is not configured.
+ * Throws an error if the OpenAI API key is not configured (except in test environment).
  * @returns The configured OpenAI client.
- * @throws {OpenAIError} If the API key is missing.
+ * @throws {OpenAIError} If the API key is missing in non-test environments.
  */
 export function getOpenAIClient(): OpenAI {
   if (openaiInstance) {
@@ -25,7 +25,7 @@ export function getOpenAIClient(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
   const organizationId = process.env.OPENAI_ORG_ID || undefined;
 
-  if (!apiKey) {
+  if (!apiKey && process.env.NODE_ENV !== "test") {
     console.error(
       "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.",
     );
@@ -35,11 +35,13 @@ export function getOpenAIClient(): OpenAI {
   }
 
   try {
+    // For test environment, apiKey might be undefined if mocks are used at a higher level.
+    // The OpenAI constructor can handle an undefined apiKey, leading to errors only if an actual API call is made.
+    // This is acceptable as tests should mock the API calls themselves.
     openaiInstance = new OpenAI({
-      apiKey,
+      apiKey: apiKey || "sk-test-key-if-not-set-for-constructor", // Provide a dummy key for constructor if testing and not set
       organization: organizationId,
       timeout: OPENAI_API_TIMEOUT_MS,
-      // maxRetries: DEFAULT_API_RETRY_ATTEMPTS, // OpenAI client handles retries by default
     });
     return openaiInstance;
   } catch (error) {
@@ -82,6 +84,19 @@ export async function createChatCompletion(
   } catch (error: any) {
     // Log the error and re-throw as a custom OpenAIError for better context
     console.error("OpenAI API request failed:", error);
+    // Check if running in test environment and an API key was expected but missing for a real call
+    if (
+      process.env.NODE_ENV === "test" &&
+      !process.env.OPENAI_API_KEY &&
+      error.message?.includes("api_key_required") // Example error message check
+    ) {
+      // This indicates an unmocked API call in a test without an API key.
+      // Tests should mock this specific call.
+      throw new OpenAIError(
+        "OpenAI API call attempted in test without API key and without being mocked. Ensure API calls are mocked in tests.",
+        { cause: error, statusCode: error.status, errorType: error.type },
+      );
+    }
     throw new OpenAIError(
       `OpenAI API request failed: ${error.message || "Unknown error"}`,
       {
