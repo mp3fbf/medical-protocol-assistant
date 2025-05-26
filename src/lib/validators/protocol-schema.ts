@@ -117,3 +117,30 @@ export const UpdateProtocolVersionInputSchema = z.object({
   flowchart: FlowchartDataSchema.optional(), // Flowchart data
   changelogNotes: z.string().optional(),
 });
+
+// AI Research Data Schemas
+export const AIResearchFindingSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  findingType: z.enum([
+    "diagnostic_criteria",
+    "treatment_protocol",
+    "geriatric_consideration",
+    "dosage_information",
+    "numeric_threshold",
+    "other",
+  ]),
+  extractedText: z.string(),
+  summary: z.string().optional(),
+  objectiveCriteria: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
+export const AIResearchDataSchema = z.object({
+  query: z.string(),
+  findings: z.array(AIResearchFindingSchema),
+  summary: z.string().optional(),
+  timestamp: z.string(),
+});

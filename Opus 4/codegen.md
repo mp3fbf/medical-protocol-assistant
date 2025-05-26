@@ -1394,7 +1394,7 @@ export default function () {
   - **Step Dependencies**: Step 1
   - **User Instructions**: Obtain OpenAI API key and add to environment variables
 
-- [ ] **Step 10 – Medical Research Integration** (Effort: L, Risk: High, Rollback: Safe)
+- [x] **Step 10 – Medical Research Integration** (Effort: L, Risk: High, Rollback: Safe)
   - **Task**: Implement DeepResearch API integration for medical literature search.
   - **Files**:
     - `src/lib/ai/research.ts`: research API client and data extraction
@@ -1405,17 +1405,21 @@ export default function () {
   - **Step Dependencies**: Step 9
   - **User Instructions**: Configure DeepResearch API credentials if available, otherwise implement mock responses
 
+# Updated Implementation Plan (excerpt)
 ## Protocol Generation Engine
-
-- [ ] **Step 11 – AI Protocol Generation** (Effort: L, Risk: High, Rollback: Safe)
+- [x] **Step 11 – AI Protocol Generation** (Effort: L, Risk: High, Rollback: Safe)
 
   - **Task**: Create AI-powered protocol generation with all 13 sections and structured output.
   - **Files**:
     - `src/lib/ai/generator.ts`: main protocol generation logic
-    - `src/lib/ai/prompts/sections.ts`: section-specific prompts for all 13 sections
-    - `src/lib/ai/prompts/medical.ts`: medical protocol generation prompts
-    - `src/lib/validators/medical.ts`: medical content validation schemas
+    - `src/lib/ai/prompts/section-specific/index.ts`: Index for section-specific prompts, defines `SECTION_DEFINITIONS`
+    - `src/lib/ai/prompts/section-specific/section-1-metadata.ts`: Example prompt details for section 1 (placeholder for now)
+    - `src/lib/ai/prompts/section-specific/section-common.ts`: Common helper strings for section prompts
+    - `src/lib/ai/prompts/protocol-generation.ts`: Overall medical protocol generation prompts (system and user prompt creation functions)
+    - `src/lib/validators/generated-content.ts`: Zod schemas for validating AI-generated medical content structure
     - `src/server/api/routers/generation.ts`: generation API endpoints
+    - `src/lib/ai/generator.test.ts`: Unit/integration tests for the generation logic.
+    - `src/types/ai-generation.ts`: Specific types for AI generation request/response.
   - **Step Dependencies**: Step 10
   - **User Instructions**: none
 
