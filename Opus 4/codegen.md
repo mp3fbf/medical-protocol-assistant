@@ -1371,7 +1371,7 @@ export default function () {
   - **Step Dependencies**: Step 6
   - **User Instructions**: none
 
-- [ ] **Step 8 – Protocol API Router** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 8 – Protocol API Router** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Create tRPC router for protocol CRUD operations with validation.
   - **Files**:
     - `src/server/api/routers/protocol.ts`: protocol management endpoints
