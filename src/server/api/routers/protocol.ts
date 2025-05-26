@@ -73,14 +73,17 @@ export const protocolRouter = router({
 
       const protocol = await ctx.db.protocol.create({
         data: {
+          id: crypto.randomUUID(),
           title,
           condition,
           code: protocolCode,
           createdById: userId,
           status: ProtocolStatus.DRAFT,
-          versions: {
+          updatedAt: new Date(),
+          ProtocolVersion: {
             create: [
               {
+                id: crypto.randomUUID(),
                 versionNumber: 1,
                 createdById: userId,
                 content: DEFAULT_EMPTY_CONTENT as any,
@@ -91,7 +94,7 @@ export const protocolRouter = router({
           },
         },
         include: {
-          versions: true, // Include the created version
+          ProtocolVersion: true, // Include the created version
         },
       });
       return protocol;
@@ -132,14 +135,14 @@ export const protocolRouter = router({
           [sortBy]: sortOrder,
         },
         include: {
-          createdBy: {
+          User: {
             select: { id: true, name: true, email: true },
           },
           _count: {
-            select: { versions: true },
+            select: { ProtocolVersion: true },
           },
           // Optionally include latest version summary
-          versions: {
+          ProtocolVersion: {
             orderBy: { versionNumber: "desc" },
             take: 1,
             select: { versionNumber: true, createdAt: true },
@@ -168,13 +171,13 @@ export const protocolRouter = router({
       const protocol = await ctx.db.protocol.findUnique({
         where: { id: input.protocolId },
         include: {
-          createdBy: {
+          User: {
             select: { id: true, name: true, email: true },
           },
-          versions: {
+          ProtocolVersion: {
             orderBy: { versionNumber: "desc" }, // Get all versions, newest first
             include: {
-              createdBy: {
+              User: {
                 select: { id: true, name: true, email: true },
               },
             },
@@ -202,7 +205,9 @@ export const protocolRouter = router({
 
       const protocol = await ctx.db.protocol.findUnique({
         where: { id: protocolId },
-        include: { versions: { orderBy: { versionNumber: "desc" }, take: 1 } },
+        include: {
+          ProtocolVersion: { orderBy: { versionNumber: "desc" }, take: 1 },
+        },
       });
 
       if (!protocol) {
@@ -231,15 +236,17 @@ export const protocolRouter = router({
         });
       }
 
-      const latestVersionNumber = protocol.versions[0]?.versionNumber ?? 0;
+      const latestVersionNumber =
+        protocol.ProtocolVersion[0]?.versionNumber ?? 0;
 
       // Create a new version for content/flowchart updates
       await ctx.db.protocol.update({
         where: { id: protocolId },
         data: {
           updatedAt: new Date(), // Ensure updatedAt is updated
-          versions: {
+          ProtocolVersion: {
             create: {
+              id: crypto.randomUUID(),
               versionNumber: latestVersionNumber + 1,
               content: (content ?? DEFAULT_EMPTY_CONTENT) as any,
               flowchart: (flowchart ?? DEFAULT_EMPTY_FLOWCHART) as any,

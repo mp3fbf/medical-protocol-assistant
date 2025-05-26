@@ -1383,7 +1383,7 @@ export default function () {
 
 ## AI Integration Foundation
 
-- [ ] **Step 9 – OpenAI Client Setup** (Effort: S, Risk: Med, Rollback: Safe)
+- [x] **Step 9 – OpenAI Client Setup** (Effort: S, Risk: Med, Rollback: Safe)
 
   - **Task**: Configure OpenAI client with structured output and error handling.
   - **Files**:
