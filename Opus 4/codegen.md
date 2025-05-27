@@ -1551,7 +1551,7 @@ export default function () {
   - **Step Dependencies**: Step 8
   - **User Instructions**: none
 
-- [ ] **Step 21 – AI Prompt Testing** (Effort: M, Risk: Med, Rollback: Safe)
+- [x] **Step 21 – AI Prompt Testing** (Effort: M, Risk: Med, Rollback: Safe)
   - **Task**: Create comprehensive tests for AI prompts and generation quality.
   - **Files**:
     - `tests/unit/ai/prompts.test.ts`: prompt template tests
@@ -1563,7 +1563,7 @@ export default function () {
 
 ## CI/CD & Quality Gates
 
-- [ ] **Step 22 – GitHub Actions CI** (Effort: S, Risk: Low, Rollback: Safe)
+- [x] **Step 22 – GitHub Actions CI** (Effort: S, Risk: Low, Rollback: Safe)
 
   - **Task**: Setup continuous integration with linting, testing, and build verification.
   - **Files**:
