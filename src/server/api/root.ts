@@ -8,13 +8,15 @@ import { router, publicProcedure } from "./trpc";
 import { protocolRouter } from "./routers/protocol";
 import { userRouter } from "./routers/user";
 import { researchRouter } from "./routers/research";
-import { generationRouter } from "./routers/generation"; // Import the new generation router
+import { generationRouter } from "./routers/generation";
+import { exportRouter } from "./routers/export"; // Import the new export router
 
 export const appRouter = router({
   protocol: protocolRouter,
   user: userRouter,
   research: researchRouter,
-  generation: generationRouter, // Add the generation router
+  generation: generationRouter,
+  export: exportRouter, // Add the export router
 
   // Example health check endpoint (can be kept or removed)
   healthCheck: publicProcedure.query(({ ctx }) => {

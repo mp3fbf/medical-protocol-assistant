@@ -10,4 +10,8 @@ build/
 node_modules/
 
 # Environment files
-.env* 
+.env*
+
+# Configuration files
+tailwind.config.js
+postcss.config.js 

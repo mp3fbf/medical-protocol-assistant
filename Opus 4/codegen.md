@@ -1423,7 +1423,7 @@ export default function () {
   - **Step Dependencies**: Step 10
   - **User Instructions**: none
 
-- [ ] **Step 12 – Protocol Validation Engine** (Effort: L, Risk: Med, Rollback: Safe)
+- [x] **Step 12 – Protocol Validation Engine** (Effort: L, Risk: Med, Rollback: Safe)
   - **Task**: Build comprehensive validation system for protocol structure and content consistency.
   - **Files**:
     - `src/lib/validators/protocol-structure.ts`: structural validation rules
@@ -1434,18 +1434,21 @@ export default function () {
   - **Step Dependencies**: Step 11
   - **User Instructions**: Upload medication CSV file to public/data/ folder
 
+# Updated Implementation Plan (excerpt)
 ## Document Generation System
-
-- [ ] **Step 13 – Word Document Generation** (Effort: L, Risk: Med, Rollback: Safe)
-
-  - **Task**: Implement DOCX generation with ABNT formatting and template compliance.
+- [x] **Step 13 – Word Document Generation (with Supabase Storage)** (Effort: L, Risk: Med, Rollback: Safe)
+  - **Task**: Implement DOCX generation with ABNT formatting and template compliance. Store documents in Supabase Storage.
   - **Files**:
-    - `src/lib/generators/docx.ts`: Word document generation with docx library
-    - `src/lib/generators/templates.ts`: ABNT template configuration
-    - `public/templates/protocol-template.docx`: base Word template
-    - `src/server/api/routers/export.ts`: document export endpoints
-  - **Step Dependencies**: Step 8
-  - **User Instructions**: Add ABNT-compliant Word template to public/templates/
+    - `src/lib/generators/docx.ts`: Word document generation with docx library.
+    - `src/lib/generators/templates.ts`: ABNT template configuration.
+    - `public/templates/protocol-template.docx`: base Word template.
+    - `src/lib/supabase/client.ts`: Supabase client configuration.
+    - `src/lib/supabase/storageActions.ts`: Supabase Storage upload and signed URL functions.
+    - `src/server/api/routers/export.ts`: Document export tRPC endpoints using Supabase Storage.
+    - `package.json`: Add `@supabase/supabase-js`, remove AWS SDK.
+    - `.env.example`: Add Supabase environment variables.
+  - **Step Dependencies**: Step 8 (Protocol API Router for fetching protocol data)
+  - **User Instructions**: Add ABNT-compliant Word template to `public/templates/`. Configure Supabase URL, Service Role Key, and Storage Bucket Name in `.env.local`. Create the bucket in your Supabase project. Ensure style IDs in `templates.ts` match those in your Word template.
 
 - [ ] **Step 14 – PDF and SVG Export** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Add PDF export and SVG flowchart generation capabilities.
@@ -1563,19 +1566,16 @@ export default function () {
   - **User Instructions**: Configure branch protection rules requiring CI checks
 
 ## Infrastructure & Deployment
-
-- [ ] **Step 24 – AWS Infrastructure Setup** (Effort: L, Risk: High, Rollback: Manual)
-
-  - **Task**: Create Terraform configuration for AWS infrastructure (RDS, S3, ECS).
+- [ ] **Step 24 – Cloud Infrastructure Setup** (Effort: L, Risk: High, Rollback: Manual)
+  - **Task**: Create Terraform configuration for cloud infrastructure (e.g., PostgreSQL on AWS RDS if not using Supabase DB, and other services like ECS). *Note: S3 setup for documents is no longer needed if using Supabase Storage.*
   - **Files**:
     - `infra/terraform/main.tf`: main Terraform configuration
-    - `infra/terraform/database.tf`: RDS PostgreSQL setup
-    - `infra/terraform/storage.tf`: S3 bucket configuration
-    - `infra/terraform/compute.tf`: ECS/Fargate setup
+    - `infra/terraform/database.tf`: RDS PostgreSQL setup (if applicable)
+    - `infra/terraform/compute.tf`: ECS/Fargate setup (if applicable)
     - `infra/terraform/variables.tf`: environment variables
   - **Step Dependencies**: Step 22
-  - **User Instructions**: Setup AWS credentials, run `terraform init` and `terraform plan`
-  - **Rollback**: Run `terraform destroy` to remove all resources
+  - **User Instructions**: Setup cloud provider credentials, run `terraform init` and `terraform plan`.
+  - **Rollback**: Run `terraform destroy` to remove all resources.
 
 - [ ] **Step 25 – Production Deployment** (Effort: L, Risk: High, Rollback: Manual)
   - **Task**: Deploy application to production with monitoring and health checks.
