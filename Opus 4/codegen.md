@@ -1488,41 +1488,53 @@ export default function () {
   - **Step Dependencies**: Step 15
   - **User Instructions**: none
 
+# Updated Implementation Plan (excerpt)
 ## Frontend Components
-
-- [ ] **Step 17 – UI Component Library** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 17 – UI Component Library** (Effort: M, Risk: Low, Rollback: Safe)
 
   - **Task**: Setup shadcn/ui components and custom medical protocol UI components.
   - **Files**:
-    - `src/components/ui/`: shadcn base components (button, input, dialog, etc.)
-    - `src/components/layout/sidebar.tsx`: navigation sidebar
-    - `src/components/layout/header.tsx`: page header with user menu
-    - `src/components/protocol/section-editor.tsx`: individual section editor
-    - `src/components/protocol/medication-table.tsx`: medication input table
-  - **Step Dependencies**: Step 5
-  - **User Instructions**: Run `npx shadcn-ui@latest init` to setup component library
+    - `src/components/ui/button.tsx` (Example shadcn component)
+    - `src/components/ui/input.tsx` (Example shadcn component)
+    - `src/components/ui/dialog.tsx` (Example shadcn component)
+    - `src/components/layout/main-layout.tsx`
+    - `src/components/layout/sidebar.tsx`
+    - `src/components/layout/header.tsx`
+    - `src/components/protocol/protocol-section-display.tsx`
+    - `src/components/protocol/medication-table-display.tsx`
+    - `src/lib/utils.ts` (Ensure `cn` utility)
+    - `src/app/(auth)/layout.tsx` (New layout for authenticated routes)
+    - `src/app/(auth)/dashboard/page.tsx` (Placeholder page for layout demo)
+    - `package.json` (Ensure shadcn/ui related dependencies)
+  - **Step Dependencies**: Step 5 (Auth setup for header/sidebar user info)
+  - **User Instructions**: Run `pnpm dlx shadcn-ui@latest init` and `pnpm dlx shadcn-ui@latest add button input dialog`. Install `lucide-react`.
 
-- [ ] **Step 18 – Protocol Editor Interface** (Effort: L, Risk: Med, Rollback: Safe)
-
+- [x] **Step 18 – Protocol Editor Interface** (Effort: L, Risk: Med, Rollback: Safe)
   - **Task**: Build main protocol editing interface with side-by-side text and flowchart views.
   - **Files**:
-    - `src/app/(auth)/protocols/[id]/page.tsx`: main protocol editor page
-    - `src/components/protocol/editor/protocol-editor.tsx`: main editor component
-    - `src/components/protocol/editor/section-list.tsx`: section navigation
-    - `src/components/protocol/validation/report.tsx`: validation results display
-    - `src/hooks/use-protocol.ts`: protocol management hook
-  - **Step Dependencies**: Step 17
-  - **User Instructions**: none
+    - `src/app/(auth)/protocols/[id]/page.tsx`
+    - `src/components/protocol/editor/protocol-editor-layout.tsx`
+    - `src/components/protocol/editor/text-editor-pane.tsx`
+    - `src/components/protocol/editor/flowchart-pane.tsx`
+    - `src/components/protocol/editor/section-navigation-list.tsx`
+    - `src/components/protocol/editor/validation-report-display.tsx`
+    - `src/hooks/use-protocol-editor-state.ts`
+    - `src/app/(auth)/protocols/page.tsx` (placeholder for navigation)
+    - `src/app/(auth)/protocols/new/page.tsx` (placeholder for navigation)
+    - `src/components/ui/scroll-area.tsx` (placeholder for shadcn component)
+  - **Step Dependencies**: Step 17 (UI components), Step 15 (Flowchart canvas), Step 8 (Protocol API for data - mocked for now)
+  - **User Instructions**: Add `scroll-area` shadcn/ui component: `pnpm dlx shadcn-ui@latest add scroll-area`.
 
 - [ ] **Step 19 – Dashboard and Protocol Management** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Create dashboard, protocol list, and management interfaces.
   - **Files**:
-    - `src/app/(auth)/dashboard/page.tsx`: main dashboard
-    - `src/app/(auth)/protocols/page.tsx`: protocol list with filtering
-    - `src/app/(auth)/protocols/new/page.tsx`: new protocol creation
-    - `src/components/protocol/list/protocol-card.tsx`: protocol list item
-    - `src/components/dashboard/stats.tsx`: dashboard statistics
-  - **Step Dependencies**: Step 18
+    - `src/app/(auth)/dashboard/page.tsx`: main dashboard (enhance placeholder)
+    - `src/app/(auth)/protocols/page.tsx`: protocol list with filtering (implement fully)
+    - `src/app/(auth)/protocols/new/page.tsx`: new protocol creation form (implement fully)
+    - `src/components/protocol/list/protocol-card.tsx`: protocol list item component
+    - `src/components/dashboard/stats-cards.tsx`: (new) dashboard statistics display cards
+    - `src/components/protocol/forms/create-protocol-form.tsx`: (new) Form for new protocol page
+  - **Step Dependencies**: Step 18 (uses layouts and some shared components), Step 8 (Protocol API for listing/creating)
   - **User Instructions**: none
 
 ## Quality Assurance & Testing
