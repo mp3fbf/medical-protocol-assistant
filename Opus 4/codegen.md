@@ -1478,7 +1478,7 @@ export default function () {
   - **Step Dependencies**: Step 8 (implied, for data integration later), general frontend setup.
   - **User Instructions**: Install `reactflow`. Ensure `cn` utility and Tailwind custom colors are available.
 
-- [ ] **Step 16 – Flowchart Auto-Generation** (Effort: L, Risk: High, Rollback: Safe)
+- [x] **Step 16 – Flowchart Auto-Generation** (Effort: L, Risk: High, Rollback: Safe)
   - **Task**: Generate flowcharts automatically from protocol text using AI and layout algorithms.
   - **Files**:
     - `src/lib/flowchart/generator.ts`: text-to-flowchart conversion
@@ -1525,7 +1525,7 @@ export default function () {
   - **Step Dependencies**: Step 17 (UI components), Step 15 (Flowchart canvas), Step 8 (Protocol API for data - mocked for now)
   - **User Instructions**: Add `scroll-area` shadcn/ui component: `pnpm dlx shadcn-ui@latest add scroll-area`.
 
-- [ ] **Step 19 – Dashboard and Protocol Management** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 19 – Dashboard and Protocol Management** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Create dashboard, protocol list, and management interfaces.
   - **Files**:
     - `src/app/(auth)/dashboard/page.tsx`: main dashboard (enhance placeholder)
@@ -1539,7 +1539,7 @@ export default function () {
 
 ## Quality Assurance & Testing
 
-- [ ] **Step 20 – Testing Infrastructure** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 20 – Testing Infrastructure** (Effort: M, Risk: Low, Rollback: Safe)
 
   - **Task**: Setup testing framework with unit, integration, and E2E tests.
   - **Files**:
