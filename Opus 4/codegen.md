@@ -1450,7 +1450,7 @@ export default function () {
   - **Step Dependencies**: Step 8 (Protocol API Router for fetching protocol data)
   - **User Instructions**: Add ABNT-compliant Word template to `public/templates/`. Configure Supabase URL, Service Role Key, and Storage Bucket Name in `.env.local`. Create the bucket in your Supabase project. Ensure style IDs in `templates.ts` match those in your Word template.
 
-- [ ] **Step 14 – PDF and SVG Export** (Effort: M, Risk: Low, Rollback: Safe)
+- [x] **Step 14 – PDF and SVG Export** (Effort: M, Risk: Low, Rollback: Safe)
   - **Task**: Add PDF export and SVG flowchart generation capabilities.
   - **Files**:
     - `src/lib/generators/pdf.ts`: PDF generation using react-pdf
@@ -1459,19 +1459,24 @@ export default function () {
   - **Step Dependencies**: Step 13
   - **User Instructions**: none
 
+# Updated Implementation Plan (excerpt)
 ## Flowchart System
-
-- [ ] **Step 15 – ReactFlow Integration** (Effort: L, Risk: Med, Rollback: Safe)
+- [x] **Step 15 – ReactFlow Integration** (Effort: L, Risk: Med, Rollback: Safe)
 
   - **Task**: Setup ReactFlow for visual flowchart editing with custom nodes and medical-specific components.
   - **Files**:
-    - `src/components/flowchart/canvas.tsx`: main flowchart canvas component
-    - `src/components/flowchart/nodes/decision-node.tsx`: decision point nodes
-    - `src/components/flowchart/nodes/action-node.tsx`: action/treatment nodes
-    - `src/components/flowchart/nodes/medication-node.tsx`: medication table nodes
-    - `src/lib/flowchart/types.ts`: flowchart data types
-  - **Step Dependencies**: Step 8
-  - **User Instructions**: none
+    - `src/components/protocol/flowchart/protocol-flowchart-canvas.tsx`
+    - `src/components/protocol/flowchart/node-types/index.ts`
+    - `src/components/protocol/flowchart/node-types/decision-node.tsx`
+    - `src/components/protocol/flowchart/node-types/action-node.tsx`
+    - `src/components/protocol/flowchart/node-types/medication-node.tsx`
+    - `src/components/protocol/flowchart/node-types/triage-node.tsx`
+    - `src/components/protocol/flowchart/ui/minimap.tsx`
+    - `src/components/protocol/flowchart/ui/controls.tsx`
+    - `src/types/flowchart.ts`
+    - `package.json` (add `reactflow`)
+  - **Step Dependencies**: Step 8 (implied, for data integration later), general frontend setup.
+  - **User Instructions**: Install `reactflow`. Ensure `cn` utility and Tailwind custom colors are available.
 
 - [ ] **Step 16 – Flowchart Auto-Generation** (Effort: L, Risk: High, Rollback: Safe)
   - **Task**: Generate flowcharts automatically from protocol text using AI and layout algorithms.
