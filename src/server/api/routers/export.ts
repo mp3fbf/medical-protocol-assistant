@@ -4,17 +4,20 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
-import { generateProtocolDocx } from "@/lib/generators/docx"; // Assumed to exist from previous Step 13 work
+import { generateProtocolDocx } from "@/lib/generators/docx";
+import { generateProtocolPdf } from "@/lib/generators/pdf";
+import { generateFlowchartSvg } from "@/lib/generators/svg";
+import { sanitizeFilename } from "@/lib/generators/utils";
 import {
   uploadToSupabaseStorage,
   createSupabaseSignedUrl,
 } from "@/lib/supabase/storageActions";
-import type { ProtocolFullContent } from "@/types/protocol";
+import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
 
 const ExportInputSchema = z.object({
   protocolId: z.string().uuid("ID de protocolo inválido."),
   versionId: z.string().uuid("ID de versão de protocolo inválido."),
-  format: z.enum(["docx"]), // Extend with "pdf", "svg" later
+  format: z.enum(["docx", "pdf", "svg"]),
 });
 
 export const exportRouter = router({
@@ -36,30 +39,40 @@ export const exportRouter = router({
       }
 
       const protocolContent =
-        protocolVersion.content as unknown as ProtocolFullContent; // Prisma returns JsonValue
+        protocolVersion.content as unknown as ProtocolFullContent;
+      const flowchartData = protocolVersion.flowchart as unknown as
+        | FlowchartData
+        | undefined; // May not exist or be empty initially
       const protocolTitle = protocolVersion.Protocol.title || "protocolo";
       const protocolCode = protocolVersion.Protocol.code || "PROTO";
       const versionNum = protocolVersion.versionNumber;
 
-      // Sanitize title for use in filename
-      const safeTitle = protocolTitle
-        .replace(/[^a-z0-9\s-]/gi, "")
-        .replace(/\s+/g, "_")
-        .toLowerCase();
-      const filename = `${protocolCode}_v${versionNum}_${safeTitle}.${format}`;
-      // Define a path within the Supabase bucket
+      const safeBaseFilename = sanitizeFilename(
+        `${protocolCode}_v${versionNum}_${protocolTitle}`,
+      );
+      const filename = `${safeBaseFilename}.${format}`;
       const filePathInBucket = `protocols/${protocolId}/${versionId}/${filename}`;
 
-      let documentBuffer: Buffer;
+      let documentBody: Buffer | string;
       let contentType: string;
 
       switch (format) {
         case "docx":
-          documentBuffer = await generateProtocolDocx(protocolContent);
+          documentBody = await generateProtocolDocx(protocolContent);
           contentType =
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
           break;
-        // Add cases for PDF, SVG later
+        case "pdf":
+          documentBody = await generateProtocolPdf(
+            protocolContent,
+            protocolTitle,
+          );
+          contentType = "application/pdf";
+          break;
+        case "svg":
+          documentBody = await generateFlowchartSvg(flowchartData);
+          contentType = "image/svg+xml";
+          break;
         default:
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -67,15 +80,16 @@ export const exportRouter = router({
           });
       }
 
+      const bufferToUpload = Buffer.isBuffer(documentBody)
+        ? documentBody
+        : Buffer.from(documentBody, "utf-8");
+
       try {
-        // Upload to Supabase Storage
         await uploadToSupabaseStorage(
           filePathInBucket,
-          documentBuffer,
+          bufferToUpload,
           contentType,
         );
-
-        // Get signed URL for download from Supabase Storage
         const downloadUrl = await createSupabaseSignedUrl(filePathInBucket);
 
         return {
@@ -85,13 +99,15 @@ export const exportRouter = router({
         };
       } catch (error) {
         console.error(
-          "Error during document export process (Supabase):",
+          `Error during document export process (Supabase, format: ${format}):`,
           error,
         );
-        if (error instanceof TRPCError) throw error; // Re-throw TRPCError as is
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `Falha ao exportar o documento para Supabase Storage: ${(error as Error).message}`,
+          message: `Falha ao exportar o documento (${format.toUpperCase()}) para Supabase Storage: ${
+            (error as Error).message
+          }`,
           cause: error,
         });
       }
