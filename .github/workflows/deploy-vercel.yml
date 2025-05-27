@@ -1,26 +1,30 @@
 # .github/workflows/deploy-vercel.yml
-name: Deploy to Vercel
+name: CI Checks (Test, Lint) & Vercel Auto-Deploy Trigger
 
 on:
   push:
     branches:
-      - main # Deploy to production on push to main
-      - develop # Deploy to preview on push to develop
+      - main # For Vercel to pick up for production deployment
+      - develop # For Vercel to pick up for preview deployment
   pull_request:
     branches:
       - main
       - develop
-    types: [opened, synchronize, reopened, closed] # Trigger on PR events for checks/comments
+    types: [opened, synchronize, reopened, closed]
 
+# Environment variables here are primarily for the test job if needed,
+# Vercel deployment will use variables set in Vercel Project Settings.
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  # DATABASE_URL, NEXTAUTH_SECRET, OPENAI_API_KEY, etc. should be set in Vercel Project Settings, not here.
+  OPENAI_API_KEY: "sk-test-key-for-ci" # Mock key for tests
+  NEXTAUTH_SECRET: "ci-nextauth-secret-placeholder"
+  NEXTAUTH_URL: "http://localhost:3000" # For local-like test environment
+  SUPABASE_URL: "http://localhost:54321" # Mock for tests
+  SUPABASE_SERVICE_ROLE_KEY: "mock.supabase.key" # Mock for tests
+  DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public" # For test job DB
 
 jobs:
   lint-and-test:
-    name: Lint & Unit/Integration Tests (Pre-deploy)
-    if: github.event.pull_request.merged != true # Don't run for merged PRs if deploy job runs on push
+    name: Lint & Unit/Integration Tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -47,47 +51,19 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Generate Prisma Client
         run: pnpm prisma generate
-        env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
-      - name: Run Database Migrations (for tests)
+        # DATABASE_URL for generate is taken from job env if needed, but often not for generate itself
+      - name: Run Database Migrations (for tests, if any test requires it)
         run: pnpm prisma migrate deploy
-        env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+        # DATABASE_URL for migrate is taken from job env
       - name: Lint code
         run: pnpm lint
       - name: Run unit and integration tests
         run: pnpm test --run
-        env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+        # DATABASE_URL for tests is taken from job env
 
-  deploy-to-vercel:
-    name: Deploy to Vercel
-    needs: lint-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.action == 'closed')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js (for Vercel CLI)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x # Use a Node version compatible with Vercel CLI & your project
-
-      - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest # Using pnpm to install globally in the CI environment
-
-      - name: Pull Vercel Project Settings
-        run: vercel pull --yes --environment=${{ github.ref_name == 'main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-        # This step links the local checkout to your Vercel project.
-        # It creates a .vercel directory with project linking information.
-
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} ${{ github.ref_name == 'main' && '--prod' || '' }}
-        # For production (main branch), add --prod. For others, it's a preview build.
-
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ github.ref_name == 'main' && '--prod' || '' }}
-        # Deploys the artifacts built in the previous step.
-        # Assigns an alias for production deployments.
+  # The Vercel deployment will now be handled by Vercel's native Git integration.
+  # This GitHub Actions workflow primarily serves as a CI check.
+  # No Vercel CLI deployment steps are needed here anymore.
+  # Vercel will see the push to 'main' or 'develop' (if configured in Vercel project settings)
+  # and trigger its own build and deployment process using the `vercel.json` and
+  # environment variables set in the Vercel dashboard.
