@@ -5,7 +5,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Settings } from "lucide-react"; // Example icons
+import { LayoutDashboard, FileText } from "lucide-react"; // Removed unused Settings
 import { cn } from "@/lib/utils";
 
 const navItems = [

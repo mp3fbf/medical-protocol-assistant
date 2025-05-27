@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { FileText, Edit, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ProtocolStatus } from "@prisma/client";
+import { ProtocolStatus } from "@prisma/client"; // Changed from type-only import
 
 export interface ProtocolCardProps {
   id: string;

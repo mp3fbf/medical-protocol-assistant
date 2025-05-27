@@ -9,7 +9,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { Metadata } from "next"; // Note: Metadata in client components is tricky
+// import type { Metadata } from "next"; // Note: Metadata in client components is tricky
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ import { Loader2, LogIn, AlertTriangle } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { status: _status } = useSession(); // Renamed status as it's checked directly in useEffect
 
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
@@ -36,10 +36,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     // If user is already authenticated, redirect them from login page
-    if (status === "authenticated") {
+    if (_status === "authenticated") {
       router.replace(callbackUrl);
     }
-  }, [status, router, callbackUrl]);
+  }, [_status, router, callbackUrl]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -89,13 +89,13 @@ export default function LoginPage() {
     }
   };
 
-  if (status === "loading" || status === "authenticated") {
+  if (_status === "loading" || _status === "authenticated") {
     // Show loading indicator or let useEffect redirect if authenticated
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
         <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
         <p className="mt-4 text-gray-600 dark:text-gray-300">
-          {status === "authenticated" ? "Redirecionando..." : "Carregando..."}
+          {_status === "authenticated" ? "Redirecionando..." : "Carregando..."}
         </p>
       </main>
     );

@@ -25,15 +25,16 @@ export const authOptions: NextAuthOptions = {
      * The JWT callback is called when a new JWT is created or updated.
      * It's used to persist custom data (like role and id) in the token.
      */
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account: _account, profile: _profile }) {
+      // Underscored unused params
       // Persist the user's id and role to the token right after signin
       if (user) {
         token.id = user.id;
         token.role = (user as NextAuthUser & { role: string }).role; // Cast to include custom role
       }
       // Add access_token to the token right after signin
-      // if (account?.access_token) {
-      //   token.accessToken = account.access_token
+      // if (_account?.access_token) {
+      //   token.accessToken = _account.access_token
       // }
       return token;
     },

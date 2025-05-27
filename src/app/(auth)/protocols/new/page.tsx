@@ -6,7 +6,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import type { Metadata } from "next"; // Metadata can be defined, but won't be dynamic for client components
+// import type { Metadata } from "next"; // Metadata can be defined, but won't be dynamic for client components
 import {
   CreateProtocolForm,
   type CreateProtocolFormValues,
