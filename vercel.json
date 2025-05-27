@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm prisma generate && pnpm build",
+  "outputDirectory": ".next",
+  "devCommand": "pnpm dev",
+  "regions": ["gru1"],
+  "env": {
+    "DATABASE_URL": "@db_url_secret",
+    "NEXTAUTH_SECRET": "@nextauth_secret_value",
+    "NEXTAUTH_URL": "@nextauth_url_value",
+    "OPENAI_API_KEY": "@openai_api_key_secret",
+    "SUPABASE_URL": "@supabase_url_secret",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key_secret",
+    "SUPABASE_STORAGE_BUCKET_NAME": "protocol-documents"
+  },
+  "github": {
+    "silent": false,
+    "autoJobCancelation": true
+  }
+}

@@ -1573,7 +1573,7 @@ export default function () {
   - **Step Dependencies**: Step 21
   - **User Instructions**: Add repository secrets for `OPENAI_API_KEY`, `DATABASE_URL`, `NEXTAUTH_SECRET`
 
-- [ ] **Step 23 – Code Quality Enforcement** (Effort: S, Risk: Low, Rollback: Safe)
+- [x] **Step 23 – Code Quality Enforcement** (Effort: S, Risk: Low, Rollback: Safe)
   - **Task**: Add code coverage reporting and quality gates.
   - **Files**:
     - `.github/workflows/coverage.yml`: coverage reporting workflow
@@ -1582,28 +1582,29 @@ export default function () {
   - **Step Dependencies**: Step 22
   - **User Instructions**: Configure branch protection rules requiring CI checks
 
+# Updated Implementation Plan (excerpt)
 ## Infrastructure & Deployment
-- [ ] **Step 24 – Cloud Infrastructure Setup** (Effort: L, Risk: High, Rollback: Manual)
-  - **Task**: Create Terraform configuration for cloud infrastructure (e.g., PostgreSQL on AWS RDS if not using Supabase DB, and other services like ECS). *Note: S3 setup for documents is no longer needed if using Supabase Storage.*
+- [x] **Step 24 – Cloud Infrastructure Setup (Revised for No AWS Cost)** (Effort: M, Risk: Low, Rollback: N/A as no resources created)
+  - **Task**: Create a minimal and safe Terraform placeholder directory. `main.tf` will explicitly define no AWS resources. `README.md` will document that primary hosting is via Vercel/Supabase and this Terraform setup is for potential, optional supplementary services, respecting the "no AWS cost" preference.
   - **Files**:
-    - `infra/terraform/main.tf`: main Terraform configuration
-    - `infra/terraform/database.tf`: RDS PostgreSQL setup (if applicable)
-    - `infra/terraform/compute.tf`: ECS/Fargate setup (if applicable)
-    - `infra/terraform/variables.tf`: environment variables
+    - `infra/terraform/main.tf` (Content: comments, no active resources)
+    - `infra/terraform/README.md` (Detailed explanation of placeholder status and no-cost intent)
+    - `infra/terraform/.gitignore` (Standard)
   - **Step Dependencies**: Step 22
-  - **User Instructions**: Setup cloud provider credentials, run `terraform init` and `terraform plan`.
-  - **Rollback**: Run `terraform destroy` to remove all resources.
+  - **User Instructions**: Understand the placeholder nature of this setup. No AWS resources will be created or costs incurred by default. `terraform init` is safe; `terraform apply` should only be used if resources are intentionally added.
+  - **Rollback**: N/A as no cloud resources are provisioned by default with this setup.
 
-- [ ] **Step 25 – Production Deployment** (Effort: L, Risk: High, Rollback: Manual)
-  - **Task**: Deploy application to production with monitoring and health checks.
+- [x] **Step 25 – Production Deployment (to Vercel)** (Effort: L, Risk: Med, Rollback: Vercel rollback features)
+  - **Task**: Configure Next.js application for deployment to Vercel. Setup Vercel project and GitHub integration for CI/CD. Ensure local development environment is consistent using Docker.
   - **Files**:
-    - `Dockerfile`: production container configuration
-    - `docker-compose.yml`: local development stack
-    - `.github/workflows/deploy.yml`: production deployment workflow
-    - `infra/terraform/monitoring.tf`: CloudWatch monitoring setup
-  - **Step Dependencies**: Step 24
-  - **User Instructions**: Configure production environment variables, run deployment pipeline
-  - **Rollback**: Revert to previous ECS task definition, restore database from backup if needed
+    - `vercel.json` (Vercel project configurations, build commands)
+    - `Dockerfile` (For local dev consistency / alternative containerized deployments)
+    - `docker-compose.yml` (Local development stack with app and PostgreSQL database)
+    - `.github/workflows/deploy-vercel.yml` (GitHub Actions workflow for Vercel deployment)
+    - `README.md` (Updated with Vercel deployment and local Docker instructions)
+  - **Step Dependencies**: Conceptually follows infrastructure setup (Step 24), but main dependency is a working application.
+  - **User Instructions**: Create Vercel account & project, link GitHub repo, configure Vercel environment variables, add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` as GitHub secrets. Review Docker setup for local development.
+  - **Rollback**: Revert to a previous deployment on Vercel dashboard.
 
 ## Final Integration & Documentation
 

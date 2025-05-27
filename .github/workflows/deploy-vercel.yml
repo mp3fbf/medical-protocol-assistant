@@ -1,0 +1,93 @@
+# .github/workflows/deploy-vercel.yml
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main # Deploy to production on push to main
+      - develop # Deploy to preview on push to develop
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened, closed] # Trigger on PR events for checks/comments
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # DATABASE_URL, NEXTAUTH_SECRET, OPENAI_API_KEY, etc. should be set in Vercel Project Settings, not here.
+
+jobs:
+  lint-and-test:
+    name: Lint & Unit/Integration Tests (Pre-deploy)
+    if: github.event.pull_request.merged != true # Don't run for merged PRs if deploy job runs on push
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+      - name: Run Database Migrations (for tests)
+        run: pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+      - name: Lint code
+        run: pnpm lint
+      - name: Run unit and integration tests
+        run: pnpm test --run
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+
+  deploy-to-vercel:
+    name: Deploy to Vercel
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.action == 'closed')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (for Vercel CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x # Use a Node version compatible with Vercel CLI & your project
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest # Using pnpm to install globally in the CI environment
+
+      - name: Pull Vercel Project Settings
+        run: vercel pull --yes --environment=${{ github.ref_name == 'main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+        # This step links the local checkout to your Vercel project.
+        # It creates a .vercel directory with project linking information.
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }} ${{ github.ref_name == 'main' && '--prod' || '' }}
+        # For production (main branch), add --prod. For others, it's a preview build.
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} ${{ github.ref_name == 'main' && '--prod' || '' }}
+        # Deploys the artifacts built in the previous step.
+        # Assigns an alias for production deployments.
