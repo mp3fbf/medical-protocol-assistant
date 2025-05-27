@@ -82,6 +82,10 @@ export function sanitizeFilename(name: string): string {
   //    - Consolidate multiple underscores to a single underscore.
   namePart = namePart.replace(/_+/g, "_");
 
+  //    - Handle the specific pattern -_- which comes from -.- after dot conversion
+  //      This is different from _-_ which might come from spaces around hyphens
+  namePart = namePart.replace(/-_-/g, "_");
+
   // 4. Remove leading/trailing hyphens or underscores from namePart
   namePart = namePart.replace(/^[-_]+|[-_]+$/g, "");
 

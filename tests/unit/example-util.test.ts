@@ -62,13 +62,11 @@ describe("sanitizeFilename utility", () => {
   });
 
   it("should truncate long filenames and ensure no trailing separators, preserving extension", () => {
-    // Name: "a...(90)..._another_long_section_of_name" -> "a_another_long_section_of_name" (len 116)
+    // Name: "a...(90)..._another_long_section_of_name" (119 chars)
     // Ext: ".pdf" (len 4). Max name len = 100-4=96.
-    // Truncated name: "a_another_long_section_of_name".substring(0,96) -> "a_another_long_section_of_na"
+    // Truncated name: "a...(90)..._anoth" (96 chars)
     const longName = "a".repeat(90) + "_another_long_section_of_name.pdf";
-    expect(sanitizeFilename(longName)).toBe(
-      "a".repeat(90) + "_another_long_section_of_na.pdf",
-    );
+    expect(sanitizeFilename(longName)).toBe("a".repeat(90) + "_anoth.pdf");
 
     const longNameWithoutExt = "b".repeat(150);
     expect(sanitizeFilename(longNameWithoutExt)).toBe("b".repeat(100));
@@ -78,7 +76,7 @@ describe("sanitizeFilename utility", () => {
 
     const trickyTruncation =
       "protocol_version_very_long_name_that_needs_truncation.tar.gz"; // ext .tar.gz (7). Max name 93.
-    // name part: "protocol_version_very_long_name_that_needs_truncation" (50 chars) - no truncation needed as 50 < 93
+    // name part: "protocol_version_very_long_name_that_needs_truncation" (54 chars) - no truncation needed as 54 < 93
     expect(sanitizeFilename(trickyTruncation)).toBe(
       "protocol_version_very_long_name_that_needs_truncation.tar.gz",
     );
@@ -87,8 +85,9 @@ describe("sanitizeFilename utility", () => {
       "protocol_version_very_long_name_that_needs_serious_truncation_to_fit_within_the_limit_of_one_hundred_characters_for_sure.tar.gz";
     // name part: "protocol_version_very_long_name_that_needs_serious_truncation_to_fit_within_the_limit_of_one_hundred_characters_for_sure" (119 chars)
     // ext: .tar.gz (7). Max name 93.
+    // Truncated: "protocol_version_very_long_name_that_needs_serious_truncation_to_fit_within_the_limit_of_one" (93 chars)
     const expectedNamePartTarGz =
-      "protocol_version_very_long_name_that_needs_serious_truncation_to_fit_within_the_limit_of_one_h"; // 93 chars
+      "protocol_version_very_long_name_that_needs_serious_truncation_to_fit_within_the_limit_of_one"; // 93 chars
     expect(sanitizeFilename(needsTruncationTarGz)).toBe(
       expectedNamePartTarGz + ".tar.gz",
     );
