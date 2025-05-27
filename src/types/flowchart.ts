@@ -41,17 +41,29 @@ export interface TriageNodeData extends BaseNodeData {
   description?: string; // Example: Triage criteria or initial assessment points
 }
 
+export interface StartNodeData extends BaseNodeData {
+  type: "start";
+  description?: string; // Optional: e.g., "Protocol initiated for condition X"
+}
+
+export interface EndNodeData extends BaseNodeData {
+  type: "end";
+  description?: string; // Optional: e.g., "Patient discharged" or "Refer to specialist"
+}
+
 // Union type for all possible node data structures
 export type CustomFlowNodeData =
   | DecisionNodeData
   | ActionNodeData
   | MedicationNodeData
-  | TriageNodeData;
+  | TriageNodeData
+  | StartNodeData
+  | EndNodeData;
 
 // Custom Node type for ReactFlow, incorporating our specific data structure
 export interface CustomFlowNode
   extends Node<CustomFlowNodeData, string | undefined> {
-  type: "decision" | "action" | "medication" | "triage"; // Ensures 'type' string literal matches CustomFlowNodeData
+  type: "decision" | "action" | "medication" | "triage" | "start" | "end"; // Ensures 'type' string literal matches CustomFlowNodeData
 }
 
 // Custom Edge type (can be extended if custom edge data is needed)
