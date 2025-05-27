@@ -1,27 +1,82 @@
 /**
  * Stylesheet for react-pdf components, aiming for ABNT compliance.
+ * Includes font registration for server-side rendering, converting buffers to Data URIs.
  */
 import { StyleSheet, Font } from "@react-pdf/renderer";
+import fs from "fs";
+import path from "path";
 
-// ABNT NBR 14724 recommends Times New Roman or Arial.
-// For react-pdf, fonts must be registered.
-// Arial is often a safe default if specific font files aren't embedded.
-// Ensure that if you use "Times New Roman", you register the font file.
-// Example (font files would need to be in your project, e.g., in /public/fonts):
-/*
-Font.register({
-  family: "Times New Roman",
-  fonts: [
-    { src: "/path/to/times.ttf" }, // regular
-    { src: "/path/to/timesbd.ttf", fontWeight: "bold" },
-    { src: "/path/to/timesi.ttf", fontStyle: "italic" },
-    { src: "/path/to/timesbi.ttf", fontWeight: "bold", fontStyle: "italic" },
-  ],
-});
-*/
+// Define the font family name that will be used in styles
+const ABNT_FONT_FAMILY = "Times New Roman";
 
-// For simplicity, we'll default to a common sans-serif font like Helvetica/Arial which react-pdf often handles.
-const ABNT_FONT_FAMILY = "Helvetica"; // Or "Times New Roman" if registered
+// Function to register fonts. This should be called once.
+// It reads font files directly from the filesystem for server-side rendering
+// and converts them to Data URIs.
+let fontsRegistered = false;
+export const registerABNTFonts = () => {
+  if (fontsRegistered) {
+    return;
+  }
+  try {
+    const projectRoot = process.cwd();
+    const fontPath = (fileName: string) =>
+      path.join(projectRoot, "src", "assets", "fonts", fileName);
+
+    // Use string literals for fontWeight and fontStyle, and any for the options and return type initially
+    const createFontSource = (
+      filePath: string,
+      options?: { fontWeight?: string; fontStyle?: string },
+    ): any | null => {
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath);
+        const base64 = buffer.toString("base64");
+        // For TTF fonts, the mime type is 'font/truetype' or 'application/font-sfnt' or 'application/x-font-ttf'
+        // 'font/truetype' is widely accepted.
+        const src = `data:font/truetype;charset=utf-8;base64,${base64}`;
+        return { src, ...options };
+      }
+      console.warn(`Font file not found at: ${filePath}.`);
+      return null;
+    };
+
+    // Using filenames as provided in the user's screenshot
+    const sources = [
+      createFontSource(fontPath("Times New Roman.ttf")),
+      createFontSource(fontPath("Times New Roman - Bold.ttf"), {
+        fontWeight: "bold",
+      }),
+      createFontSource(fontPath("Times New Roman - Italic.ttf"), {
+        fontStyle: "italic",
+      }),
+      createFontSource(fontPath("Times New Roman - Bold Italic.ttf"), {
+        fontWeight: "bold",
+        fontStyle: "italic",
+      }),
+    ].filter((source) => source !== null) as any[]; // Cast to any[] for now
+
+    if (sources.length > 0) {
+      Font.register({
+        family: ABNT_FONT_FAMILY,
+        fonts: sources,
+      });
+      console.log(
+        `Successfully registered ${ABNT_FONT_FAMILY} font family with ${sources.length} variants for react-pdf using Data URIs.`,
+      );
+    } else if (sources.length === 0 && process.env.NODE_ENV !== "test") {
+      // Only throw if no fonts registered and not in test mode
+      throw new Error(
+        `No Times New Roman font files found matching expected names in src/assets/fonts/. PDF generation will likely fail or use incorrect fonts.`,
+      );
+    }
+    fontsRegistered = true;
+  } catch (error) {
+    console.error(
+      `Error registering ${ABNT_FONT_FAMILY} fonts for react-pdf:`,
+      error,
+    );
+    fontsRegistered = true; // Mark as attempted
+  }
+};
 
 // ABNT Page Margins (in points, 1 inch = 72 points, 1 cm = 72 / 2.54 points)
 const CM_TO_PT = (cm: number) => (cm / 2.54) * 72;
@@ -32,24 +87,23 @@ export const abntStyles = StyleSheet.create({
     paddingLeft: CM_TO_PT(3),
     paddingBottom: CM_TO_PT(2),
     paddingRight: CM_TO_PT(2),
-    fontFamily: ABNT_FONT_FAMILY,
+    fontFamily: ABNT_FONT_FAMILY, // Use the registered Times New Roman
     fontSize: 12, // ABNT Body text size 12pt
     lineHeight: 1.5, // ABNT line spacing 1.5
   },
   documentTitle: {
-    fontSize: 16, // Example, adjust as needed
+    fontSize: 16,
     textAlign: "center",
-    marginBottom: CM_TO_PT(2), // Space after title
+    marginBottom: CM_TO_PT(2),
     fontFamily: ABNT_FONT_FAMILY,
     fontWeight: "bold",
   },
   sectionTitleH1: {
-    fontSize: 12, // ABNT: Sections start with 12pt, bold, all caps for primary
+    fontSize: 12,
     fontFamily: ABNT_FONT_FAMILY,
     fontWeight: "bold",
-    marginTop: CM_TO_PT(1), // Space before section title
-    marginBottom: CM_TO_PT(0.5), // Space after section title
-    // textTransform: "uppercase", // react-pdf doesn't support text-transform directly
+    marginTop: CM_TO_PT(1),
+    marginBottom: CM_TO_PT(0.5),
   },
   sectionTitleH2: {
     fontSize: 12,
@@ -61,7 +115,6 @@ export const abntStyles = StyleSheet.create({
   sectionTitleH3: {
     fontSize: 12,
     fontFamily: ABNT_FONT_FAMILY,
-    // ABNT: tertiary sections might be italic or just normal with number
     fontStyle: "italic",
     marginTop: CM_TO_PT(0.6),
     marginBottom: CM_TO_PT(0.3),
@@ -70,20 +123,20 @@ export const abntStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: ABNT_FONT_FAMILY,
     textAlign: "justify",
-    textIndent: CM_TO_PT(1.25), // ABNT first line indent for paragraphs
-    marginBottom: CM_TO_PT(0.2), // Small space between paragraphs or adjust line height
+    textIndent: CM_TO_PT(1.25),
+    marginBottom: CM_TO_PT(0.2),
   },
   listItem: {
     fontSize: 12,
     fontFamily: ABNT_FONT_FAMILY,
     textAlign: "justify",
-    marginLeft: CM_TO_PT(0.75), // Indent for list items
+    marginLeft: CM_TO_PT(0.75),
     marginBottom: CM_TO_PT(0.1),
   },
   table: {
-    display: "flex" as any, // Required for react-pdf table
+    display: "flex" as any,
     flexDirection: "column" as any,
-    width: "100%",
+    width: "auto",
     borderStyle: "solid",
     borderWidth: 1,
     borderColor: "#000",
@@ -97,53 +150,37 @@ export const abntStyles = StyleSheet.create({
     borderBottomColor: "#bfbfbf",
   },
   tableColHeader: {
-    width: "33%", // Example for 3 columns
+    flexGrow: 1,
     borderStyle: "solid",
     borderRightWidth: 1,
     borderRightColor: "#bfbfbf",
     backgroundColor: "#f0f0f0",
-    padding: 5,
+    padding: 3,
     fontWeight: "bold",
+    fontSize: 10,
+    fontFamily: ABNT_FONT_FAMILY,
   },
   tableCol: {
-    width: "33%", // Example for 3 columns
+    flexGrow: 1,
     borderStyle: "solid",
     borderRightWidth: 1,
     borderRightColor: "#bfbfbf",
-    padding: 5,
-  },
-  tableCell: {
-    fontSize: 10, // ABNT smaller font for table content
-    margin: 5,
+    padding: 3,
+    fontSize: 10,
+    fontFamily: ABNT_FONT_FAMILY,
   },
   referenceItem: {
     fontSize: 12,
     fontFamily: ABNT_FONT_FAMILY,
     textAlign: "justify",
-    // ABNT references: single spaced within, double between. Complex to achieve perfectly.
-    // Often left aligned, hanging indent.
     marginBottom: CM_TO_PT(0.2),
-    // marginLeft for hanging indent needs careful handling or custom component
   },
   boldText: {
+    fontFamily: ABNT_FONT_FAMILY,
     fontWeight: "bold",
   },
   italicText: {
+    fontFamily: ABNT_FONT_FAMILY,
     fontStyle: "italic",
   },
-  // Add more styles as needed for specific ABNT elements:
-  // - Long citations (recuo de 4cm)
-  // - Footnotes
-  // - Figure/Table captions
 });
-
-// Helper for registering fonts - ensure you have the font files
-export const registerABNTFonts = () => {
-  // Example:
-  // Font.register({ family: 'Arial', src: '/path/to/arial.ttf' });
-  // Font.register({ family: 'Times New Roman', src: '/path/to/times.ttf' });
-  // If not registering, react-pdf will use its defaults (Helvetica, Courier, Times-Roman)
-  console.log(
-    "Font registration placeholder. Ensure fonts are correctly registered for ABNT compliance if using specific ones.",
-  );
-};
