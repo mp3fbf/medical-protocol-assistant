@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { TRPCReactProvider } from "@/lib/api/client"; // Import the tRPC provider
-import SessionProviderWrapper from "@/components/providers/session-provider-wrapper"; // Import the new SessionProvider wrapper
+import { GlobalProviders } from "@/components/providers/global-providers"; // New
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/config";
 
@@ -23,9 +22,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <SessionProviderWrapper session={session}>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </SessionProviderWrapper>
+        <GlobalProviders session={session}>{children}</GlobalProviders>
       </body>
     </html>
   );

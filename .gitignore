@@ -65,3 +65,7 @@ lerna-debug.log*
 # Optional local development database file
 # local.db
 # local.db-journal
+
+# Playwright
+/playwright-report/
+/test-results/
