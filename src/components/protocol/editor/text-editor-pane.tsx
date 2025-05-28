@@ -2,7 +2,7 @@
  * Enhanced pane for editing protocol sections with structured forms and AI assistance.
  */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { ProtocolSectionData } from "@/types/protocol";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,18 +49,7 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
       )
     : null;
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (isDirty && currentSection) {
-      const autoSaveTimer = setTimeout(() => {
-        handleSave();
-      }, 2000); // Auto-save after 2 seconds of inactivity
-
-      return () => clearTimeout(autoSaveTimer);
-    }
-  }, [isDirty, currentSection]);
-
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!currentSection || !isDirty) return;
 
     try {
@@ -74,7 +63,18 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
     } catch (error) {
       setValidationStatus("error");
     }
-  };
+  }, [currentSection, isDirty, onUpdateSectionContent]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (isDirty && currentSection) {
+      const autoSaveTimer = setTimeout(() => {
+        handleSave();
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(autoSaveTimer);
+    }
+  }, [isDirty, currentSection, handleSave]);
 
   const handleGenerateWithAI = async () => {
     if (!currentSection || !sectionDefinition) return;
