@@ -11,15 +11,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"; // Assuming shadcn/ui
 interface TextEditorPaneProps {
   currentSection: ProtocolSectionData | null | undefined;
   onUpdateSectionContent: (
+    // Renamed to _onUpdateSectionContent as it's unused for now
     sectionNumber: number,
     newContent: ProtocolSectionData["content"],
-  ) => void; // For future editing
+  ) => void;
   isLoading?: boolean;
 }
 
 export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
   currentSection,
-  onUpdateSectionContent,
+  onUpdateSectionContent: _onUpdateSectionContent, // Marked as unused
   isLoading,
 }) => {
   if (isLoading) {
@@ -40,14 +41,12 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
     );
   }
 
-  // Placeholder for actual editing UI. For now, just displays content.
   const handleEditClick = () => {
-    // TODO: Implement modal or inline editor for section content
     alert(
       `Funcionalidade de edição para a Seção ${currentSection.sectionNumber} (${currentSection.title}) ainda não implementada.`,
     );
     // Example of how updating might work:
-    // onUpdateSectionContent(currentSection.sectionNumber, "Novo conteúdo editado...");
+    // _onUpdateSectionContent(currentSection.sectionNumber, "Novo conteúdo editado...");
   };
 
   return (

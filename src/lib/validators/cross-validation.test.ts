@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { validateCrossConsistency } from "@/lib/validators/cross-validation";
 import type {
-  ProtocolFullContent,
-  ProtocolSectionData,
-} from "@/types/protocol";
+  ProtocolFullContent /* ProtocolSectionData as _ProtocolSectionData */,
+} from "@/types/protocol"; // _ProtocolSectionData marked as unused
 import type { FlowchartDefinition, CustomFlowNode } from "@/types/flowchart";
 import { mockFullProtocolContent } from "../../../tests/fixtures/protocols";
 
@@ -40,7 +39,6 @@ describe("Cross-Validation (Text vs. Flowchart)", () => {
     consistentProtocol = createTextSection(
       5,
       "Avaliação",
-      // This text implies two outcomes from one decision point (estável vs instável)
       "Se paciente estável (PAS > 90mmHg), observar. Se instável (PAS <= 90mmHg), iniciar fluidos.",
       consistentProtocol,
     );
@@ -53,11 +51,9 @@ describe("Cross-Validation (Text vs. Flowchart)", () => {
     const consistentFlowchart: FlowchartDefinition = {
       nodes: [
         {
-          id: "n1", // Decision: Estável ou Instável?
+          id: "n1",
           type: "decision",
           position: { x: 0, y: 0 },
-          // The criteria could be "Paciente Estável?" and edges labelled "Sim (PAS > 90)" / "Não (PAS <= 90)"
-          // Or it could be "PAS > 90mmHg?"
           data: {
             type: "decision",
             title: "Estado do Paciente",
@@ -66,21 +62,21 @@ describe("Cross-Validation (Text vs. Flowchart)", () => {
           },
         },
         {
-          id: "n2", // Action: Observar
+          id: "n2",
           type: "action",
-          position: { x: -100, y: 100 }, // Example position
+          position: { x: -100, y: 100 },
           data: { type: "action", title: "Observar" },
         },
         {
-          id: "n3", // Action: Iniciar Fluidos
+          id: "n3",
           type: "action",
-          position: { x: 100, y: 100 }, // Example position
+          position: { x: 100, y: 100 },
           data: { type: "action", title: "Iniciar Fluidos" },
         },
         {
           id: "n4",
           type: "medication",
-          position: { x: 0, y: 200 }, // Example position
+          position: { x: 0, y: 200 },
           data: {
             type: "medication",
             title: "Medicação de Emergência",
@@ -96,7 +92,6 @@ describe("Cross-Validation (Text vs. Flowchart)", () => {
         },
       ] as CustomFlowNode[],
       edges: [
-        // Edges connecting based on the decision
         {
           id: "e1-2",
           source: "n1",
@@ -109,7 +104,6 @@ describe("Cross-Validation (Text vs. Flowchart)", () => {
           target: "n3",
           label: "Instável (PAS <= 90mmHg)",
         },
-        // Assuming medication follows one of these paths or is separate
       ],
     };
 

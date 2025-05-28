@@ -2,27 +2,27 @@ import { describe, it, expect } from "vitest";
 import { validateCompleteness } from "./completeness";
 import type {
   ProtocolFullContent,
-  ProtocolSectionData,
+  // ProtocolSectionData, // Marked as unused
 } from "@/types/protocol";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 
 // Helper to create mock protocol content
-const createMockProtocolContent = (
-  sections: Record<string, Partial<ProtocolSectionData>>,
-  sectionCount = 13,
-): ProtocolFullContent => {
-  const fullContent: ProtocolFullContent = {};
-  for (let i = 1; i <= sectionCount; i++) {
-    const key = i.toString();
-    fullContent[key] = {
-      sectionNumber: i,
-      title: `Título Seção ${i}`,
-      content: `Conteúdo da Seção ${i}`,
-      ...(sections[key] || {}),
-    };
-  }
-  return fullContent;
-};
+// const _createMockProtocolContent = ( // Marked as unused
+//   sections: Record<string, Partial<ProtocolSectionData>>,
+//   sectionCount = 13,
+// ): ProtocolFullContent => {
+//   const fullContent: ProtocolFullContent = {};
+//   for (let i = 1; i <= sectionCount; i++) {
+//     const key = i.toString();
+//     fullContent[key] = {
+//       sectionNumber: i,
+//       title: `Título Seção ${i}`,
+//       content: `Conteúdo da Seção ${i}`,
+//       ...(sections[key] || {}),
+//     };
+//   }
+//   return fullContent;
+// };
 
 const createMinimalValidContent = (): ProtocolFullContent => {
   const content: ProtocolFullContent = {};
@@ -30,7 +30,7 @@ const createMinimalValidContent = (): ProtocolFullContent => {
     content[def.sectionNumber.toString()] = {
       sectionNumber: def.sectionNumber,
       title: def.titlePT,
-      content: def.example || "Conteúdo de exemplo.", // Use example or default
+      content: def.example || "Conteúdo de exemplo.",
     };
   });
   return content;
@@ -41,7 +41,6 @@ describe("validateCompleteness", () => {
     it("should return no issues if all sections have content", async () => {
       const validContent = createMinimalValidContent();
       const issues = await validateCompleteness(validContent);
-      // Filter for COMPLETENESS_001 issues only for this specific sub-test
       const sectionContentIssues = issues.filter(
         (issue) => issue.ruleId === "COMPLETENESS_001",
       );
@@ -63,7 +62,7 @@ describe("validateCompleteness", () => {
 
     it("should return an issue if a section has an empty string as content", async () => {
       const content = createMinimalValidContent();
-      content["2"]!.content = "   "; // Whitespace only
+      content["2"]!.content = "   ";
       const issues = await validateCompleteness(content);
       expect(issues).toContainEqual(
         expect.objectContaining({
@@ -76,7 +75,7 @@ describe("validateCompleteness", () => {
 
     it("should return an issue if a section has an empty object as content", async () => {
       const content = createMinimalValidContent();
-      content["1"]!.content = {}; // Assuming section 1 could be an object
+      content["1"]!.content = {};
       const issues = await validateCompleteness(content);
       expect(issues).toContainEqual(
         expect.objectContaining({
@@ -89,7 +88,7 @@ describe("validateCompleteness", () => {
 
     it("should return an issue if a section has an empty array as content", async () => {
       const content = createMinimalValidContent();
-      content["8"]!.content = []; // Assuming section 8 could be an array
+      content["8"]!.content = [];
       const issues = await validateCompleteness(content);
       expect(issues).toContainEqual(
         expect.objectContaining({
@@ -103,7 +102,7 @@ describe("validateCompleteness", () => {
 
   describe("checkRequiredFieldsInSection1", () => {
     it("should return no issues if Section 1 has all required fields", async () => {
-      const validContent = createMinimalValidContent(); // This already has a valid section 1
+      const validContent = createMinimalValidContent();
       const issues = await validateCompleteness(validContent);
       const section1FieldIssues = issues.filter(
         (issue) => issue.ruleId === "COMPLETENESS_002",

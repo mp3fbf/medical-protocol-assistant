@@ -2,10 +2,10 @@
  * Prompts for AI-powered flowchart generation from protocol text.
  */
 import type { ProtocolFullContent } from "@/types/protocol";
-import type {
-  CustomFlowNodeData,
-  FlowchartMedication,
-} from "@/types/flowchart"; // Using the types from flowchart.ts
+// import type {
+//   CustomFlowNodeData as _CustomFlowNodeData, // Marked as unused
+//   FlowchartMedication as _FlowchartMedication, // Marked as unused
+// } from "@/types/flowchart";
 
 export const FLOWCHART_GENERATION_SYSTEM_PROMPT = `
 You are an expert AI assistant specialized in converting medical protocol text into structured flowchart data.
@@ -46,7 +46,7 @@ Analyze the provided protocol text sections and generate the flowchart structure
 
 export function createFlowchartGenerationUserPrompt(
   protocolCondition: string,
-  relevantTextSections: Pick<ProtocolFullContent, string>, // Pass only relevant sections as text
+  relevantTextSections: Pick<ProtocolFullContent, string>,
 ): string {
   let inputText = `Condição do Protocolo: ${protocolCondition}\n\n`;
   inputText += "Seções relevantes do protocolo para gerar o fluxograma:\n\n";
@@ -61,7 +61,6 @@ export function createFlowchartGenerationUserPrompt(
         typeof section.content === "object" &&
         section.content !== null
       ) {
-        // Basic stringification for object/array content, might need refinement
         inputText += `${JSON.stringify(section.content, null, 2)}\n\n`;
       }
     }

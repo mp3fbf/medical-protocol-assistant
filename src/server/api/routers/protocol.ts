@@ -2,7 +2,7 @@
  * tRPC Router for Protocol Management
  */
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+// import { z as _z } from "zod"; // Marked as unused
 import {
   router,
   publicProcedure,
@@ -13,22 +13,22 @@ import {
   CreateProtocolInputSchema,
   ListProtocolsInputSchema,
   ProtocolIdInputSchema,
-  // UpdateProtocolInputSchema, // Not used directly in this version of update
+  // UpdateProtocolInputSchema, // Not used
   UpdateProtocolVersionInputSchema,
 } from "@/lib/validators/protocol-schema";
 import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
 import { ProtocolStatus, UserRole } from "@prisma/client";
 import { Permission } from "@/lib/auth/permissions";
 import { checkPermission } from "@/lib/auth/rbac";
-import { randomUUID } from "crypto"; // Use crypto.randomUUID
+import { randomUUID } from "crypto";
 
 const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
   Array.from({ length: 13 }, (_, i) => [
     (i + 1).toString(),
     {
       sectionNumber: i + 1,
-      title: `Seção ${i + 1}`, // Placeholder title
-      content: "", // Default empty content
+      title: `Seção ${i + 1}`,
+      content: "",
     },
   ]),
 );
@@ -36,14 +36,9 @@ const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
 const DEFAULT_EMPTY_FLOWCHART: FlowchartData = {
   nodes: [],
   edges: [],
-  // viewport can be omitted or set to a default if needed
 };
 
 export const protocolRouter = router({
-  /**
-   * Creates a new medical protocol.
-   * Initializes with a first version containing empty content for 13 sections.
-   */
   create: protectedProcedure
     .input(CreateProtocolInputSchema)
     .mutation(async ({ ctx, input }) => {
@@ -78,15 +73,15 @@ export const protocolRouter = router({
           code: protocolCode,
           createdById: userId,
           status: ProtocolStatus.DRAFT,
-          updatedAt: new Date(), // Explicitly set updatedAt
+          updatedAt: new Date(),
           ProtocolVersion: {
             create: [
               {
                 id: randomUUID(),
                 versionNumber: 1,
                 createdById: userId,
-                content: DEFAULT_EMPTY_CONTENT as any, // Prisma expects JsonValue
-                flowchart: DEFAULT_EMPTY_FLOWCHART as any, // Prisma expects JsonValue
+                content: DEFAULT_EMPTY_CONTENT as any,
+                flowchart: DEFAULT_EMPTY_FLOWCHART as any,
                 changelogNotes: "Versão inicial criada.",
               },
             ],
@@ -234,10 +229,10 @@ export const protocolRouter = router({
           versionNumber: latestVersionNumber + 1,
           content: (content ??
             protocol.ProtocolVersion[0]?.content ??
-            DEFAULT_EMPTY_CONTENT) as any, // Prisma expects JsonValue
+            DEFAULT_EMPTY_CONTENT) as any,
           flowchart: (flowchart ??
             protocol.ProtocolVersion[0]?.flowchart ??
-            DEFAULT_EMPTY_FLOWCHART) as any, // Prisma expects JsonValue
+            DEFAULT_EMPTY_FLOWCHART) as any,
           changelogNotes:
             changelogNotes ??
             `Atualização para versão ${latestVersionNumber + 1}.`,

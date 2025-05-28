@@ -13,23 +13,21 @@ import type {
   ProtocolFullContent,
 } from "@/types/protocol";
 import type { FlowchartDefinition } from "@/types/flowchart";
-
-// TODO: Replace 'any' with actual ValidationIssue type from '@/types/validation'
-type ValidationIssuePlaceholder = any;
+import type { ValidationIssue } from "@/types/validation"; // Corrected import
 
 interface ProtocolEditorLayoutProps {
   protocolTitle: string;
   protocolData: ProtocolFullContent | null;
   flowchartData: FlowchartDefinition | null;
   currentSectionNumber: number;
-  validationIssues: ValidationIssuePlaceholder[];
+  validationIssues: ValidationIssue[]; // Use the specific type
   isLoading: boolean;
   onSelectSection: (sectionNumber: number) => void;
   onUpdateSectionContent: (
     sectionNumber: number,
     newContent: ProtocolSectionData["content"],
   ) => void;
-  onSaveChanges: () => void; // Placeholder for save action
+  onSaveChanges: () => void;
 }
 
 export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
@@ -57,7 +55,7 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
         <button
           onClick={onSaveChanges}
           className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-          disabled={isLoading} // Disable save while loading
+          disabled={isLoading}
         >
           Salvar Alterações (Mock)
         </button>
@@ -75,7 +73,6 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
           </div>
           <div className="h-1/3 min-h-[150px]">
             {" "}
-            {/* Validation report takes bottom part */}
             <ValidationReportDisplay
               issues={validationIssues}
               isLoading={isLoading}

@@ -14,7 +14,7 @@ const renderComplexContent = (
   content: Record<string, any> | any[],
   depth = 0,
 ): JSX.Element => {
-  const indent = "  ".repeat(depth); // Simple text indent
+  const _indent = "  ".repeat(depth); // _indent marked as unused
 
   if (Array.isArray(content)) {
     return (

@@ -11,13 +11,13 @@ import {
   TableRow,
   TableCell,
   WidthType,
-  BorderStyle,
+  // BorderStyle as _BorderStyle, // Marked as unused
   AlignmentType,
   VerticalAlign,
-  PageBreak,
-  Header,
-  Footer,
-  PageNumber,
+  // PageBreak as _PageBreak, // Marked as unused
+  // Header as _Header, // Marked as unused
+  // Footer as _Footer, // Marked as unused
+  // PageNumber as _PageNumber, // Marked as unused
   SectionType,
 } from "docx";
 import type {
@@ -29,9 +29,8 @@ import {
   ABNT_PAGE_MARGINS,
   ABNT_FONT_SETTINGS,
 } from "./templates";
-import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific"; // For standard titles
+import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 
-// Helper to create ABNT-styled paragraphs
 const createStyledParagraph = (
   text: string,
   styleId?: string,
@@ -49,8 +48,7 @@ const createStyledParagraph = (
       }),
     ],
     style: styleId || ABNT_STYLE_IDS.NORMAL,
-    spacing: { after: 120 }, // Adjust spacing as needed for ABNT
-    // alignment: AlignmentType.JUSTIFIED, // Typically for body text
+    spacing: { after: 120 },
     indent:
       styleId === ABNT_STYLE_IDS.NORMAL ? { firstLine: "1.25cm" } : undefined,
   });
@@ -66,15 +64,15 @@ const createSectionTitleParagraph = (
   switch (level) {
     case HeadingLevel.HEADING_1:
       styleId = ABNT_STYLE_IDS.HEADING_1;
-      fontSize = ABNT_FONT_SETTINGS.heading1.size || 28; // 14pt
+      fontSize = ABNT_FONT_SETTINGS.heading1.size || 28;
       break;
     case HeadingLevel.HEADING_2:
       styleId = ABNT_STYLE_IDS.HEADING_2;
-      fontSize = ABNT_FONT_SETTINGS.heading2.size || 24; // 12pt
+      fontSize = ABNT_FONT_SETTINGS.heading2.size || 24;
       break;
     case HeadingLevel.HEADING_3:
       styleId = ABNT_STYLE_IDS.HEADING_3;
-      fontSize = ABNT_FONT_SETTINGS.body.size; // Often same as body, but bold
+      fontSize = ABNT_FONT_SETTINGS.body.size;
       break;
     default:
       styleId = ABNT_STYLE_IDS.NORMAL;
@@ -94,7 +92,6 @@ const createSectionTitleParagraph = (
   });
 };
 
-// Function to render Ficha Técnica (Section 2)
 const renderFichaTecnica = (
   sectionData?: ProtocolSectionData,
 ): (Paragraph | Table)[] => {
@@ -108,7 +105,7 @@ const renderFichaTecnica = (
     return elements;
   }
 
-  const content = sectionData.content as any; // Cast to access properties
+  const content = sectionData.content as any;
 
   const createResponsibilityTable = (
     title: string,
@@ -168,18 +165,16 @@ const renderFichaTecnica = (
               ),
             ],
           }),
-          new TableCell({ children: [createStyledParagraph("")] }), // Placeholder for signature
+          new TableCell({ children: [createStyledParagraph("")] }),
         ],
       });
     });
 
-    elements.push(createStyledParagraph(title, ABNT_STYLE_IDS.HEADING_3, true)); // Or a specific sub-heading style
+    elements.push(createStyledParagraph(title, ABNT_STYLE_IDS.HEADING_3, true));
     return new Table({
       rows: [headerRow, ...dataRows],
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: {
-        /* ABNT_TABLE_PROPERTIES.borders */
-      }, // Apply ABNT borders
+      borders: {},
     });
   };
 
@@ -204,7 +199,6 @@ const renderFichaTecnica = (
   return elements;
 };
 
-// Generic content renderer
 const renderGenericContent = (content: any, path: string = ""): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   if (typeof content === "string") {
@@ -232,7 +226,7 @@ const renderGenericContent = (content: any, path: string = ""): Paragraph[] => {
     for (const [key, value] of Object.entries(content)) {
       const displayKey = key
         .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (str) => str.toUpperCase()); // Basic camelCase to Title Case
+        .replace(/^./, (str) => str.toUpperCase());
       paragraphs.push(createStyledParagraph(`${displayKey}:`, undefined, true));
       if (
         typeof value === "string" ||
@@ -292,17 +286,14 @@ export async function generateProtocolDocx(
     ) {
       documentSections.push(createStyledParagraph("Conteúdo não disponível."));
     } else if (i === 2) {
-      // Ficha Técnica
       documentSections.push(...renderFichaTecnica(sectionContent));
     } else if (i === 12) {
-      // Fluxograma
       documentSections.push(
         createStyledParagraph(
           "O fluxograma correspondente a este protocolo está disponível em anexo ou em sistema específico.",
         ),
       );
     } else if (i === 13 && Array.isArray(sectionContent.content)) {
-      // Referências
       (sectionContent.content as string[]).forEach((ref) => {
         documentSections.push(
           createStyledParagraph(ref, ABNT_STYLE_IDS.REFERENCE_LIST),
@@ -313,7 +304,6 @@ export async function generateProtocolDocx(
       typeof sectionContent.content === "object" &&
       sectionContent.content !== null
     ) {
-      // Identificação (Section 1)
       const idContent = sectionContent.content as any;
       const fieldsToDisplay = [
         { label: "Código do Protocolo", key: "codigoProtocolo" },
@@ -332,7 +322,6 @@ export async function generateProtocolDocx(
           );
         }
       });
-      // Placeholder for Histórico de Alterações e CIDs if they are part of Section 1
       if (idContent.historicoAlteracoes)
         documentSections.push(
           createStyledParagraph(
@@ -348,7 +337,7 @@ export async function generateProtocolDocx(
     } else {
       documentSections.push(...renderGenericContent(sectionContent.content));
     }
-    documentSections.push(new Paragraph("")); // Spacing between sections
+    documentSections.push(new Paragraph(""));
   }
 
   const doc = new Document({
@@ -417,7 +406,7 @@ export async function generateProtocolDocx(
           quickFormat: true,
           run: { size: 32, bold: true },
           paragraph: { spacing: { before: 240, after: 120 } },
-        }, // 16pt
+        },
         {
           id: ABNT_STYLE_IDS.HEADING_2,
           name: "Heading 2",
@@ -426,7 +415,7 @@ export async function generateProtocolDocx(
           quickFormat: true,
           run: { size: 28, bold: true },
           paragraph: { spacing: { before: 180, after: 120 } },
-        }, // 14pt
+        },
         {
           id: ABNT_STYLE_IDS.HEADING_3,
           name: "Heading 3",
@@ -435,7 +424,7 @@ export async function generateProtocolDocx(
           quickFormat: true,
           run: { size: 24, bold: true },
           paragraph: { spacing: { before: 180, after: 120 } },
-        }, // 12pt
+        },
         {
           id: ABNT_STYLE_IDS.LIST_BULLET,
           name: "List Bullet",
@@ -458,7 +447,7 @@ export async function generateProtocolDocx(
       {
         properties: {
           page: { margin: ABNT_PAGE_MARGINS },
-          type: SectionType.CONTINUOUS, // Or NEXT_PAGE if each section should start new page
+          type: SectionType.CONTINUOUS,
         },
         children: documentSections,
       },

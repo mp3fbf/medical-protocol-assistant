@@ -4,8 +4,11 @@
  * This module orchestrates the generation of full medical protocols or individual sections
  * using AI, based on research data and predefined prompts.
  */
-import { v4 as uuidv4 } from "uuid";
-import { getOpenAIClient, createChatCompletion } from "./client";
+// import { v4 as _uuidv4 } from "uuid"; // Marked as unused
+import {
+  getOpenAIClient as _getOpenAIClient,
+  createChatCompletion,
+} from "./client"; // _getOpenAIClient marked as unused
 import {
   PROTOCOL_GENERATION_SYSTEM_PROMPT,
   createFullProtocolUserPrompt,
@@ -17,12 +20,11 @@ import type {
   AIFullProtocolGenerationOutput,
   AIProtocolSectionInput,
   AIProtocolSectionOutput,
-  StandardSectionDefinition,
+  StandardSectionDefinition as _StandardSectionDefinition, // Marked as unused
 } from "@/types/ai-generation";
-import type {
-  ProtocolFullContent,
-  ProtocolSectionData,
-} from "@/types/protocol";
+import type {} from // ProtocolFullContent as _ProtocolFullContent, // Marked as unused
+// ProtocolSectionData as _ProtocolSectionData, // Marked as unused
+"@/types/protocol";
 import {
   DEFAULT_CHAT_MODEL,
   JSON_RESPONSE_FORMAT,
@@ -36,16 +38,11 @@ import {
   GeneratedSingleSectionSchema,
 } from "../validators/generated-content";
 
-/**
- * Generates a complete 13-section medical protocol using AI.
- * @param input - The input data including medical condition and research findings.
- * @returns A promise resolving to the fully generated protocol content.
- */
 export async function generateFullProtocolAI(
   input: AIFullProtocolGenerationInput,
 ): Promise<AIFullProtocolGenerationOutput> {
   const { medicalCondition, researchData, specificInstructions } = input;
-  const openaiClient = getOpenAIClient();
+  // const openaiClient = _getOpenAIClient(); // Marked as unused
 
   const userPrompt = createFullProtocolUserPrompt(
     medicalCondition,
@@ -91,12 +88,11 @@ export async function generateFullProtocolAI(
 
     return {
       protocolContent: validationResult.data,
-      // TODO: Extract warnings or confidence scores if AI provides them
     };
   } catch (error) {
     console.error("Full protocol generation AI call failed:", error);
     if (error instanceof OpenAIError || error instanceof SyntaxError) {
-      throw error; // Re-throw known errors
+      throw error;
     }
     throw new OpenAIError(
       "An unexpected error occurred during full protocol generation.",
@@ -107,11 +103,6 @@ export async function generateFullProtocolAI(
   }
 }
 
-/**
- * Generates a single protocol section using AI.
- * @param input - The input data for generating the section.
- * @returns A promise resolving to the generated section data.
- */
 export async function generateProtocolSectionAI(
   input: AIProtocolSectionInput,
 ): Promise<AIProtocolSectionOutput> {
@@ -133,7 +124,7 @@ export async function generateProtocolSectionAI(
     );
   }
 
-  const openaiClient = getOpenAIClient();
+  // const openaiClient = _getOpenAIClient(); // Marked as unused
   const userPrompt = createSingleSectionUserPrompt(
     medicalCondition,
     sectionDefinition,
@@ -177,7 +168,6 @@ export async function generateProtocolSectionAI(
       );
     }
 
-    // Ensure the returned section number matches the requested one
     if (validationResult.data.sectionNumber !== sectionNumber) {
       throw new OpenAIError(
         `AI returned content for section ${validationResult.data.sectionNumber} but section ${sectionNumber} was requested.`,

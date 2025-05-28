@@ -2,36 +2,35 @@ import { describe, it, expect } from "vitest";
 import { validateProtocolStructure } from "./protocol-structure";
 import type {
   ProtocolFullContent,
-  ProtocolSectionData,
+  // ProtocolSectionData, // Marked as unused
 } from "@/types/protocol";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 import type { ValidationIssue } from "@/types/validation";
 
 // Helper to create mock protocol content
-const createMockProtocolContent = (
-  sections: Record<string, Partial<ProtocolSectionData>>,
-): ProtocolFullContent => {
-  const fullContent: ProtocolFullContent = {};
-  for (let i = 1; i <= 13; i++) {
-    const key = i.toString();
-    fullContent[key] = {
-      sectionNumber: i,
-      title: `Título Seção ${i}`,
-      content: `Conteúdo da Seção ${i}`,
-      ...sections[key],
-    };
-  }
-  return fullContent;
-};
+// const _createMockProtocolContent = ( // Marked as unused
+//   sections: Record<string, Partial<ProtocolSectionData>>,
+// ): ProtocolFullContent => {
+//   const fullContent: ProtocolFullContent = {};
+//   for (let i = 1; i <= 13; i++) {
+//     const key = i.toString();
+//     fullContent[key] = {
+//       sectionNumber: i,
+//       title: `Título Seção ${i}`,
+//       content: `Conteúdo da Seção ${i}`,
+//       ...sections[key],
+//     };
+//   }
+//   return fullContent;
+// };
 
-// Helper to create minimal valid protocol content based on SECTION_DEFINITIONS
 const createMinimalValidContent = (): ProtocolFullContent => {
   const content: ProtocolFullContent = {};
   SECTION_DEFINITIONS.forEach((def) => {
     content[def.sectionNumber.toString()] = {
       sectionNumber: def.sectionNumber,
       title: def.titlePT,
-      content: def.example ?? "Conteúdo de exemplo.", // Use example or default
+      content: def.example ?? "Conteúdo de exemplo.",
     };
   });
   return content;
@@ -47,7 +46,7 @@ describe("validateProtocolStructure", () => {
   it("should detect if not all 13 sections are present", async () => {
     const partialContent: Partial<ProtocolFullContent> =
       createMinimalValidContent();
-    delete partialContent["13"]; // Remove one section
+    delete partialContent["13"];
     const issues = await validateProtocolStructure(
       partialContent as ProtocolFullContent,
     );
@@ -65,7 +64,6 @@ describe("validateProtocolStructure", () => {
     const misnumberedContent: ProtocolFullContent = {
       ...createMinimalValidContent(),
     };
-    // Create an invalid scenario: remove section 1, add section 14
     delete misnumberedContent["1"];
     misnumberedContent["14"] = {
       sectionNumber: 14,

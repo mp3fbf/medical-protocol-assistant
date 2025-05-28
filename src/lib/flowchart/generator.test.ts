@@ -1,19 +1,18 @@
-import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { generateFlowchartFromProtocolContent } from "./generator";
 import * as aiClient from "@/lib/ai/client";
 import { OpenAIError } from "@/lib/ai/errors";
 import type {
   ProtocolFullContent,
-  ProtocolSectionData,
+  // ProtocolSectionData as _ProtocolSectionData, // Marked as unused
 } from "@/types/protocol";
 import type {
   FlowchartDefinition,
   CustomFlowNode,
   CustomFlowEdge,
 } from "@/types/flowchart";
-import { GeneratedFlowchartSchema } from "@/lib/validators/flowchart"; // For mocking valid AI output
+// import { GeneratedFlowchartSchema as _GeneratedFlowchartSchema } from "@/lib/validators/flowchart"; // Marked as unused
 
-// Mock the OpenAI client's createChatCompletion function
 vi.mock("@/lib/ai/client", async () => {
   const actual = await vi.importActual<typeof aiClient>("@/lib/ai/client");
   return {
@@ -24,7 +23,6 @@ vi.mock("@/lib/ai/client", async () => {
 
 const mockCreateChatCompletion = aiClient.createChatCompletion as Mock;
 
-// Helper to create a mock AI response for flowchart generation
 const mockAiFlowchartResponse = (
   flowchartData: Partial<FlowchartDefinition>,
 ) => ({
@@ -37,7 +35,6 @@ const sampleProtocolContent: ProtocolFullContent = {
     title: "Tratamento",
     content: "Se A, então B. Se não A, então C.",
   },
-  // Add other sections if needed by RELEVANT_SECTIONS_FOR_FLOWCHART
 };
 const sampleProtocolCondition = "Test Condition";
 const sampleProtocolId = "test-proto-id";
@@ -54,7 +51,7 @@ describe("Flowchart Generation", () => {
           id: "node-1",
           type: "start",
           data: { type: "start", title: "Início" },
-          position: { x: 0, y: 0 }, // Position will be ignored and reset
+          position: { x: 0, y: 0 },
         },
         {
           id: "node-2",
@@ -66,7 +63,7 @@ describe("Flowchart Generation", () => {
           },
           position: { x: 0, y: 0 },
         },
-      ] as CustomFlowNode[], // Cast for type safety in test
+      ] as CustomFlowNode[],
       edges: [
         { id: "edge-1-2", source: "node-1", target: "node-2" },
       ] as CustomFlowEdge[],
@@ -84,16 +81,15 @@ describe("Flowchart Generation", () => {
       );
 
       expect(mockCreateChatCompletion).toHaveBeenCalledOnce();
-      // Check if the result matches the validated structure (IDs might be regenerated)
       expect(result.nodes).toHaveLength(validAiOutput.nodes.length);
       expect(result.edges).toHaveLength(validAiOutput.edges.length);
 
       result.nodes.forEach((node) => {
         expect(node.id).toBeDefined();
-        expect(node.position).toEqual({ x: 0, y: 0 }); // Initial position before layout
+        expect(node.position).toEqual({ x: 0, y: 0 });
         const originalNode = validAiOutput.nodes.find(
           (n) => n.data.title === node.data.title,
-        ); // simple match for test
+        );
         expect(node.type).toBe(originalNode?.type);
         expect(node.data.title).toBe(originalNode?.data.title);
       });
@@ -114,7 +110,7 @@ describe("Flowchart Generation", () => {
     });
 
     it("should throw OpenAIError if AI output fails Zod validation", async () => {
-      const invalidAiOutput = { nodes: [{ id: "1" }], edges: "not an array" }; // Invalid structure
+      const invalidAiOutput = { nodes: [{ id: "1" }], edges: "not an array" };
       mockCreateChatCompletion.mockResolvedValue(
         mockAiFlowchartResponse(invalidAiOutput as any),
       );
@@ -136,7 +132,7 @@ describe("Flowchart Generation", () => {
     });
 
     it("should return an empty flowchart if no relevant sections are found", async () => {
-      const emptyContent: ProtocolFullContent = {}; // No relevant sections
+      const emptyContent: ProtocolFullContent = {};
       const result = await generateFlowchartFromProtocolContent(
         sampleProtocolId,
         emptyContent,
@@ -150,18 +146,15 @@ describe("Flowchart Generation", () => {
     it("should ensure unique IDs for nodes and edges even if AI omits them", async () => {
       const aiOutputWithMissingIds: any = {
         nodes: [
-          { type: "start", data: { type: "start", title: "Início" } }, // Missing ID
+          { type: "start", data: { type: "start", title: "Início" } },
           {
             id: "node-abc",
             type: "decision",
             data: { type: "decision", title: "Decision 1", criteria: "X > 10" },
           },
         ],
-        edges: [
-          { source: "node-abc", target: "node-def" }, // Missing ID, and assumes node-abc and node-def exist
-        ],
+        edges: [{ source: "node-abc", target: "node-def" }],
       };
-      // Ensure node-def exists for the edge to be valid according to GeneratedFlowchartSchema
       aiOutputWithMissingIds.nodes.push({
         id: "node-def",
         type: "end",
@@ -178,7 +171,7 @@ describe("Flowchart Generation", () => {
         sampleProtocolCondition,
       );
 
-      expect(result.nodes[0].id).toMatch(/^node-/); // Check if UUID-like ID was generated
+      expect(result.nodes[0].id).toMatch(/^node-/);
       expect(result.nodes[1].id).toBe("node-abc");
       expect(result.edges[0].id).toMatch(/^edge-/);
     });

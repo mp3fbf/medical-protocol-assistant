@@ -1,13 +1,13 @@
 /**
  * Prompts for AI-powered medical protocol generation.
  */
-import type { AIResearchData, AIGenerationContext } from "@/lib/ai/types";
-import type { StandardSectionDefinition } from "@/types/ai-generation";
+import type { AIResearchData } from "@/types/research"; // Corrected import
+import type { StandardSectionDefinition as _StandardSectionDefinition } from "@/types/ai-generation"; // Keep for createFullProtocolUserPrompt type
 import type {
   ProtocolFullContent,
-  ProtocolSectionData,
+  ProtocolSectionData as _ProtocolSectionData, // Marked as unused if only its sub-property 'content' is used
 } from "@/types/protocol";
-import { SECTION_DEFINITIONS } from "./section-specific";
+import { SECTION_DEFINITIONS as _SECTION_DEFINITIONS } from "./section-specific"; // Prefixed as it's passed to functions
 
 export const PROTOCOL_GENERATION_SYSTEM_PROMPT = `
   You are an expert AI assistant for generating standardized medical protocols.
@@ -17,7 +17,7 @@ export const PROTOCOL_GENERATION_SYSTEM_PROMPT = `
   Key Directives:
   1.  **Complete All 13 Sections**: Every protocol MUST have all 13 sections. If information for a section is scarce or not applicable based on research, generate a placeholder statement like "Não aplicável para esta condição" or "Informação não disponível na pesquisa inicial." but ensure the section exists with its title.
   2.  **Structured Output**: Generate content in JSON format as specified. Each section should have a 'sectionNumber', 'title', and 'content'. The 'content' field can be a string or a structured JSON object if the section demands it (e.g., tables, lists of criteria).
-  3.  **Objective Criteria**: All decision points, criteria, and thresholds must be objective and clearly defined (e.g., "Glasgow Coma Scale < 13", "Temperature > 38.5°C", " aanwezigheid van criterium X"). Avoid vague terms like "severe" or "significant" without quantification.
+  3.  **Objective Criteria**: All decision points, criteria, and thresholds must be objective and clearly defined (e.g., "Glasgow Coma Scale < 13", "Temperature > 38.5°C", " presença de criterium X"). Avoid vague terms like "severe" or "significant" without quantification.
   4.  **Medication Details**: When mentioning medications, always include: Dose, Route, Frequency, and Duration if specified in the research or standard practice (e.g., "Amoxicilina 500mg, via oral, a cada 8 horas, por 7 dias").
   5.  **Portuguese Language**: All generated protocol text (titles, content) must be in Brazilian Portuguese (PT-BR).
   6.  **Consistency**: Ensure consistency across sections (e.g., terminology, abbreviations defined once).
@@ -31,7 +31,7 @@ export const PROTOCOL_GENERATION_SYSTEM_PROMPT = `
 export function createFullProtocolUserPrompt(
   medicalCondition: string,
   researchData: AIResearchData,
-  allSectionDefinitions: StandardSectionDefinition[],
+  allSectionDefinitions: _StandardSectionDefinition[],
   specificInstructions?: string,
 ): string {
   const researchSummary = researchData.findings
@@ -79,7 +79,7 @@ export function createFullProtocolUserPrompt(
 
 export function createSingleSectionUserPrompt(
   medicalCondition: string,
-  sectionDefinition: StandardSectionDefinition,
+  sectionDefinition: _StandardSectionDefinition,
   researchFindings?: AIResearchData["findings"],
   previousSectionsContent?: Partial<ProtocolFullContent>,
   specificInstructions?: string,

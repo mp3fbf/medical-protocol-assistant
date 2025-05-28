@@ -6,12 +6,8 @@ import { StyleSheet, Font } from "@react-pdf/renderer";
 import fs from "fs";
 import path from "path";
 
-// Define the font family name that will be used in styles
 const ABNT_FONT_FAMILY = "Times New Roman";
 
-// Function to register fonts. This should be called once.
-// It reads font files directly from the filesystem for server-side rendering
-// and converts them to Data URIs.
 let fontsRegistered = false;
 export const registerABNTFonts = () => {
   if (fontsRegistered) {
@@ -22,16 +18,19 @@ export const registerABNTFonts = () => {
     const fontPath = (fileName: string) =>
       path.join(projectRoot, "src", "assets", "fonts", fileName);
 
-    // Use string literals for fontWeight and fontStyle, and any for the options and return type initially
+    // Define options for font registration compatible with react-pdf
+    interface FontSourceOptions {
+      fontWeight?: "normal" | "bold";
+      fontStyle?: "normal" | "italic";
+    }
+
     const createFontSource = (
       filePath: string,
-      options?: { fontWeight?: string; fontStyle?: string },
-    ): any | null => {
+      options?: FontSourceOptions,
+    ) => {
       if (fs.existsSync(filePath)) {
         const buffer = fs.readFileSync(filePath);
         const base64 = buffer.toString("base64");
-        // For TTF fonts, the mime type is 'font/truetype' or 'application/font-sfnt' or 'application/x-font-ttf'
-        // 'font/truetype' is widely accepted.
         const src = `data:font/truetype;charset=utf-8;base64,${base64}`;
         return { src, ...options };
       }
@@ -39,7 +38,6 @@ export const registerABNTFonts = () => {
       return null;
     };
 
-    // Using filenames as provided in the user's screenshot
     const sources = [
       createFontSource(fontPath("Times New Roman.ttf")),
       createFontSource(fontPath("Times New Roman - Bold.ttf"), {
@@ -52,7 +50,7 @@ export const registerABNTFonts = () => {
         fontWeight: "bold",
         fontStyle: "italic",
       }),
-    ].filter((source) => source !== null) as any[]; // Cast to any[] for now
+    ].filter((source) => source !== null);
 
     if (sources.length > 0) {
       Font.register({
@@ -63,7 +61,6 @@ export const registerABNTFonts = () => {
         `Successfully registered ${ABNT_FONT_FAMILY} font family with ${sources.length} variants for react-pdf using Data URIs.`,
       );
     } else if (sources.length === 0 && process.env.NODE_ENV !== "test") {
-      // Only throw if no fonts registered and not in test mode
       throw new Error(
         `No Times New Roman font files found matching expected names in src/assets/fonts/. PDF generation will likely fail or use incorrect fonts.`,
       );
@@ -74,11 +71,10 @@ export const registerABNTFonts = () => {
       `Error registering ${ABNT_FONT_FAMILY} fonts for react-pdf:`,
       error,
     );
-    fontsRegistered = true; // Mark as attempted
+    fontsRegistered = true;
   }
 };
 
-// ABNT Page Margins (in points, 1 inch = 72 points, 1 cm = 72 / 2.54 points)
 const CM_TO_PT = (cm: number) => (cm / 2.54) * 72;
 
 export const abntStyles = StyleSheet.create({
@@ -87,9 +83,9 @@ export const abntStyles = StyleSheet.create({
     paddingLeft: CM_TO_PT(3),
     paddingBottom: CM_TO_PT(2),
     paddingRight: CM_TO_PT(2),
-    fontFamily: ABNT_FONT_FAMILY, // Use the registered Times New Roman
-    fontSize: 12, // ABNT Body text size 12pt
-    lineHeight: 1.5, // ABNT line spacing 1.5
+    fontFamily: ABNT_FONT_FAMILY,
+    fontSize: 12,
+    lineHeight: 1.5,
   },
   documentTitle: {
     fontSize: 16,

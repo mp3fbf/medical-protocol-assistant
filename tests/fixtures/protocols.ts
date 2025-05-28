@@ -3,11 +3,8 @@
  * Provides mock data for testing AI prompt generation, AI content generation,
  * and validation logic.
  */
-import type {
-  AIResearchData,
-  AIResearchFinding,
-  AIGenerationContext,
-} from "@/lib/ai/types";
+import type { AIResearchData, AIResearchFinding } from "@/types/research"; // Corrected import path
+import type { AIFullProtocolGenerationInput } from "@/types/ai-generation"; // For mockAIGenerationContext
 import type {
   ProtocolFullContent,
   ProtocolSectionData,
@@ -68,10 +65,12 @@ export const mockResearchData: AIResearchData = {
   timestamp: new Date().toISOString(),
 };
 
-export const mockAIGenerationContext: AIGenerationContext = {
+// Aligning mockAIGenerationContext with AIFullProtocolGenerationInput
+// as AIGenerationContext was more of a conceptual type.
+export const mockAIGenerationContext: Partial<AIFullProtocolGenerationInput> = {
   medicalCondition: mockMedicalCondition,
-  targetAudience: "Médicos de Pronto Atendimento",
   researchData: mockResearchData,
+  // specificInstructions could be added if needed for tests
 };
 
 export const mockSection1Content: ProtocolSectionData["content"] = {

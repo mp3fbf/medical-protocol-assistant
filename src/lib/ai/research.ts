@@ -6,7 +6,10 @@
  * from the research results.
  */
 import { v4 as uuidv4 } from "uuid";
-import { createChatCompletion, getOpenAIClient } from "./client";
+import {
+  createChatCompletion,
+  getOpenAIClient as _getOpenAIClient,
+} from "./client"; // _getOpenAIClient marked as unused
 import {
   EXTRACT_MEDICAL_INFO_SYSTEM_PROMPT,
   createExtractionUserPrompt,
@@ -16,33 +19,24 @@ import type {
   RawDeepResearchArticle,
   ProcessedAIMedicalFinding,
   AggregatedResearchOutput,
-} from "@/types/research";
+} from "@/types/research"; // Import from new canonical location
 import {
   DEFAULT_CHAT_MODEL,
   JSON_RESPONSE_FORMAT,
-  DEEPRESEARCH_API_TIMEOUT_MS,
+  // DEEPRESEARCH_API_TIMEOUT_MS, // Marked as unused
 } from "./config";
-import { DeepResearchError, OpenAIError } from "./errors";
+import { /* DeepResearchError, */ OpenAIError } from "./errors"; // DeepResearchError marked as unused
 
-const DEEPRESEARCH_API_ENDPOINT =
-  process.env.DEEPRESEARCH_API_ENDPOINT ||
-  "https://api.deepresearch.example.com"; // Placeholder
+// const DEEPRESEARCH_API_ENDPOINT = // Marked as unused
+//   process.env.DEEPRESEARCH_API_ENDPOINT ||
+//   "https://api.deepresearch.example.com";
 
-/**
- * Simulates a call to the DeepResearch API.
- * In a real implementation, this would make an HTTP request to the DeepResearch service.
- * @param query - The research query.
- * @returns A promise resolving to an array of raw research articles.
- * @throws {DeepResearchError} If the API call fails.
- */
 async function callDeepResearchAPI(
   query: DeepResearchQuery,
 ): Promise<RawDeepResearchArticle[]> {
   const apiKey = process.env.DEEPRESEARCH_API_KEY;
 
   if (!apiKey && process.env.NODE_ENV !== "test") {
-    // In non-test environments, if no API key, we might want to throw or return empty
-    // For now, we'll proceed with mock data if no key is found, as per plan.
     console.warn("DEEPRESEARCH_API_KEY not set. Using mock research data.");
   }
 
@@ -50,37 +44,10 @@ async function callDeepResearchAPI(
     `Simulating DeepResearch API call for condition: "${query.condition}" with sources: ${query.sources?.join(", ")}`,
   );
 
-  // Simulate API call delay
   await new Promise((resolve) =>
     setTimeout(resolve, Math.random() * 500 + 200),
   );
 
-  // MOCK IMPLEMENTATION: Return sample data
-  // In a real scenario, this would be an actual fetch call:
-  /*
-  try {
-    const response = await fetch(`${DEEPRESEARCH_API_ENDPOINT}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(query),
-      timeout: DEEPRESEARCH_API_TIMEOUT_MS, // This needs a library like node-fetch with AbortController
-    });
-
-    if (!response.ok) {
-      throw new DeepResearchError(`API request failed with status ${response.status}: ${await response.text()}`, { statusCode: response.status });
-    }
-    return await response.json() as RawDeepResearchArticle[];
-  } catch (error) {
-    if (error instanceof DeepResearchError) throw error;
-    console.error("DeepResearch API call failed:", error);
-    throw new DeepResearchError("Failed to fetch data from DeepResearch API.", { cause: error as Error });
-  }
-  */
-
-  // Mock data based on query for slightly more realistic testing
   const mockData: RawDeepResearchArticle[] = [
     {
       id: "pubmed-123",
@@ -119,18 +86,12 @@ async function callDeepResearchAPI(
   return mockData;
 }
 
-/**
- * Processes raw research articles using an AI model to extract structured findings.
- * @param rawArticles - Array of raw articles from DeepResearch.
- * @param queryContext - The original research query, for context.
- * @returns A promise resolving to an array of processed medical findings.
- */
 async function processDeepResearchResults(
   rawArticles: RawDeepResearchArticle[],
-  queryContext: DeepResearchQuery, // eslint-disable-line @typescript-eslint/no-unused-vars
+  _queryContext: DeepResearchQuery, // Marked as unused
 ): Promise<ProcessedAIMedicalFinding[]> {
   const allFindings: ProcessedAIMedicalFinding[] = [];
-  const openaiClient = getOpenAIClient(); // Ensure client is initialized
+  // const openaiClient = _getOpenAIClient(); // Marked as unused
 
   for (const article of rawArticles) {
     const textToAnalyze =
@@ -152,7 +113,7 @@ async function processDeepResearchResults(
         ],
         {
           response_format: JSON_RESPONSE_FORMAT,
-          temperature: 0.1, // Low temperature for factual extraction
+          temperature: 0.1,
         },
       );
 
@@ -162,7 +123,6 @@ async function processDeepResearchResults(
           const extractedData = JSON.parse(
             content,
           ) as ProcessedAIMedicalFinding[];
-          // Add generated IDs if AI didn't provide them or ensure uniqueness
           extractedData.forEach((finding) => {
             if (!finding.id) finding.id = uuidv4();
             allFindings.push(finding);
@@ -172,7 +132,6 @@ async function processDeepResearchResults(
             `Failed to parse JSON response from OpenAI for article ${article.id}:`,
             parseError,
           );
-          // Optionally, add a finding indicating an error for this article
         }
       }
     } catch (error) {
@@ -180,20 +139,13 @@ async function processDeepResearchResults(
         `OpenAI processing failed for article ${article.id}:`,
         error,
       );
-      // Optionally, handle this error, e.g., by skipping the article or logging
       if (error instanceof OpenAIError) {
-        // Log more details or handle specific OpenAI errors
       }
     }
   }
   return allFindings;
 }
 
-/**
- * Performs medical research: calls DeepResearch API and processes results with AI.
- * @param query - The research query.
- * @returns A promise resolving to aggregated research output.
- */
 export async function performMedicalResearch(
   query: DeepResearchQuery,
 ): Promise<AggregatedResearchOutput> {
@@ -201,7 +153,7 @@ export async function performMedicalResearch(
     const rawArticles = await callDeepResearchAPI(query);
     if (!rawArticles || rawArticles.length === 0) {
       return {
-        query: query.condition, // Using condition as the primary query identifier
+        query: query.condition,
         findings: [],
         summary:
           "No relevant articles found or DeepResearch API returned no results.",
@@ -214,18 +166,13 @@ export async function performMedicalResearch(
       query,
     );
 
-    // Optional: Generate an overall summary of all findings using another AI call
-    // const overallSummary = await generateOverallSummary(processedFindings);
-
     return {
       query: query.condition,
       findings: processedFindings,
-      // summary: overallSummary, // If implemented
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
     console.error("Medical research process failed:", error);
-    // Ensure a consistent error structure or re-throw a higher-level application error
-    throw error; // Re-throw for the tRPC router to handle
+    throw error;
   }
 }

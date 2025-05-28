@@ -7,7 +7,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { validateUserCredentials } from "./actions";
 import type { Provider } from "next-auth/providers/index";
-import type { UserRole } from "@prisma/client"; // Or your defined UserRole type
+// import type { UserRole as _UserRole } from "@prisma/client"; // Marked as unused
 
 export const providers: Provider[] = [
   CredentialsProvider({
@@ -20,16 +20,15 @@ export const providers: Provider[] = [
       },
       password: { label: "Senha", type: "password" },
     },
-    async authorize(credentials, req) {
-      // Added req for more context if needed
+    async authorize(credentials, _req) {
+      // _req marked as unused
       console.log(
         "[AUTH DEBUG] `authorize` function in CredentialsProvider called.",
       );
       console.log("[AUTH DEBUG] Received credentials:", credentials);
 
-      // Validate credentials
       if (!credentials?.email || !credentials?.password) {
-        console.log("[AUTH] No credentials provided");
+        console.log("[AUTH DEBUG] Authorize: No credentials provided");
         return null;
       }
 
@@ -39,19 +38,23 @@ export const providers: Provider[] = [
       );
 
       if (user) {
-        console.log("[AUTH] User validated", user.email, user.role);
-        // Return the user object that will be encoded in the JWT
+        console.log(
+          "[AUTH DEBUG] Authorize: User validated",
+          user.email,
+          user.role,
+        );
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role, // Ensure role is part of the returned object
+          role: user.role,
         };
       }
-      console.log("[AUTH] Invalid credentials for", credentials.email);
-      // If you return null then an error will be displayed advising the user to check their details.
+      console.log(
+        "[AUTH DEBUG] Authorize: Invalid credentials for",
+        credentials.email,
+      );
       return null;
     },
   }),
-  // Add other providers here if needed (e.g., Google, GitHub)
 ];

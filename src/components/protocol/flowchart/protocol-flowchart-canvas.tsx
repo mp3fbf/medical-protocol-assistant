@@ -12,10 +12,10 @@ import ReactFlow, {
   useEdgesState,
   type Connection,
   type Edge,
-  type Node,
-  ReactFlowProvider, // Required for useReactFlow hook if used outside of ReactFlow component tree
+  // type Node, // Marked as unused
+  ReactFlowProvider,
 } from "reactflow";
-import "reactflow/dist/style.css"; // Default ReactFlow styles
+import "reactflow/dist/style.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
@@ -26,7 +26,6 @@ import type {
   CustomFlowNodeData,
 } from "@/types/flowchart";
 
-// Sample initial data
 const initialNodes: CustomFlowNode[] = [
   {
     id: "1",
@@ -77,7 +76,7 @@ const initialEdges: CustomFlowEdge[] = [
     id: "e2-3",
     source: "2",
     target: "3",
-    sourceHandle: "no", // Assuming 'no' path from decision node
+    sourceHandle: "no",
     label: "Não",
     type: "default",
   },
@@ -85,14 +84,14 @@ const initialEdges: CustomFlowEdge[] = [
     id: "e2-4",
     source: "2",
     target: "4",
-    sourceHandle: "yes", // Assuming 'yes' path from decision node
+    sourceHandle: "yes",
     label: "Sim",
     type: "default",
   },
 ];
 
 const ProtocolFlowchartCanvasContent: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] =
+  const [_nodes, _setNodes, onNodesChange] = // _setNodes marked as unused
     useNodesState<CustomFlowNodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -104,7 +103,7 @@ const ProtocolFlowchartCanvasContent: React.FC = () => {
   return (
     <div className="h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
       <ReactFlow
-        nodes={nodes}
+        nodes={_nodes} // use _nodes
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -112,7 +111,7 @@ const ProtocolFlowchartCanvasContent: React.FC = () => {
         nodeTypes={customNodeTypes}
         fitView
         attributionPosition="bottom-left"
-        className="protocol-flowchart-theme" // For custom global styles if needed
+        className="protocol-flowchart-theme"
       >
         <Background gap={16} color="#e0e0e0" variant={BackgroundVariant.Dots} />
         <FlowControls />
@@ -122,9 +121,6 @@ const ProtocolFlowchartCanvasContent: React.FC = () => {
   );
 };
 
-// Wrap with ReactFlowProvider if useReactFlow is needed in child components not directly under <ReactFlow>
-// For this setup, FlowControls and FlowMinimap are direct children, so Provider is not strictly needed here
-// but good practice if the structure evolves.
 export const ProtocolFlowchartCanvas: React.FC = () => {
   return (
     <ReactFlowProvider>

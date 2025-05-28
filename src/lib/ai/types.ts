@@ -1,10 +1,15 @@
 /**
  * TypeScript Types for AI Requests and Responses
  *
- * This file defines common interfaces and types used when interacting
- * with AI services for research, generation, and other tasks.
+ * THIS FILE IS BEING DEPRECATED. Types are being moved to:
+ * - src/types/ai-generation.ts
+ * - src/types/research.ts
+ *
+ * Please update imports to use the new locations.
+ * This file will be removed in a future cleanup step (Step 6 of Optimization Plan).
  */
 
+/*
 // Generic structure for AI-generated content that needs to be parsed
 export interface StructuredOutput<T> {
   success: boolean;
@@ -15,70 +20,30 @@ export interface StructuredOutput<T> {
 }
 
 // Represents a chunk of information extracted during AI research
-export interface AIResearchFinding {
-  id: string;
-  source: string; // e.g., PubMed ID, Guideline URL
-  findingType:
-    | "diagnostic_criteria"
-    | "treatment_protocol"
-    | "geriatric_consideration"
-    | "dosage_information"
-    | "numeric_threshold"
-    | "other";
-  extractedText: string; // The raw text extracted
-  summary?: string; // Optional AI-generated summary
-  objectiveCriteria?: Record<string, string | number | boolean>; // Extracted objective data
-  metadata?: Record<string, any>; // Other relevant metadata from the source
-}
+// MOVED to src/types/research.ts as AIResearchFinding
+// export interface AIResearchFinding { ... }
 
 // Represents the result of an AI research phase
-export interface AIResearchData {
-  query: string;
-  findings: AIResearchFinding[];
-  summary?: string; // Overall summary of the research
-  timestamp: string;
-}
+// MOVED to src/types/research.ts as AIResearchData
+// export interface AIResearchData { ... }
 
 // Context provided to the AI for generating a protocol or a section
-export interface AIGenerationContext {
-  medicalCondition: string;
-  targetAudience: string; // e.g., "Emergency Room Physicians"
-  existingSections?: Record<string, string>; // Content of already generated/edited sections
-  researchData?: AIResearchData; // Relevant research findings
-  specificInstructions?: string; // Any specific user instructions for this generation task
-  outputFormatRequirements?: string; // e.g., "Ensure all 13 sections are present"
-}
+// MOVED to src/types/ai-generation.ts as AIGenerationContext (implicitly, via specific input types)
+// export interface AIGenerationContext { ... }
 
 // Represents the output from an AI protocol generation task
-export interface AIProtocolGenerationOutput {
-  // This will map to the 13 sections of the protocol
-  // For now, using a generic record; will be more specific later
-  sections: Record<string, string | Record<string, any>>;
-  flowchartLogic?: any; // AI's attempt to convert text to flowchart logic
-  warnings?: string[]; // Warnings about potential inaccuracies or missing info
-  confidenceScore?: number;
-}
+// MOVED to src/types/ai-generation.ts as AIFullProtocolGenerationOutput
+// export interface AIProtocolGenerationOutput { ... }
 
 // Represents the output from an AI section generation task
-export interface AISectionGenerationOutput {
-  sectionNumber: number;
-  title: string;
-  content: string | Record<string, any>; // The generated content for the section
-  explanation?: string; // AI's explanation of how it generated the content
-  confidenceScore?: number;
-}
+// MOVED to src/types/ai-generation.ts as AIProtocolSectionOutput
+// export interface AISectionGenerationOutput { ... }
 
 // Type for sources to be queried by DeepResearch
-export type DeepResearchSource =
-  | "pubmed"
-  | "scielo"
-  | "cfm"
-  | "mec"
-  | "other_guidelines";
+// MOVED to src/types/research.ts as DeepResearchSource
+// export type DeepResearchSource = ...;
 
-export interface DeepResearchQuery {
-  condition: string;
-  sources?: DeepResearchSource[];
-  yearRange?: number; // e.g., last 5 years
-  keywords?: string[];
-}
+// MOVED to src/types/research.ts as DeepResearchQuery
+// export interface DeepResearchQuery { ... }
+*/
+export {}; // Add an empty export to keep it a module until deleted
