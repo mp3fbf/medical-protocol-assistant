@@ -6,7 +6,7 @@
  */
 import { prisma } from "@/lib/db/client";
 import type { User } from "@prisma/client"; // Using Prisma's User type
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 
 // This is a placeholder. In a real application, you would:
 // 1. Receive email and password.
