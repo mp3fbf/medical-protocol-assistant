@@ -1,157 +1,314 @@
 import { describe, it, expect } from "vitest";
-import { validateCompleteness } from "./completeness";
+import { validateCrossConsistency } from "@/lib/validators/cross-validation";
 import type {
   ProtocolFullContent,
   ProtocolSectionData,
 } from "@/types/protocol";
-import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
-import type { ValidationIssue } from "@/types/validation";
+import type { FlowchartDefinition, CustomFlowNode } from "@/types/flowchart";
+import { mockFullProtocolContent } from "../../../tests/fixtures/protocols";
 
-// Helper to create mock protocol content
-const createMockProtocolContent = (
-  sections: Record<string, Partial<ProtocolSectionData>>,
-  sectionCount = 13,
-): ProtocolFullContent => {
-  const fullContent: ProtocolFullContent = {};
-  for (let i = 1; i <= sectionCount; i++) {
-    const key = i.toString();
-    fullContent[key] = {
-      sectionNumber: i,
-      title: `Título Seção ${i}`,
-      content: `Conteúdo da Seção ${i}`,
-      ...(sections[key] || {}),
+// Helper to create a simplified text section
+const createTextSection = (
+  sectionNumber: number,
+  title: string,
+  text: string,
+  existingContent: ProtocolFullContent = {},
+): ProtocolFullContent => ({
+  ...existingContent,
+  [sectionNumber.toString()]: { sectionNumber, title, content: text },
+});
+
+const createMedicationSection = (
+  medsInstaveis: any[] = [],
+  medsEstaveis: any[] = [],
+  existingContent: ProtocolFullContent = {},
+): ProtocolFullContent => ({
+  ...existingContent,
+  "7": {
+    sectionNumber: 7,
+    title: "Tratamento",
+    content: {
+      tratamentoPacientesInstaveis: { medicamentos: medsInstaveis },
+      tratamentoPacientesEstaveis: { medicamentosConsiderar: medsEstaveis },
+    },
+  },
+});
+
+describe("Cross-Validation (Text vs. Flowchart)", () => {
+  it("should return no issues for a consistent protocol and flowchart", async () => {
+    let consistentProtocol: ProtocolFullContent = {};
+    consistentProtocol = createTextSection(
+      5,
+      "Avaliação",
+      // This text implies two outcomes from one decision point (estável vs instável)
+      "Se paciente estável (PAS > 90mmHg), observar. Se instável (PAS <= 90mmHg), iniciar fluidos.",
+      consistentProtocol,
+    );
+    consistentProtocol = createMedicationSection(
+      [{ name: "Adrenalina", dose: "1mg", route: "IV", frequency: "STAT" }],
+      [],
+      consistentProtocol,
+    );
+
+    const consistentFlowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "n1", // Decision: Estável ou Instável?
+          type: "decision",
+          position: { x: 0, y: 0 },
+          // The criteria could be "Paciente Estável?" and edges labelled "Sim (PAS > 90)" / "Não (PAS <= 90)"
+          // Or it could be "PAS > 90mmHg?"
+          data: {
+            type: "decision",
+            title: "Estado do Paciente",
+            criteria:
+              "Paciente estável (PAS > 90mmHg) ou instável (PAS <= 90mmHg)",
+          },
+        },
+        {
+          id: "n2", // Action: Observar
+          type: "action",
+          position: { x: -100, y: 100 }, // Example position
+          data: { type: "action", title: "Observar" },
+        },
+        {
+          id: "n3", // Action: Iniciar Fluidos
+          type: "action",
+          position: { x: 100, y: 100 }, // Example position
+          data: { type: "action", title: "Iniciar Fluidos" },
+        },
+        {
+          id: "n4",
+          type: "medication",
+          position: { x: 0, y: 200 }, // Example position
+          data: {
+            type: "medication",
+            title: "Medicação de Emergência",
+            medications: [
+              {
+                name: "Adrenalina",
+                dose: "1mg",
+                route: "IV",
+                frequency: "STAT",
+              },
+            ],
+          },
+        },
+      ] as CustomFlowNode[],
+      edges: [
+        // Edges connecting based on the decision
+        {
+          id: "e1-2",
+          source: "n1",
+          target: "n2",
+          label: "Estável (PAS > 90mmHg)",
+        },
+        {
+          id: "e1-3",
+          source: "n1",
+          target: "n3",
+          label: "Instável (PAS <= 90mmHg)",
+        },
+        // Assuming medication follows one of these paths or is separate
+      ],
     };
-  }
-  return fullContent;
-};
 
-const createMinimalValidContent = (): ProtocolFullContent => {
-  const content: ProtocolFullContent = {};
-  SECTION_DEFINITIONS.forEach((def) => {
-    content[def.sectionNumber.toString()] = {
-      sectionNumber: def.sectionNumber,
-      title: def.titlePT,
-      content: def.example || "Conteúdo de exemplo.", // Use example or default
+    const issues = await validateCrossConsistency(
+      consistentProtocol,
+      consistentFlowchart,
+    );
+    const criticalMissingIssues = issues.filter(
+      (issue) =>
+        issue.ruleId === "CROSS_TEXT_DECISION_MISSING_IN_FLOWCHART" ||
+        issue.ruleId === "CROSS_FLOWCHART_DECISION_MISSING_IN_TEXT" ||
+        issue.ruleId === "CROSS_TEXT_MED_MISSING_IN_FLOWCHART" ||
+        issue.ruleId === "CROSS_FLOWCHART_MED_MISSING_IN_TEXT",
+    );
+    expect(
+      criticalMissingIssues,
+      `Unexpected critical issues: ${JSON.stringify(criticalMissingIssues)}`,
+    ).toEqual([]);
+  });
+
+  it("should warn if textual decision is missing in flowchart", async () => {
+    const protocol: ProtocolFullContent = createTextSection(
+      5,
+      "Avaliação",
+      "Se febre alta (>38.5C), considerar antibiótico.",
+    );
+    const flowchart: FlowchartDefinition = { nodes: [], edges: [] };
+
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        ruleId: "CROSS_TEXT_DECISION_MISSING_IN_FLOWCHART",
+        severity: "warning",
+        sectionNumber: 5,
+        details: expect.objectContaining({
+          textualDecision: expect.stringMatching(
+            /Se febre alta.*\(>38\.5C\).*/i,
+          ),
+          keywords: expect.arrayContaining(["febre", "alta", ">38.5c"]),
+        }),
+      }),
+    );
+  });
+
+  it("should warn if textual medication is missing in flowchart", async () => {
+    const protocol: ProtocolFullContent = createMedicationSection([
+      { name: "Dipirona", dose: "1g", route: "IV", frequency: "SOS" },
+    ]);
+    const flowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "m1",
+          type: "medication",
+          position: { x: 0, y: 0 },
+          data: { type: "medication", title: "Analgesia", medications: [] },
+        },
+      ] as CustomFlowNode[],
+      edges: [],
     };
-  });
-  return content;
-};
 
-describe("validateCompleteness", () => {
-  describe("checkAllSectionsHaveContent", () => {
-    it("should return no issues if all sections have content", async () => {
-      const validContent = createMinimalValidContent();
-      const issues = await validateCompleteness(validContent);
-      // Filter for COMPLETENESS_001 issues only for this specific sub-test
-      const sectionContentIssues = issues.filter(
-        (issue: ValidationIssue) => issue.ruleId === "COMPLETENESS_001",
-      );
-      expect(sectionContentIssues).toEqual([]);
-    });
-
-    it("should return an issue if a section has null content", async () => {
-      const content = createMinimalValidContent();
-      content["5"]!.content = null as any;
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_001",
-          sectionNumber: 5,
-          severity: "error",
-        }),
-      );
-    });
-
-    it("should return an issue if a section has an empty string as content", async () => {
-      const content = createMinimalValidContent();
-      content["2"]!.content = "   "; // Whitespace only
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_001",
-          sectionNumber: 2,
-          severity: "error",
-        }),
-      );
-    });
-
-    it("should return an issue if a section has an empty object as content", async () => {
-      const content = createMinimalValidContent();
-      content["1"]!.content = {}; // Assuming section 1 could be an object
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_001",
-          sectionNumber: 1,
-          severity: "error",
-        }),
-      );
-    });
-
-    it("should return an issue if a section has an empty array as content", async () => {
-      const content = createMinimalValidContent();
-      content["8"]!.content = []; // Assuming section 8 could be an array
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_001",
-          sectionNumber: 8,
-          severity: "error",
-        }),
-      );
-    });
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        ruleId: "CROSS_TEXT_MED_MISSING_IN_FLOWCHART",
+        details: { medicationName: "Dipirona" },
+      }),
+    );
   });
 
-  describe("checkRequiredFieldsInSection1", () => {
-    it("should return no issues if Section 1 has all required fields", async () => {
-      const validContent = createMinimalValidContent(); // This already has a valid section 1
-      const issues = await validateCompleteness(validContent);
-      const section1FieldIssues = issues.filter(
-        (issue: ValidationIssue) => issue.ruleId === "COMPLETENESS_002",
-      );
-      expect(section1FieldIssues).toEqual([]);
-    });
+  it("should warn if flowchart decision criteria is missing in text", async () => {
+    const protocol: ProtocolFullContent = createTextSection(
+      5,
+      "Avaliação",
+      "Avaliar o estado geral do paciente.",
+    );
+    const flowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "d1",
+          type: "decision",
+          position: { x: 0, y: 0 },
+          data: {
+            type: "decision",
+            title: "Risco de Choque",
+            criteria: "Sinais de hipoperfusão e taquicardia",
+          },
+        },
+      ] as CustomFlowNode[],
+      edges: [],
+    };
 
-    it("should return an issue if a required field in Section 1 is missing", async () => {
-      const content = createMinimalValidContent();
-      const section1Content = content["1"]!.content as Record<string, any>;
-      delete section1Content.codigoProtocolo;
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_002",
-          sectionNumber: 1,
-          field: "codigoProtocolo",
-          severity: "error",
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        ruleId: "CROSS_FLOWCHART_DECISION_MISSING_IN_TEXT",
+        details: expect.objectContaining({
+          criteria: "Sinais de hipoperfusão e taquicardia",
         }),
-      );
-    });
+      }),
+    );
+  });
 
-    it("should return an issue if a required field in Section 1 is empty", async () => {
-      const content = createMinimalValidContent();
-      (content["1"]!.content as Record<string, any>).tituloCompleto = "  ";
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_002",
-          sectionNumber: 1,
-          field: "tituloCompleto",
-          severity: "error",
-        }),
-      );
-    });
+  it("should warn if flowchart medication is missing in text", async () => {
+    const protocol: ProtocolFullContent = createMedicationSection([]);
+    const flowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "m1",
+          type: "medication",
+          position: { x: 0, y: 0 },
+          data: {
+            type: "medication",
+            title: "Antibióticos",
+            medications: [
+              { name: "Ceftriaxona", dose: "2g", route: "IV", frequency: "OD" },
+            ],
+          },
+        },
+      ] as CustomFlowNode[],
+      edges: [],
+    };
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        ruleId: "CROSS_FLOWCHART_MED_MISSING_IN_TEXT",
+        details: expect.objectContaining({ medicationName: "Ceftriaxona" }),
+      }),
+    );
+  });
 
-    it("should return format issue if Section 1 content is not an object", async () => {
-      const content = createMinimalValidContent();
-      content["1"]!.content = "Not an object";
-      const issues = await validateCompleteness(content);
-      expect(issues).toContainEqual(
-        expect.objectContaining({
-          ruleId: "COMPLETENESS_002_FORMAT",
-          sectionNumber: 1,
-          severity: "error",
-        }),
-      );
-    });
+  it("should return warning if flowchart is missing for cross-validation", async () => {
+    const protocol = mockFullProtocolContent;
+    const issues = await validateCrossConsistency(protocol, undefined);
+    expect(issues).toEqual([
+      expect.objectContaining({ ruleId: "CROSS_FLOWCHART_MISSING" }),
+    ]);
+  });
+
+  it("should correctly identify matching textual decisions in flowchart criteria (keywords based)", async () => {
+    const protocol: ProtocolFullContent = createTextSection(
+      5,
+      "Avaliação",
+      "Critério para internação: Glasgow < 13 ou Confusão Mental significativa. Se presente, seguir via crítica.",
+    );
+    const flowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "n1",
+          type: "decision",
+          position: { x: 0, y: 0 },
+          data: {
+            type: "decision",
+            title: "Nível de Consciência",
+            criteria: "Glasgow < 13 ou Confusão Mental significativa",
+          },
+        },
+      ] as CustomFlowNode[],
+      edges: [],
+    };
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    const decisionMissingIssuesRelatedToGlasgow = issues.filter(
+      (i) =>
+        i.ruleId === "CROSS_TEXT_DECISION_MISSING_IN_FLOWCHART" &&
+        (i.details as any)?.textualDecision?.toLowerCase().includes("glasgow"),
+    );
+    expect(
+      decisionMissingIssuesRelatedToGlasgow,
+      `Unexpected issues regarding Glasgow: ${JSON.stringify(decisionMissingIssuesRelatedToGlasgow)}`,
+    ).toEqual([]);
+  });
+
+  it("should correctly identify matching flowchart criteria in textual decisions (keywords based)", async () => {
+    const protocol: ProtocolFullContent = createTextSection(
+      5,
+      "Avaliação",
+      "Se o paciente apresentar SatO2 < 92%, deve-se considerar O2 suplementar.",
+    );
+    const flowchart: FlowchartDefinition = {
+      nodes: [
+        {
+          id: "n1",
+          type: "decision",
+          position: { x: 0, y: 0 },
+          data: {
+            type: "decision",
+            title: "Saturação de O2",
+            criteria: "SatO2 < 92%",
+          },
+        },
+      ] as CustomFlowNode[],
+      edges: [],
+    };
+    const issues = await validateCrossConsistency(protocol, flowchart);
+    const criteriaMissingIssues = issues.filter(
+      (i) => i.ruleId === "CROSS_FLOWCHART_DECISION_MISSING_IN_TEXT",
+    );
+    expect(
+      criteriaMissingIssues,
+      `Unexpected issues: ${JSON.stringify(criteriaMissingIssues)}`,
+    ).toEqual([]);
   });
 });
