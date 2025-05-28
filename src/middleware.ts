@@ -19,14 +19,14 @@ export async function middleware(req: NextRequest) {
     (pathname.startsWith("/dashboard") || pathname.startsWith("/protocols")) &&
     !token
   ) {
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname); // Pass original path for redirect after login
     return NextResponse.redirect(loginUrl);
   }
 
   // If trying to access login page but already authenticated, redirect to dashboard
   if (pathname.startsWith("/login") && token) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
   return NextResponse.next();

@@ -36,11 +36,18 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 
     - `DATABASE_URL`: Your PostgreSQL connection string (Supabase or local Docker).
     - `NEXTAUTH_SECRET`: A secret for NextAuth (generate with `openssl rand -base64 32`).
-    - `NEXTAUTH_URL`: `http://localhost:3000` for local development.
+    - `NEXTAUTH_URL`: **CRITICAL** - Must be set to `http://localhost:3000` for local development. This prevents "Invalid URL" errors during authentication.
     - `OPENAI_API_KEY`: Your OpenAI API key.
     - `OPENAI_ORG_ID` (Optional): Your OpenAI Organization ID.
     - `SUPABASE_URL` & `SUPABASE_SERVICE_ROLE_KEY`: If using Supabase for DB/Storage.
     - `SUPABASE_STORAGE_BUCKET_NAME`: e.g., `protocol-documents`.
+
+    **Important Note about NEXTAUTH_URL:**
+
+    - This variable is **required** for NextAuth to function properly in server-side contexts.
+    - For local development: Always use `NEXTAUTH_URL="http://localhost:3000"`
+    - If you see "Invalid URL" errors in the console, verify this variable is set correctly.
+    - The app includes debug logging that will show the current value in server logs.
 
 4.  **Initialize Husky git hooks:**
     ```bash
