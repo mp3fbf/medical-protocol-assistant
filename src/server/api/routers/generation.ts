@@ -16,19 +16,25 @@ import type {
 import {
   AIResearchDataSchema,
   // ProtocolFullContentSchema as _ProtocolFullContentSchema, // Marked as unused
-} from "@/lib/validators/protocol-schema";
+} from "@/lib/validators/protocol-schema"; // AIResearchDataSchema is actually defined here
 import type { ProtocolFullContent } from "@/types/protocol";
 
 const AIFullProtocolGenerationInputSchema = z.object({
-  protocolId: z.string().uuid().optional(),
+  protocolId: z
+    .string()
+    .cuid("ID de protocolo inválido (esperado CUID).")
+    .optional(), // Changed from uuid()
   medicalCondition: z.string().min(1, "Condição médica é obrigatória."),
   researchData: AIResearchDataSchema,
   specificInstructions: z.string().optional(),
 });
 
 const AIProtocolSectionInputSchema = z.object({
-  protocolId: z.string().uuid("ID de protocolo inválido."),
-  protocolVersionId: z.string().uuid("ID de versão inválido.").optional(),
+  protocolId: z.string().cuid("ID de protocolo inválido (esperado CUID)."), // Changed from uuid()
+  protocolVersionId: z
+    .string()
+    .cuid("ID de versão inválido (esperado CUID).")
+    .optional(), // Changed from uuid()
   medicalCondition: z.string().min(1, "Condição médica é obrigatória."),
   sectionNumber: z
     .number()

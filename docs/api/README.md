@@ -23,43 +23,46 @@ The API is organized into several routers, each handling a specific domain. Thes
 Handles CRUD operations and management of medical protocols.
 
 - **`create(input: CreateProtocolInputSchema)`**: (Mutation) Creates a new protocol with a default first version.
-  - Input: `{ title: string, condition: string }`
+  - Input: `{ title: string, condition: string }` (from `CreateProtocolInputSchema`)
   - Output: The newly created `Protocol` object with its initial `ProtocolVersion`.
 - **`list(input: ListProtocolsInputSchema)`**: (Query) Lists protocols with pagination, filtering (status, search), and sorting.
-  - Input: `{ status?: ProtocolStatus, search?: string, page?: number, limit?: number, sortBy?: string, sortOrder?: 'asc'|'desc' }`
+  - Input: `{ status?: ProtocolStatus, search?: string, page?: number, limit?: number, sortBy?: string, sortOrder?: 'asc'|'desc' }` (from `ListProtocolsInputSchema`)
   - Output: `{ items: ProtocolWithDetails[], totalItems: number, totalPages: number, currentPage: number }`
 - **`getById(input: ProtocolIdInputSchema)`**: (Query) Retrieves a single protocol by its ID, including all its versions.
-  - Input: `{ protocolId: string }`
+  - Input: `{ protocolId: string (cuid) }` (from `ProtocolIdInputSchema`)
   - Output: `ProtocolWithDetails` object or `null`.
-- **`update(input: UpdateProtocolVersionInputSchema)`**: (Mutation) Updates a protocol, typically by creating a new version with new content/flowchart. Can also update protocol metadata.
-  - Input: `{ protocolId: string, content?: ProtocolFullContent, flowchart?: FlowchartData, changelogNotes?: string, title?: string, condition?: string, status?: ProtocolStatus }`
-  - Output: The newly created or updated `ProtocolVersion` or the updated `Protocol`.
+- **`update(input: UpdateProtocolVersionInputSchema)`**: (Mutation) Creates a new version for an existing protocol with updated content/flowchart.
+  - Input: `{ protocolId: string (cuid), content?: ProtocolFullContent, flowchart?: FlowchartData, changelogNotes?: string }` (from `UpdateProtocolVersionInputSchema`)
+  - Output: The newly created `ProtocolVersion`.
 
 ### 2. `researchRouter` (`src/server/api/routers/research.ts`)
 
 Handles AI-powered medical literature research.
 
-- **`performResearch(input: DeepResearchQueryInputSchema)`**: (Mutation) Initiates a research task using DeepResearch (mocked) and AI processing.
-  - Input: `{ condition: string, sources?: string[], yearRange?: number, keywords?: string[] }`
-  - Output: `AggregatedResearchOutput` containing structured findings.
+- **`performResearch(input: DeepResearchQueryInputSchema)`**: (Mutation) Initiates a research task using DeepResearch (currently mocked) and AI processing.
+  - Input: `{ condition: string, sources?: DeepResearchSource[], yearRange?: number, keywords?: string[] }` (from `DeepResearchQueryInputSchema`)
+  - Output: `AggregatedResearchOutput` containing structured findings. (Type from `src/types/research.ts`)
 
 ### 3. `generationRouter` (`src/server/api/routers/generation.ts`)
 
 Handles AI-driven generation of protocol content.
 
 - **`generateFullProtocol(input: AIFullProtocolGenerationInputSchema)`**: (Mutation) Generates content for all 13 sections of a protocol.
-  - Input: `{ medicalCondition: string, researchData: AIResearchData, specificInstructions?: string }`
-  - Output: `AIFullProtocolGenerationOutput` (which is `ProtocolFullContent`).
+  - Input: `{ protocolId?: string (uuid - Note: This should ideally be CUID if related to our DB IDs), medicalCondition: string, researchData: AIResearchData, specificInstructions?: string }` (from `AIFullProtocolGenerationInputSchema` which uses `AIResearchDataSchema` from `protocol-schema.ts`)
+  - Output: `AIFullProtocolGenerationOutput` (Type from `src/types/ai-generation.ts`)
 - **`generateSingleSection(input: AIProtocolSectionInputSchema)`**: (Mutation) Generates content for a single specified protocol section.
-  - Input: `{ medicalCondition: string, sectionNumber: number, researchFindings?: AIResearchFinding[], previousSectionsContent?: Partial<ProtocolFullContent>, specificInstructions?: string }`
-  - Output: `AIProtocolSectionOutput` (which is `ProtocolSectionData`).
+
+  - Input: `{ protocolId: string (uuid - Note: This should ideally be CUID), protocolVersionId?: string (uuid - Note: This should ideally be CUID), medicalCondition: string, sectionNumber: number (1-13), sectionTitle?: string, researchFindings?: AIResearchFinding[], previousSectionsContent?: Partial<ProtocolFullContent>, specificInstructions?: string }` (from `AIProtocolSectionInputSchema`)
+  - Output: `AIProtocolSectionOutput` (Type from `src/types/ai-generation.ts`)
+
+  _Note on UUIDs in generationRouter inputs_: The current Zod schemas for `generationRouter` use `uuid()` for `protocolId` and `protocolVersionId`. These should ideally be aligned with the `cuid()` used in `protocolRouter` and the database if these IDs refer to the same entities. This is a point for future consistency review.
 
 ### 4. `exportRouter` (`src/server/api/routers/export.ts`)
 
 Handles exportation of protocol documents.
 
-- **`exportProtocol(input: ExportInputSchema)`**: (Mutation) Generates and prepares a protocol document for download.
-  - Input: `{ protocolId: string, versionId: string, format: 'docx' | 'pdf' | 'svg' }`
+- **`exportProtocol(input: ExportInputSchema)`**: (Mutation) Generates and prepares a protocol document for download via Supabase Storage.
+  - Input: `{ protocolId: string (cuid), versionId: string (cuid), format: 'docx' | 'pdf' | 'svg' }` (from `ExportInputSchema` defined in `export.ts`, which implicitly uses CUIDs due to `ProtocolIdInputSchema` and `ProtocolVersionIdInputSchema` used for fetching data)
   - Output: `{ filename: string, url: string (signed URL to Supabase Storage), message: string }`
 
 ### 5. `userRouter` (`src/server/api/routers/user.ts`)
@@ -92,7 +95,7 @@ The client should handle these errors appropriately.
 The frontend uses a pre-configured tRPC client. Example usage:
 
 ```typescript
-import { trpc } from '@/lib/api/client';
+import { trpc } from "@/lib/api/client";
 
 // Query
 const { data, error, isLoading } = trpc.protocol.list.useQuery({ limit: 10 });
@@ -101,5 +104,5 @@ const { data, error, isLoading } = trpc.protocol.list.useQuery({ limit: 10 });
 const createMutation = trpc.protocol.create.useMutation();
 createMutation.mutate({ title: "New Protocol", condition: "Fever" });
 
-Refer to tRPC and React Query documentation for more advanced usage patterns.
+// Refer to tRPC and React Query documentation for more advanced usage patterns.
 ```
