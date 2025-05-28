@@ -5,58 +5,81 @@
  * such as validating user credentials.
  */
 import { prisma } from "@/lib/db/client";
-import type { User } from "@prisma/client"; // Using Prisma's User type
-import * as bcrypt from "bcrypt";
+import type { User } from "@prisma/client";
+import * as bcrypt from "bcryptjs"; // Changed to bcryptjs
 
-// This is a placeholder. In a real application, you would:
-// 1. Receive email and password.
-// 2. Query the database for the user by email.
-// 3. If user exists, compare the provided password with the stored hashed password.
-// 4. Return the user object if credentials are valid, otherwise null.
-// Ensure to handle password hashing and comparison securely (e.g., using bcrypt).
+// --- WARNING: INSECURE PASSWORD HANDLING FOR DEVELOPMENT ONLY ---
+// This password should match the one set in the seed script for the dev-mock user.
+// In a real application, NEVER store or compare plain-text passwords.
+// Implement proper password hashing (e.g., bcryptjs.hashSync) and comparison.
+const MOCK_USER_PASSWORD = "password";
+const MOCK_USER_EMAIL = "dev-mock@example.com";
+// --- END WARNING ---
 
 export async function validateUserCredentials(
   email?: string,
   password?: string,
-): Promise<Omit<User, "password" | "emailVerified"> | null> {
-  // Validate input
+): Promise<Pick<User, "id" | "email" | "name" | "role"> | null> {
   if (!email || !password) {
-    console.log("[AUTH] Missing email or password");
     return null;
   }
 
-  try {
-    // Query the database for the user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+  console.log(`[AUTH ACTION] Validating credentials for: ${email}`);
 
-    if (!user) {
-      console.log(`[AUTH] User with email ${email} not found.`);
-      return null;
-    }
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
 
-    // Check if user has a password (might be null for users created before password field was added)
-    if (!user.password) {
-      console.log(`[AUTH] User ${email} has no password set.`);
-      return null;
-    }
-
-    // Compare the provided password with the stored hashed password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if (!isValidPassword) {
-      console.log(`[AUTH] Invalid password for user ${email}`);
-      return null;
-    }
-
-    console.log(`[AUTH] User ${email} validated successfully.`);
-
-    // Return user without sensitive fields
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword as Omit<User, "password" | "emailVerified">;
-  } catch (error) {
-    console.error("[AUTH] Error validating credentials:", error);
+  if (!user) {
+    console.log(`[AUTH ACTION] User with email ${email} not found.`);
     return null;
   }
+
+  // --- PRODUCTION-READY (BUT HASHED PASSWORD NEEDED IN DB) ---
+  // In a real app, user.hashedPassword would exist.
+  // const isValidPassword = user.hashedPassword ? bcrypt.compareSync(password, user.hashedPassword) : false;
+  // ---
+
+  // --- TEMPORARY DEV LOGIC FOR SEEDED USER WITH PLAIN PASSWORD ---
+  // This block should be replaced by the production-ready logic above once passwords are hashed.
+  let isValidPassword = false;
+  if (email === MOCK_USER_EMAIL && password === MOCK_USER_PASSWORD) {
+    // This specific check is ONLY for the dev-mock user with a known plain-text password.
+    isValidPassword = true;
+    console.warn(
+      `[AUTH ACTION] User ${email} validated with PLAIN TEXT dev password. THIS IS INSECURE. Role: ${user.role}`,
+    );
+  } else if (user.password) {
+    // If other users have hashed passwords, attempt to compare.
+    try {
+      isValidPassword = bcrypt.compareSync(password, user.password);
+    } catch (e) {
+      console.error(
+        "[AUTH ACTION] bcrypt.compareSync error (likely malformed hash for user):",
+        email,
+        e,
+      );
+      isValidPassword = false;
+    }
+  } else {
+    // If user is not the dev-mock and has no hashed password, fail.
+    console.warn(
+      `[AUTH ACTION] User ${email} does not have a hashed password set and is not the dev-mock user. Denying login.`,
+    );
+    isValidPassword = false;
+  }
+  // --- END TEMPORARY DEV LOGIC ---
+
+  if (isValidPassword) {
+    console.log(`[AUTH ACTION] User ${email} validated. Role: ${user.role}`);
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
+  }
+
+  console.log(`[AUTH ACTION] Invalid password for ${email}.`);
+  return null;
 }

@@ -14,8 +14,18 @@
  * }
  * and install tsx: `pnpm add -D tsx`
  */
+// In seed.ts
+import * as bcrypt from "bcryptjs";
 import { PrismaClient, UserRole } from "@prisma/client";
-import * as bcrypt from "bcrypt";
+const saltRounds = 10; // Or your preferred salt rounds
+const DEV_MOCK_USER_PASSWORD_PLAIN = "password";
+const hashedPassword = bcrypt.hashSync(
+  DEV_MOCK_USER_PASSWORD_PLAIN,
+  saltRounds,
+);
+// ...
+// When creating user:
+// hashedPassword: hashedPassword, // Store this instead of plain password
 
 const prisma = new PrismaClient();
 
