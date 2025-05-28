@@ -17,7 +17,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log("[RootLayout DEBUG] NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
   const session = await getServerSession(authOptions);
 
   return (
