@@ -1,76 +1,78 @@
 /**
- * Database Seeding Script
- *
- * This script seeds the database with initial data, such as a default admin user
- * and a specific user for development/mock authentication.
- *
- * To run this seed:
- * 1. Ensure your DATABASE_URL in .env is correctly set up.
- * 2. Run `pnpm prisma db seed`
- *
- * Note: You need to add a "seed" script to your package.json:
- * "prisma": {
- *   "seed": "tsx src/lib/db/seed.ts"
- * }
- * and install tsx: `pnpm add -D tsx`
- */
-// In seed.ts
-import * as bcrypt from "bcryptjs";
-import { PrismaClient, UserRole } from "@prisma/client";
-const saltRounds = 10; // Or your preferred salt rounds
-const DEV_MOCK_USER_PASSWORD_PLAIN = "password";
-const hashedPassword = bcrypt.hashSync(
-  DEV_MOCK_USER_PASSWORD_PLAIN,
-  saltRounds,
-);
-// ...
-// When creating user:
-// hashedPassword: hashedPassword, // Store this instead of plain password
 
+Database Seeding Script
+This script seeds the database with initial data, such as a default admin user
+and a specific user for development/mock authentication.
+Passwords for seeded users will be hashed.
+*/
+import { PrismaClient, UserRole } from "@prisma/client";
+import { randomUUID } from "crypto";
+import * as bcryptjs from "bcryptjs"; // Use bcryptjs
 const prisma = new PrismaClient();
+const SALT_ROUNDS = 10; // Standard salt rounds for bcrypt
 
 async function main() {
   console.log("Start seeding ...");
 
-  // Seed Admin User (general admin)
+  // --- Seed Admin User (general admin) ---
   const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  const adminPlainPassword = "adminSecurePassword123"; // Choose a strong password
   let adminUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
 
+  const adminHashedPassword = bcryptjs.hashSync(
+    adminPlainPassword,
+    SALT_ROUNDS,
+  );
+
   if (!adminUser) {
-    // Hash password for admin user
-    const adminPassword = await bcrypt.hash("admin123", 10);
     adminUser = await prisma.user.create({
       data: {
-        id: crypto.randomUUID(), // General admin can have a random UUID
+        id: randomUUID(),
         email: adminEmail,
         name: "Admin User",
-        password: adminPassword,
         role: UserRole.ADMIN,
+        hashedPassword: adminHashedPassword, // Store hashed password
         updatedAt: new Date(),
       },
     });
     console.log(
-      `Created admin user: ${adminUser.email} with ID: ${adminUser.id}`,
+      `Created admin user: ${adminUser.email} with ID: ${adminUser.id} (Password HASHED)`,
     );
   } else {
-    console.log(
-      `Admin user ${adminEmail} already exists with ID: ${adminUser.id}.`,
-    );
+    // Optionally update existing admin's password if it's not set or needs updating
+    if (
+      !adminUser.hashedPassword ||
+      !bcryptjs.compareSync(adminPlainPassword, adminUser.hashedPassword)
+    ) {
+      await prisma.user.update({
+        where: { email: adminEmail },
+        data: { hashedPassword: adminHashedPassword },
+      });
+      console.log(`Updated hashed password for admin user: ${adminUser.email}`);
+    } else {
+      console.log(
+        `Admin user ${adminEmail} already exists with a valid hashed password.`,
+      );
+    }
   }
 
-  // Seed Specific Mock User for Development/Testing
-  // This user's ID must match the ID used in the mock authorize function in src/lib/auth/providers.ts
+  // --- Seed Specific Mock User for Development/Testing ---
   const mockUserId = "mock-user-id-dev123";
   const mockUserEmail = "dev-mock@example.com";
+  const mockUserPlainPassword = "password"; // The password you want to use for this dev user
 
   let developmentMockUser = await prisma.user.findUnique({
     where: { id: mockUserId },
   });
 
+  const mockUserHashedPassword = bcryptjs.hashSync(
+    mockUserPlainPassword,
+    SALT_ROUNDS,
+  );
+
   if (!developmentMockUser) {
-    // Check if email is taken by another user before trying to create with this email
     const existingUserWithMockEmail = await prisma.user.findUnique({
       where: { email: mockUserEmail },
     });
@@ -82,69 +84,58 @@ async function main() {
       console.warn(
         `Email ${mockUserEmail} is already in use by user ${existingUserWithMockEmail.id}. Cannot create mock user ${mockUserId} with this email.`,
       );
-    } else if (
-      existingUserWithMockEmail &&
-      existingUserWithMockEmail.id === mockUserId
-    ) {
-      // This case should ideally be caught by findUnique by ID, but as a safeguard.
-      developmentMockUser = existingUserWithMockEmail;
-      console.log(
-        `Mock user ${mockUserEmail} with ID ${mockUserId} already exists.`,
-      );
     } else {
-      // WARNING: Using simple password "password" for development only!
-      // NEVER use simple passwords in production
-      const devPassword = await bcrypt.hash("password", 10);
       developmentMockUser = await prisma.user.create({
         data: {
-          id: mockUserId, // Specific ID for mock authentication
+          id: mockUserId,
           email: mockUserEmail,
-          name: "Usuário de Desenvolvimento Mock",
-          password: devPassword, // DEV ONLY: Simple password for local development
-          role: UserRole.ADMIN, // Ensure this role matches what's used in the mock provider
+          name: "Usuário de Desenvolvimento",
+          role: UserRole.ADMIN, // Or CREATOR, as appropriate for testing
+          hashedPassword: mockUserHashedPassword, // Store HASHED password
           updatedAt: new Date(),
         },
       });
       console.log(
-        `Created development mock user: ${developmentMockUser.email} with ID: ${developmentMockUser.id}`,
-      );
-      console.warn(
-        `⚠️  DEV ONLY: Mock user created with password "password" - DO NOT use in production!`,
+        `Created development mock user: ${developmentMockUser.email} with ID: ${developmentMockUser.id}. Password set (HASHED).`,
       );
     }
   } else {
-    console.log(
-      `Development mock user ${developmentMockUser.email} with ID ${mockUserId} already exists.`,
-    );
-    // Optionally update the role if it changed in mocks
+    // Update existing mock user to ensure it has the correct hashed password and role
+    let updateData: {
+      hashedPassword?: string;
+      role?: UserRole;
+      name?: string;
+    } = {};
+    if (
+      !developmentMockUser.hashedPassword ||
+      !bcryptjs.compareSync(
+        mockUserPlainPassword,
+        developmentMockUser.hashedPassword,
+      )
+    ) {
+      updateData.hashedPassword = mockUserHashedPassword;
+      updateData.name = "Usuário de Desenvolvimento (Pwd Updated)";
+    }
     if (developmentMockUser.role !== UserRole.ADMIN) {
-      await prisma.user.update({
-        where: { id: mockUserId },
-        data: {
-          role: UserRole.ADMIN,
-          name: "Usuário de Desenvolvimento Mock (Role Updated)",
-        },
-      });
-      console.log(`Updated role for mock user ${mockUserId} to ADMIN.`);
+      updateData.role = UserRole.ADMIN;
+      updateData.name =
+        updateData.name || "Usuário de Desenvolvimento (Role Updated)";
     }
 
-    // Update password if it's null (for existing users after migration)
-    if (!developmentMockUser.password) {
-      const devPassword = await bcrypt.hash("password", 10);
+    if (Object.keys(updateData).length > 0) {
       await prisma.user.update({
         where: { id: mockUserId },
-        data: {
-          password: devPassword,
-        },
+        data: updateData,
       });
-      console.log(`Updated password for existing mock user ${mockUserId}.`);
-      console.warn(
-        `⚠️  DEV ONLY: Mock user password updated to "password" - DO NOT use in production!`,
+      console.log(
+        `Updated development mock user: ${developmentMockUser.email}. Password/Role potentially updated (HASHED).`,
+      );
+    } else {
+      console.log(
+        `Development mock user ${developmentMockUser.email} with ID ${mockUserId} already exists with a valid hashed password and role.`,
       );
     }
   }
-
-  // TODO: Add more seed data as needed (e.g., example protocols)
 
   console.log("Seeding finished.");
 }
