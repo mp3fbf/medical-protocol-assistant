@@ -46,7 +46,7 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
     : null;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="protocol-editor-layout flex h-[calc(100vh-4rem)] flex-col">
       {/* Header for Protocol Title and Actions */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <h2 className="truncate text-xl font-semibold text-gray-800 dark:text-gray-100">

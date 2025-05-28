@@ -2,6 +2,7 @@
  * Protocol List Page
  * Displays a list of all available medical protocols using cards.
  */
+"use client";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,63 +11,32 @@ import {
   ProtocolCard,
   type ProtocolCardProps,
 } from "@/components/protocol/list/protocol-card";
-import { PlusCircle, Filter, ListOrdered, FileText } from "lucide-react";
+import { PlusCircle, Filter, ListOrdered, FileText, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/api/client";
 
-export const metadata: Metadata = {
-  title: "Lista de Protocolos | Assistente de Protocolos Médicos",
-  description: "Visualize e gerencie todos os protocolos médicos.",
-};
-
-// Mock data for now, to be replaced by API call
-const mockProtocols: ProtocolCardProps[] = [
-  {
-    id: "mock-protocol-123",
-    title: "Protocolo de Atendimento à Bradicardia Sintomática no Adulto",
-    condition: "Bradicardia",
-    status: "DRAFT",
-    updatedAt: new Date().toLocaleDateString("pt-BR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }),
-    latestVersionNumber: 1,
-    versionCount: 1,
-  },
-  {
-    id: "mock-protocol-456",
-    title: "Protocolo de Manejo da Infecção do Trato Urinário (ITU) Complicada",
-    condition: "Infecção do Trato Urinário",
-    status: "APPROVED",
-    updatedAt: new Date(Date.now() - 86400000 * 5).toLocaleDateString("pt-BR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }),
-    latestVersionNumber: 3,
-    versionCount: 3,
-  },
-  {
-    id: "mock-protocol-789",
-    title: "Protocolo de Sepse e Choque Séptico",
-    condition: "Sepse",
-    status: "REVIEW",
-    updatedAt: new Date(Date.now() - 86400000 * 2).toLocaleDateString("pt-BR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }),
-    latestVersionNumber: 2,
-    versionCount: 2,
-  },
-];
+// Note: metadata export removed since this is now a client component
 
 export default function ProtocolsPage() {
-  // TODO: Implement state and handlers for search, filter, sort
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [filterStatus, setFilterStatus] = useState<string | null>(null);
-  // const [sortOrder, setSortOrder] = useState<string>("updatedAt:desc");
+  const { data, isLoading, isError, error } = trpc.protocol.list.useQuery({
+    page: 1,
+    limit: 20,
+    sortBy: "updatedAt",
+    sortOrder: "desc",
+  });
 
-  // const filteredAndSortedProtocols = mockProtocols; // Apply filtering/sorting here
+  const protocols: ProtocolCardProps[] = data?.items?.map((protocol) => ({
+    id: protocol.id,
+    title: protocol.title,
+    condition: protocol.condition,
+    status: protocol.status,
+    updatedAt: new Date(protocol.updatedAt).toLocaleDateString("pt-BR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }),
+    latestVersionNumber: protocol.ProtocolVersion[0]?.versionNumber,
+    versionCount: protocol._count.ProtocolVersion,
+  })) || [];
 
   return (
     <div className="space-y-6">
@@ -104,9 +74,26 @@ export default function ProtocolsPage() {
       </div>
 
       {/* Protocol Cards Grid */}
-      {mockProtocols.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+          <span className="ml-2 text-gray-600 dark:text-gray-400">
+            Carregando protocolos...
+          </span>
+        </div>
+      ) : isError ? (
+        <div className="mt-8 rounded-md border-2 border-dashed border-red-300 p-12 text-center dark:border-red-700">
+          <FileText className="mx-auto h-12 w-12 text-red-400" />
+          <h3 className="mt-2 text-sm font-medium text-red-900 dark:text-red-100">
+            Erro ao carregar protocolos
+          </h3>
+          <p className="mt-1 text-sm text-red-500 dark:text-red-400">
+            {error?.message || "Ocorreu um erro inesperado."}
+          </p>
+        </div>
+      ) : protocols.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {mockProtocols.map((protocol) => (
+          {protocols.map((protocol) => (
             <ProtocolCard key={protocol.id} {...protocol} />
           ))}
         </div>
@@ -130,10 +117,6 @@ export default function ProtocolsPage() {
         </p>
       </div>
 
-      <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
-        Nota: A lista de protocolos e funcionalidades de busca/filtro são
-        mocadas. A integração com a API (tRPC) será feita em etapas futuras.
-      </p>
     </div>
   );
 }

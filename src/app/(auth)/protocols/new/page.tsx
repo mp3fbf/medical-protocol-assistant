@@ -2,11 +2,10 @@
  * New Protocol Page
  * Allows users to start creating a new medical protocol using a form.
  */
-"use client"; // This page will use client-side hooks for form handling and API calls
+"use client"; 
 
 import React from "react";
 import { useRouter } from "next/navigation";
-// import type { Metadata } from "next"; // Metadata can be defined, but won't be dynamic for client components
 import {
   CreateProtocolForm,
   type CreateProtocolFormValues,
@@ -15,49 +14,73 @@ import { trpc } from "@/lib/api/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-// For client components, metadata is typically set in a parent layout or via document.title
-// export const metadata: Metadata = {
-//   title: "Novo Protocolo | Assistente de Protocolos Médicos",
-//   description: "Inicie a criação de um novo protocolo médico.",
-// };
 
 export default function NewProtocolPage() {
   const router = useRouter();
-  const createProtocolMutation = trpc.protocol.create.useMutation();
+  const createProtocolMutation = trpc.protocol.create.useMutation({
+    // Optional: onSuccess and onError directly on useMutation can also be used
+    // but we are handling it via the promise returned by mutateAsync for now.
+  });
 
-  const handleFormSubmit = async (data: CreateProtocolFormValues) => {
+  const triggerMutation = async (data: CreateProtocolFormValues) => {
+    console.log('[NewProtocolPage] triggerMutation called with data:', data);
+    if (!data || !data.title || !data.condition) {
+      console.error("[NewProtocolPage] triggerMutation: Invalid data received:", data);
+      return {
+        success: false,
+        error: "Dados do formulário inválidos ou ausentes para mutação.",
+        data: null,
+      };
+    }
     try {
+      console.log('[NewProtocolPage] Calling createProtocolMutation.mutateAsync with:', { title: data.title, condition: data.condition });
+      // Ensure we are passing exactly what the Zod schema CreateProtocolInputSchema expects
       const result = await createProtocolMutation.mutateAsync({
         title: data.title,
         condition: data.condition,
       });
-      console.log("Protocol created (mock/actual):", result);
-      // The `onSuccess` callback in the form component will handle success message
-      // We handle redirection here.
-      return { success: true, data: result };
+      console.log("[NewProtocolPage] Protocol mutation successful, result data:", result);
+      return { success: true, data: result, error: undefined };
     } catch (error: any) {
-      console.error("Failed to create protocol:", error);
+      console.error("[NewProtocolPage] createProtocolMutation.mutateAsync failed:", error);
+      let errorMessage = "Falha ao criar protocolo.";
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      if (error.data && error.data.zodError && error.data.zodError.fieldErrors) {
+        // More specific Zod error
+        const fieldErrors = Object.entries(error.data.zodError.fieldErrors)
+          .map(([field, errors]) => `${field}: ${(errors as string[]).join(", ")}`)
+          .join("; ");
+        errorMessage = `Erro de validação: ${fieldErrors}`;
+      } else if (error.data?.httpStatus) {
+         console.error("[NewProtocolPage] tRPC Error details:", JSON.stringify(error.data, null, 2));
+         errorMessage = `Erro no servidor (HTTP ${error.data.httpStatus}): ${error.message}`;
+      }
       return {
         success: false,
-        error: error.message || "Falha ao enviar dados. Tente novamente.",
+        error: errorMessage,
+        data: null,
       };
     }
   };
+  
+  const handleFormSubmit = (data: CreateProtocolFormValues): Promise<{ success: boolean; data?: any; error?: string }> => {
+    console.log('[NewProtocolPage] handleFormSubmit (passed to form) received data:', data);
+    return triggerMutation(data);
+  };
 
   const handleSuccess = (createdProtocol?: any) => {
-    if (createdProtocol?.id) {
-      // After a short delay to show success message, redirect to the editor
-      setTimeout(() => {
-        router.push(`/protocols/${createdProtocol.id}`);
-      }, 1500);
+    console.log('[NewProtocolPage] handleSuccess called with createdProtocol:', createdProtocol);
+    if (createdProtocol && createdProtocol.id && typeof createdProtocol.id === 'string') {
+      console.log(`[NewProtocolPage] Navigating to /protocols/${createdProtocol.id}`);
+      // Navigate immediately for better test reliability
+      router.push(`/protocols/${createdProtocol.id}`);
     } else {
-      // Fallback if ID is not available, though it should be
       console.warn(
-        "Protocol ID not found after creation, redirecting to list.",
+        "[NewProtocolPage] Protocol ID not found or invalid after creation attempt. Not redirecting.",
+        "Received createdProtocol:", createdProtocol
       );
-      setTimeout(() => {
-        router.push(`/protocols`);
-      }, 1500);
     }
   };
 
@@ -73,22 +96,20 @@ export default function NewProtocolPage() {
         </p>
       </div>
 
-      {createProtocolMutation.error && (
-        // This top-level error display is for errors not caught by the form's own state.
-        // The form itself has more specific error display.
+      {createProtocolMutation.isError && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro na Criação</AlertTitle>
+          <AlertTitle>Erro na Criação (Mutation Hook)</AlertTitle>
           <AlertDescription>
-            {createProtocolMutation.error.message ||
+            {createProtocolMutation.error?.message ||
               "Não foi possível criar o protocolo. Tente novamente."}
           </AlertDescription>
         </Alert>
       )}
 
       <CreateProtocolForm
-        onSubmit={handleFormSubmit}
-        onSuccess={handleSuccess}
+        onSubmit={handleFormSubmit} 
+        onSuccess={handleSuccess}    
       />
 
       <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">

@@ -4,7 +4,7 @@
  * This file configures the tRPC client for frontend usage.
  * It integrates with React Query for data fetching, mutations, and caching.
  */
-"use client"; // This file is primarily for client-side usage
+"use client"; 
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -16,9 +16,15 @@ import superjson from "superjson";
 import type { AppRouter } from "@/server/api/root";
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") return ""; // browser should use relative url
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
-  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+  if (typeof window !== "undefined") {
+    // Browser should use an absolute URL.
+    // Use NEXT_PUBLIC_APP_URL if available (e.g., for consistency in test environments),
+    // otherwise, default to window.location.origin.
+    return process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+  }
+  // Server-side
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; 
+  return `http://localhost:${process.env.PORT ?? 3000}`; 
 };
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -29,8 +35,8 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000, // 5 seconds
-            refetchOnWindowFocus: false, // Optional: disable refetch on window focus
+            staleTime: 5 * 1000, 
+            refetchOnWindowFocus: false, 
           },
         },
       }),
@@ -45,7 +51,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             (opts.direction === "down" && opts.result instanceof Error),
         }),
         httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
+          url: `${getBaseUrl()}/api/trpc`, // Ensures getBaseUrl() provides the scheme and host
           transformer: superjson,
         }),
       ],

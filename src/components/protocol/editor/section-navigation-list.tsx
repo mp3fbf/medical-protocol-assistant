@@ -19,9 +19,14 @@ export const SectionNavigationList: React.FC<SectionNavigationListProps> = ({
   className,
 }) => {
   return (
-    <nav className={cn("h-full w-full", className)}>
+    <nav className={cn("section-navigation-list h-full w-full", className)}>
       <ScrollArea className="h-full pr-2">
         <div className="space-y-1">
+          {SECTION_DEFINITIONS.length === 0 && (
+            <div className="p-2 text-red-500 text-sm">
+              ERROR: No section definitions loaded
+            </div>
+          )}
           {SECTION_DEFINITIONS.map((sectionDef) => (
             <button
               key={sectionDef.sectionNumber}

@@ -8,7 +8,7 @@ datasource db {
 }
 
 model AuditLog {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) 
   timestamp    DateTime @default(now())
   userId       String?
   action       String
@@ -24,14 +24,14 @@ model AuditLog {
 }
 
 model Protocol {
-  id              String            @id @default(cuid())
+  id              String            @id @default(cuid()) 
   code            String            @unique
   title           String
   condition       String
   status          ProtocolStatus    @default(DRAFT)
   createdById     String
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  updatedAt       DateTime          @updatedAt 
   User            User              @relation(fields: [createdById], references: [id])
   ProtocolVersion ProtocolVersion[]
 
@@ -41,7 +41,7 @@ model Protocol {
 }
 
 model ProtocolVersion {
-  id             String   @id @default(cuid())
+  id             String   @id @default(cuid()) // Changed to cuid for consistency
   protocolId     String
   versionNumber  Int
   content        Json
@@ -58,13 +58,14 @@ model ProtocolVersion {
 }
 
 model User {
-  id              String    @id @default(cuid())
+  id              String    @id @default(cuid()) 
   email           String    @unique
   name            String
-  hashedPassword  String?   // For storing bcryptjs hashes
+  password        String?   
+  hashedPassword  String?   
   role            UserRole  @default(CREATOR)
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  updatedAt       DateTime  @updatedAt 
   AuditLog        AuditLog[]
   Protocol        Protocol[]
   ProtocolVersion ProtocolVersion[]

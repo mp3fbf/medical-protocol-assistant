@@ -13,9 +13,9 @@ export interface StatCardItem {
   value: string | number;
   icon: LucideIcon;
   description?: string;
-  bgColorClass?: string; // e.g., 'bg-blue-100 dark:bg-blue-900'
-  textColorClass?: string; // e.g., 'text-blue-600 dark:text-blue-300'
-  iconColorClass?: string; // e.g., 'text-blue-500 dark:text-blue-400'
+  bgColorClass?: string; 
+  textColorClass?: string; 
+  iconColorClass?: string; 
 }
 
 interface StatsCardsProps {
@@ -40,6 +40,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             "overflow-hidden shadow-lg transition-all hover:shadow-xl",
             stat.bgColorClass || "bg-white dark:bg-gray-800",
           )}
+          data-testid={`stat-card-${stat.id}`}
         >
           <CardHeader
             className={cn(
@@ -47,7 +48,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
               stat.textColorClass || "text-gray-700 dark:text-gray-200",
             )}
           >
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+            <CardTitle 
+              className="text-sm font-medium"
+              data-testid={`stat-card-title-${stat.id}`} // Added data-testid
+            >
+              {stat.title}
+            </CardTitle>
             <stat.icon
               className={cn(
                 "h-5 w-5 text-muted-foreground",
@@ -61,6 +67,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
                 "text-2xl font-bold",
                 stat.textColorClass || "text-gray-900 dark:text-gray-50",
               )}
+              data-testid={`stat-card-value-${stat.id}`}
             >
               {stat.value}
             </div>
@@ -72,6 +79,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
                     ? `${stat.textColorClass} opacity-75`
                     : "text-gray-500 dark:text-gray-400",
                 )}
+                data-testid={`stat-card-desc-${stat.id}`}
               >
                 {stat.description}
               </p>

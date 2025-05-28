@@ -5,6 +5,8 @@ import path from "path";
 // Read from default ".env.local" file.
 dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
+const AUTH_FILE = "playwright/.auth/user.json";
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -20,6 +22,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+
+  /* Global setup script to run before all tests (for login) */
+  globalSetup: require.resolve("./tests/e2e/global.setup.ts"),
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -27,44 +33,45 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+
+    /* Use saved authentication state for all tests */
+    storageState: AUTH_FILE,
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { 
+        ...devices["Desktop Chrome"],
+        storageState: AUTH_FILE, // Ensure each project uses the auth state
+      },
+      dependencies: ["setup"], // Depends on the global setup for authentication
     },
 
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: { 
+        ...devices["Desktop Firefox"],
+        storageState: AUTH_FILE,
+      },
+      dependencies: ["setup"],
     },
 
     {
       name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      use: { 
+        ...devices["Desktop Safari"],
+        storageState: AUTH_FILE,
+       },
+      dependencies: ["setup"],
     },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    
+    // Project for authentication setup, does not run tests but runs globalSetup
+    {
+      name: "setup",
+      testMatch: /global\.setup\.ts/,
+    },
   ],
 
   /* Run your local dev server before starting the tests */
@@ -75,5 +82,11 @@ export default defineConfig({
     timeout: 120 * 1000, // 120 seconds
     stdout: "pipe",
     stderr: "pipe",
+    env: {
+        // Ensure NEXTAUTH_URL is explicitly passed to the webServer's environment
+        // This is important if your app running via `pnpm dev` relies on it internally
+        // even if Playwright's baseURL is also set.
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL || "http://localhost:3000",
+    }
   },
 });

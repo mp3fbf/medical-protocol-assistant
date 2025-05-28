@@ -11,10 +11,9 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Assuming Alert is a shadcn component
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
-// Define the schema for form validation using Zod
 const createProtocolFormSchema = z.object({
   title: z
     .string()
@@ -32,7 +31,7 @@ interface CreateProtocolFormProps {
   onSubmit: (
     data: CreateProtocolFormValues,
   ) => Promise<{ success: boolean; data?: any; error?: string }>;
-  onSuccess?: (data?: any) => void; // Optional: callback on successful submission
+  onSuccess?: (data?: any) => void; 
 }
 
 export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
@@ -56,15 +55,17 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
   const processSubmit: SubmitHandler<CreateProtocolFormValues> = async (
     data,
   ) => {
+    // DEBUG: Log data collected by react-hook-form
+    console.log('[CreateProtocolForm] Data from react-hook-form:', data);
+    
     setFormStatus("loading");
     setFormError(null);
     try {
-      const result = await onSubmit(data);
+      const result = await onSubmit(data); // This calls handleFormSubmit in NewProtocolPage
       if (result.success) {
         setFormStatus("success");
         if (onSuccess) onSuccess(result.data);
-        reset(); // Optionally reset form on success
-        // Redirection or further actions should be handled by the parent page via onSuccess
+        reset(); 
       } else {
         setFormStatus("error");
         setFormError(result.error || "Ocorreu um erro desconhecido.");

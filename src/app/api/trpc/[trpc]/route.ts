@@ -14,20 +14,37 @@ import { appRouter } from "@/server/api/root";
 /**
  * @see https://trpc.io/docs/v11/server/adapters/fetch#used-with-nextjs-app-router
  */
-const handler = (req: NextRequest) =>
-  fetchRequestHandler({
+const handler = async (req: NextRequest) => { // Made handler async
+  // Clone the request to be able to read its body for logging, as req.text() consumes it
+  const clonedReq = req.clone();
+
+  // Log raw body for protocol.create path for debugging E2E
+  if (req.nextUrl.pathname.includes("protocol.create")) {
+    try {
+      const bodyText = await clonedReq.text();
+      console.log('[TRPC Handler] Raw request body for protocol.create:', bodyText);
+    } catch (e) {
+      console.error('[TRPC Handler] Error reading raw request body for protocol.create:', e);
+    }
+  }
+
+  return fetchRequestHandler({
     endpoint: "/api/trpc",
-    req,
+    req, // Pass the original request to fetchRequestHandler
     router: appRouter,
     createContext: (opts) => createContext(opts),
     onError:
       process.env.NODE_ENV === "development"
-        ? ({ path, error }) => {
+        ? ({ path, error, input, type, ctx }) => {
             console.error(
-              `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
+              `❌ tRPC failed on ${path ?? "<no-path>"}:\nError: ${error.message}\nInput: ${JSON.stringify(input)}\nType: ${type}\nCode: ${error.code}\nSession User: ${ctx?.session?.user?.id}`,
             );
+            if (error.cause) {
+              console.error("Cause:", error.cause);
+            }
           }
         : undefined,
   });
+};
 
 export { handler as GET, handler as POST };
