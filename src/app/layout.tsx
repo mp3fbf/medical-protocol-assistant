@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { GlobalProviders } from "@/components/providers/global-providers"; // New
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth/config";
+// import { getServerSession } from "next-auth/next";
+// import { authOptions } from "@/lib/auth/config";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +18,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   console.log("[RootLayout DEBUG] NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-  const session = await getServerSession(authOptions);
+  // Temporarily commenting out session to test if this is causing the 500 error
+  // const session = await getServerSession(authOptions);
+  const session = null;
 
   return (
     <html lang="pt-BR">
