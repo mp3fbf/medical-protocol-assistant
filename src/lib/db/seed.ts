@@ -15,6 +15,7 @@
  * and install tsx: `pnpm add -D tsx`
  */
 import { PrismaClient, UserRole } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -28,11 +29,14 @@ async function main() {
   });
 
   if (!adminUser) {
+    // Hash password for admin user
+    const adminPassword = await bcrypt.hash("admin123", 10);
     adminUser = await prisma.user.create({
       data: {
         id: crypto.randomUUID(), // General admin can have a random UUID
         email: adminEmail,
         name: "Admin User",
+        password: adminPassword,
         role: UserRole.ADMIN,
         updatedAt: new Date(),
       },
@@ -78,17 +82,24 @@ async function main() {
         `Mock user ${mockUserEmail} with ID ${mockUserId} already exists.`,
       );
     } else {
+      // WARNING: Using simple password "password" for development only!
+      // NEVER use simple passwords in production
+      const devPassword = await bcrypt.hash("password", 10);
       developmentMockUser = await prisma.user.create({
         data: {
           id: mockUserId, // Specific ID for mock authentication
           email: mockUserEmail,
           name: "Usuário de Desenvolvimento Mock",
+          password: devPassword, // DEV ONLY: Simple password for local development
           role: UserRole.ADMIN, // Ensure this role matches what's used in the mock provider
           updatedAt: new Date(),
         },
       });
       console.log(
         `Created development mock user: ${developmentMockUser.email} with ID: ${developmentMockUser.id}`,
+      );
+      console.warn(
+        `⚠️  DEV ONLY: Mock user created with password "password" - DO NOT use in production!`,
       );
     }
   } else {
@@ -105,6 +116,21 @@ async function main() {
         },
       });
       console.log(`Updated role for mock user ${mockUserId} to ADMIN.`);
+    }
+
+    // Update password if it's null (for existing users after migration)
+    if (!developmentMockUser.password) {
+      const devPassword = await bcrypt.hash("password", 10);
+      await prisma.user.update({
+        where: { id: mockUserId },
+        data: {
+          password: devPassword,
+        },
+      });
+      console.log(`Updated password for existing mock user ${mockUserId}.`);
+      console.warn(
+        `⚠️  DEV ONLY: Mock user password updated to "password" - DO NOT use in production!`,
+      );
     }
   }
 

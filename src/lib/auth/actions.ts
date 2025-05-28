@@ -6,6 +6,7 @@
  */
 import { prisma } from "@/lib/db/client";
 import type { User } from "@prisma/client"; // Using Prisma's User type
+import bcrypt from "bcrypt";
 
 // This is a placeholder. In a real application, you would:
 // 1. Receive email and password.
@@ -18,37 +19,44 @@ export async function validateUserCredentials(
   email?: string,
   password?: string,
 ): Promise<Omit<User, "password" | "emailVerified"> | null> {
-  // Simulate database lookup and password validation
+  // Validate input
   if (!email || !password) {
+    console.log("[AUTH] Missing email or password");
     return null;
   }
 
-  // IMPORTANT: NEVER log passwords in a real application
-  // console.log(`Validating: ${email} / ${password}`);
+  try {
+    // Query the database for the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  // For demonstration, we'll check against a mock user or a seeded user
-  // In a real scenario, query Prisma:
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+    if (!user) {
+      console.log(`[AUTH] User with email ${email} not found.`);
+      return null;
+    }
 
-  if (!user) {
-    console.log(`User with email ${email} not found.`);
+    // Check if user has a password (might be null for users created before password field was added)
+    if (!user.password) {
+      console.log(`[AUTH] User ${email} has no password set.`);
+      return null;
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      console.log(`[AUTH] Invalid password for user ${email}`);
+      return null;
+    }
+
+    console.log(`[AUTH] User ${email} validated successfully.`);
+
+    // Return user without sensitive fields
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword as Omit<User, "password" | "emailVerified">;
+  } catch (error) {
+    console.error("[AUTH] Error validating credentials:", error);
     return null;
   }
-
-  // IMPORTANT: Implement actual password hashing and comparison here
-  // For this placeholder, we assume any password for an existing user is valid.
-  // Example using bcrypt (install bcrypt: pnpm add bcrypt @types/bcrypt):
-  // import bcrypt from 'bcrypt';
-  // const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
-  // if (!isValidPassword) {
-  //   console.log("Invalid password");
-  //   return null;
-  // }
-
-  console.log(`User ${email} validated (placeholder validation).`);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ...userWithoutPassword } = user; // Omit password for security
-  return userWithoutPassword as Omit<User, "password" | "emailVerified">;
 }

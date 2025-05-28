@@ -37,6 +37,8 @@
     "@trpc/client": "^11.1.2",
     "@trpc/react-query": "^11.1.2",
     "@trpc/server": "^11.1.2",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dagre": "^0.8.5",
