@@ -83,7 +83,24 @@ export const protocolRouter = router({
         JSON.stringify(input, null, 2),
       );
 
-      const { title, condition } = input;
+      const {
+        title,
+        condition,
+        generationMode = "manual",
+        targetPopulation,
+        researchSources = ["pubmed", "scielo"],
+        yearRange = 5,
+      } = input;
+
+      // Log the generation configuration for future implementation
+      console.log(`[TRPC /protocol.create] Generation mode: ${generationMode}`);
+      console.log(
+        `[TRPC /protocol.create] Target population: ${targetPopulation || "Not specified"}`,
+      );
+      console.log(
+        `[TRPC /protocol.create] Research sources: ${researchSources.join(", ")}`,
+      );
+      console.log(`[TRPC /protocol.create] Year range: ${yearRange} years`);
       const userId = ctx.session.user.id;
 
       if (!title || !condition) {
