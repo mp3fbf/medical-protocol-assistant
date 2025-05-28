@@ -12,7 +12,8 @@ import {
   uploadToSupabaseStorage,
   createSupabaseSignedUrl,
 } from "@/lib/supabase/storageActions";
-import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
+import type { ProtocolFullContent } from "@/types/protocol";
+import type { FlowchartDefinition } from "@/types/flowchart"; // Use specific type
 
 const ExportInputSchema = z.object({
   protocolId: z.string().uuid("ID de protocolo inválido."),
@@ -40,9 +41,10 @@ export const exportRouter = router({
 
       const protocolContent =
         protocolVersion.content as unknown as ProtocolFullContent;
+      // Cast flowchart to FlowchartDefinition or undefined
       const flowchartData = protocolVersion.flowchart as unknown as
-        | FlowchartData
-        | undefined; // May not exist or be empty initially
+        | FlowchartDefinition
+        | undefined;
       const protocolTitle = protocolVersion.Protocol.title || "protocolo";
       const protocolCode = protocolVersion.Protocol.code || "PROTO";
       const versionNum = protocolVersion.versionNumber;
@@ -70,6 +72,7 @@ export const exportRouter = router({
           contentType = "application/pdf";
           break;
         case "svg":
+          // Pass the correctly typed flowchartData
           documentBody = await generateFlowchartSvg(flowchartData);
           contentType = "image/svg+xml";
           break;

@@ -13,13 +13,14 @@ import {
   CreateProtocolInputSchema,
   ListProtocolsInputSchema,
   ProtocolIdInputSchema,
-  UpdateProtocolInputSchema,
+  // UpdateProtocolInputSchema, // Not used directly in this version of update
   UpdateProtocolVersionInputSchema,
 } from "@/lib/validators/protocol-schema";
 import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
 import { ProtocolStatus, UserRole } from "@prisma/client";
 import { Permission } from "@/lib/auth/permissions";
 import { checkPermission } from "@/lib/auth/rbac";
+import { randomUUID } from "crypto"; // Use crypto.randomUUID
 
 const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
   Array.from({ length: 13 }, (_, i) => [
@@ -35,6 +36,7 @@ const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
 const DEFAULT_EMPTY_FLOWCHART: FlowchartData = {
   nodes: [],
   edges: [],
+  // viewport can be omitted or set to a default if needed
 };
 
 export const protocolRouter = router({
@@ -48,7 +50,6 @@ export const protocolRouter = router({
       const { title, condition } = input;
       const userId = ctx.session.user.id;
 
-      // Basic permission check (more granular checks can be added if needed)
       if (
         !checkPermission(
           ctx.session.user.role as UserRole,
@@ -61,8 +62,6 @@ export const protocolRouter = router({
         });
       }
 
-      // Generate a unique protocol code (e.g., based on condition and count)
-      // For simplicity, using a placeholder logic.
       const codePrefix = condition.substring(0, 5).toUpperCase();
       const count = await ctx.db.protocol.count({
         where: { code: { startsWith: codePrefix } },
@@ -73,37 +72,34 @@ export const protocolRouter = router({
 
       const protocol = await ctx.db.protocol.create({
         data: {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           title,
           condition,
           code: protocolCode,
           createdById: userId,
           status: ProtocolStatus.DRAFT,
-          updatedAt: new Date(),
+          updatedAt: new Date(), // Explicitly set updatedAt
           ProtocolVersion: {
             create: [
               {
-                id: crypto.randomUUID(),
+                id: randomUUID(),
                 versionNumber: 1,
                 createdById: userId,
-                content: DEFAULT_EMPTY_CONTENT as any,
-                flowchart: DEFAULT_EMPTY_FLOWCHART as any,
+                content: DEFAULT_EMPTY_CONTENT as any, // Prisma expects JsonValue
+                flowchart: DEFAULT_EMPTY_FLOWCHART as any, // Prisma expects JsonValue
                 changelogNotes: "Versão inicial criada.",
               },
             ],
           },
         },
         include: {
-          ProtocolVersion: true, // Include the created version
+          ProtocolVersion: true,
         },
       });
       return protocol;
     }),
 
-  /**
-   * Lists protocols with pagination and filtering.
-   */
-  list: publicProcedure // Or protectedProcedure if all lists require auth
+  list: publicProcedure
     .input(ListProtocolsInputSchema)
     .query(async ({ ctx, input }) => {
       const {
@@ -141,7 +137,6 @@ export const protocolRouter = router({
           _count: {
             select: { ProtocolVersion: true },
           },
-          // Optionally include latest version summary
           ProtocolVersion: {
             orderBy: { versionNumber: "desc" },
             take: 1,
@@ -162,9 +157,6 @@ export const protocolRouter = router({
       };
     }),
 
-  /**
-   * Retrieves a single protocol by its ID, including all its versions and details.
-   */
   getById: protectedProcedure
     .input(ProtocolIdInputSchema)
     .query(async ({ ctx, input }) => {
@@ -175,7 +167,7 @@ export const protocolRouter = router({
             select: { id: true, name: true, email: true },
           },
           ProtocolVersion: {
-            orderBy: { versionNumber: "desc" }, // Get all versions, newest first
+            orderBy: { versionNumber: "desc" },
             include: {
               User: {
                 select: { id: true, name: true, email: true },
@@ -194,11 +186,8 @@ export const protocolRouter = router({
       return protocol;
     }),
 
-  /**
-   * Updates a protocol's metadata or creates a new version.
-   */
   update: protectedProcedure
-    .input(UpdateProtocolVersionInputSchema) // Using a schema that allows content/flowchart update
+    .input(UpdateProtocolVersionInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { protocolId, content, flowchart, changelogNotes } = input;
       const userId = ctx.session.user.id;
@@ -217,7 +206,6 @@ export const protocolRouter = router({
         });
       }
 
-      // Permission check: Can edit own or any (if applicable)
       const canEditOwn = checkPermission(
         ctx.session.user.role as UserRole,
         Permission.EDIT_OWN_PROTOCOL,
@@ -239,38 +227,33 @@ export const protocolRouter = router({
       const latestVersionNumber =
         protocol.ProtocolVersion[0]?.versionNumber ?? 0;
 
-      // Create a new version for content/flowchart updates
+      const newProtocolVersion = await ctx.db.protocolVersion.create({
+        data: {
+          id: randomUUID(),
+          protocolId: protocolId,
+          versionNumber: latestVersionNumber + 1,
+          content: (content ??
+            protocol.ProtocolVersion[0]?.content ??
+            DEFAULT_EMPTY_CONTENT) as any, // Prisma expects JsonValue
+          flowchart: (flowchart ??
+            protocol.ProtocolVersion[0]?.flowchart ??
+            DEFAULT_EMPTY_FLOWCHART) as any, // Prisma expects JsonValue
+          changelogNotes:
+            changelogNotes ??
+            `Atualização para versão ${latestVersionNumber + 1}.`,
+          createdById: userId,
+        },
+      });
+
       await ctx.db.protocol.update({
         where: { id: protocolId },
         data: {
-          updatedAt: new Date(), // Ensure updatedAt is updated
-          ProtocolVersion: {
-            create: {
-              id: crypto.randomUUID(),
-              versionNumber: latestVersionNumber + 1,
-              content: (content ?? DEFAULT_EMPTY_CONTENT) as any,
-              flowchart: (flowchart ?? DEFAULT_EMPTY_FLOWCHART) as any,
-              changelogNotes:
-                changelogNotes ??
-                `Atualização para versão ${latestVersionNumber + 1}.`,
-              createdById: userId,
-            },
-          },
+          updatedAt: new Date(),
         },
       });
 
-      // Fetch the newly created version
-      const newVersion = await ctx.db.protocolVersion.findFirst({
-        where: {
-          protocolId: protocolId,
-          versionNumber: latestVersionNumber + 1,
-        },
-      });
-
-      return newVersion;
+      return newProtocolVersion;
     }),
-
-  // TODO: delete: protectedProcedure...
 });
 
 export const protocolCaller = createCallerFactory(protocolRouter);
