@@ -3,6 +3,7 @@ packages:
 ignoredBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
+  - '@vercel/speed-insights'
   - bcrypt
   - esbuild
   - prisma
