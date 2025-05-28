@@ -4,7 +4,8 @@
  * This is the main page users see after logging in.
  * It displays summaries, quick actions, and key statistics.
  */
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,20 +18,27 @@ import {
   CheckCircle,
   AlertTriangle,
   PlusCircle,
+  Clock,
 } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Dashboard | Assistente de Protocolos Médicos",
-  description: "Visão geral e acesso rápido às funcionalidades.",
-};
+import { trpc } from "@/lib/api/client";
 
 export default function DashboardPage() {
-  // Mock data for demonstration
-  const mockStats: StatCardItem[] = [
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = trpc.protocol.getStats.useQuery();
+  const {
+    data: recentActivity,
+    isLoading: activityLoading,
+    error: activityError,
+  } = trpc.protocol.getRecentActivity.useQuery();
+
+  const statsCards: StatCardItem[] = [
     {
       id: "total-protocols",
       title: "Total de Protocolos",
-      value: 25, // Example value
+      value: stats?.totalProtocols ?? 0,
       icon: FileText,
       description: "Número total de protocolos no sistema.",
       bgColorClass: "bg-blue-50 dark:bg-blue-900/30",
@@ -40,7 +48,7 @@ export default function DashboardPage() {
     {
       id: "draft-protocols",
       title: "Protocolos em Rascunho",
-      value: 8, // Example value
+      value: stats?.draftProtocols ?? 0,
       icon: Edit3,
       description: "Aguardando finalização.",
       bgColorClass: "bg-yellow-50 dark:bg-yellow-900/30",
@@ -50,7 +58,7 @@ export default function DashboardPage() {
     {
       id: "review-protocols",
       title: "Protocolos em Revisão",
-      value: 3, // Example value
+      value: stats?.reviewProtocols ?? 0,
       icon: AlertTriangle,
       description: "Aguardando aprovação.",
       bgColorClass: "bg-orange-50 dark:bg-orange-900/30",
@@ -60,7 +68,7 @@ export default function DashboardPage() {
     {
       id: "approved-protocols",
       title: "Protocolos Aprovados",
-      value: 14, // Example value
+      value: stats?.approvedProtocols ?? 0,
       icon: CheckCircle,
       description: "Prontos para uso.",
       bgColorClass: "bg-green-50 dark:bg-green-900/30",
@@ -68,6 +76,23 @@ export default function DashboardPage() {
       iconColorClass: "text-green-500 dark:text-green-400",
     },
   ];
+
+  if (statsError || activityError) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">
+            Erro ao carregar dashboard
+          </h1>
+          <p className="mt-2 text-gray-600">
+            {statsError?.message ||
+              activityError?.message ||
+              "Erro desconhecido"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -91,17 +116,71 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <StatsCards stats={mockStats} />
+      {statsLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-lg bg-gray-200"
+            />
+          ))}
+        </div>
+      ) : (
+        <StatsCards stats={statsCards} />
+      )}
 
       <div className="mt-8 space-y-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
           Atividade Recente
         </h2>
         <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-          <p className="text-gray-500 dark:text-gray-400">
-            (Placeholder para lista de protocolos editados recentemente ou
-            outras atividades relevantes...)
-          </p>
+          {activityLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <div className="h-5 w-5 animate-pulse rounded bg-gray-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
+                  </div>
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
+                </div>
+              ))}
+            </div>
+          ) : recentActivity && recentActivity.length > 0 ? (
+            <div className="space-y-4">
+              {recentActivity.map((protocol) => (
+                <div
+                  key={protocol.id}
+                  className="flex items-center justify-between border-b border-gray-200 pb-3 last:border-b-0 dark:border-gray-700"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {protocol.title}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {protocol.condition} • {protocol.code}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {new Date(protocol.updatedAt).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400">
+              Nenhuma atividade recente encontrada.
+            </p>
+          )}
         </div>
 
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
