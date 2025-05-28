@@ -6,7 +6,7 @@
  */
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, Suspense } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 // import type { Metadata } from "next"; // Note: Metadata in client components is tricky
@@ -22,7 +22,7 @@ import { Loader2, LogIn, AlertTriangle } from "lucide-react";
 //   description: "Faça login para acessar o sistema.",
 // };
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status: _status } = useSession(); // Renamed status as it's checked directly in useEffect
@@ -180,5 +180,20 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Carregando...</p>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
