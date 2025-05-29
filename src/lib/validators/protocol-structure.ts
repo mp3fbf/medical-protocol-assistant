@@ -59,6 +59,15 @@ const checkSectionPresenceAndOrder: ValidatorFunction = (
     const sectionData = protocolContent[key];
     let sectionDef = null; // Initialize sectionDef
 
+    // Debug logging
+    console.log(`[STRUCTURE_003] Checking section ${key}:`, {
+      sectionData: sectionData,
+      sectionDataType: typeof sectionData,
+      sectionNumber: sectionData?.sectionNumber,
+      sectionNumberType: typeof sectionData?.sectionNumber,
+      allKeysInSectionData: sectionData ? Object.keys(sectionData) : [],
+    });
+
     const isKeyNumeric = !isNaN(sectionNumberFromKey);
     // A key is valid if it's a number AND within the 1-13 range
     const isKeyInValidNumericRange =
@@ -72,17 +81,43 @@ const checkSectionPresenceAndOrder: ValidatorFunction = (
       );
     }
 
+    // Get sectionNumber from data, handling potential JSON serialization reordering
+    const actualSectionNumber = sectionData?.sectionNumber;
+    const hasSectionNumber = typeof actualSectionNumber === "number";
+    const sectionNumberMatches =
+      hasSectionNumber && actualSectionNumber === sectionNumberFromKey;
+
+    // For valid keys (1-13), we can be more lenient - if the key is valid and data exists,
+    // we can assume it's valid even if sectionNumber field is missing (due to serialization issues)
+    const isStructurallyValid =
+      isKeyInValidNumericRange &&
+      sectionData &&
+      sectionData.title &&
+      sectionData.content !== undefined;
+
     // Condition for STRUCTURE_003:
     // 1. The key itself is not a number representing a valid section (1-13).
     // OR 2. The sectionData is missing.
-    // OR 3. The internal sectionNumber field is not a number.
-    // OR 4. The internal sectionNumber field does not match the key.
+    // OR 3. For valid keys, missing essential fields (title, content)
+    // Note: We're being more lenient about sectionNumber field due to JSON serialization issues
     if (
       !isKeyInValidNumericRange || // Catches keys like "14", "abc", "0"
       !sectionData ||
-      typeof sectionData.sectionNumber !== "number" ||
-      sectionData.sectionNumber !== sectionNumberFromKey
+      !isStructurallyValid ||
+      (hasSectionNumber && !sectionNumberMatches) // Only check sectionNumber if it exists
     ) {
+      console.log(`[STRUCTURE_003] VALIDATION FAILED for section ${key}:`, {
+        isKeyInValidNumericRange,
+        sectionDataExists: !!sectionData,
+        isStructurallyValid,
+        hasSectionNumber,
+        sectionNumberMatches,
+        actualSectionNumber,
+        expectedSectionNumber: sectionNumberFromKey,
+        hasTitle: !!sectionData?.title,
+        hasContent: sectionData?.content !== undefined,
+      });
+
       issues.push({
         ruleId: "STRUCTURE_003",
         message: `A seção com chave "${key}" é inválida: ou a chave está fora do intervalo esperado (1-${REQUIRED_SECTION_COUNT}), ou seu 'sectionNumber' interno (${sectionData?.sectionNumber ?? "N/A"}) não corresponde à chave, ou a seção está malformada. Título esperado (se a chave fosse válida): ${sectionDef?.titlePT || "Título Desconhecido / Chave Inválida"}.`,

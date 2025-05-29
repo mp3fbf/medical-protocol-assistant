@@ -2,11 +2,11 @@
  * Main React component for rendering a full medical protocol as a PDF document
  * using @react-pdf/renderer.
  */
-import React from "react";
+import * as React from "react";
 import { Page, Document, View, Text } from "@react-pdf/renderer";
 import type { ProtocolFullContent } from "@/types/protocol";
 import { SectionPdf } from "./section-pdf";
-import { abntStyles, registerABNTFonts } from "./abnt-pdf-styles";
+import { abntStyles, registerABNTFonts, CM_TO_PT } from "./abnt-pdf-styles";
 
 interface ProtocolPdfDocumentProps {
   protocol: ProtocolFullContent;
@@ -17,7 +17,11 @@ interface ProtocolPdfDocumentProps {
 // This should ideally be called once when the app/server starts,
 // but for simplicity in this module structure, calling it here.
 // Ensure font files are correctly pathed and accessible in your deployment.
-registerABNTFonts();
+try {
+  registerABNTFonts();
+} catch (error) {
+  console.warn("Font registration failed, using default fonts:", error);
+}
 
 export const ProtocolPdfDocument: React.FC<ProtocolPdfDocumentProps> = ({
   protocol,

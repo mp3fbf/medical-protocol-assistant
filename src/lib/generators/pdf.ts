@@ -1,7 +1,7 @@
 /**
  * PDF Document Generation for Medical Protocols using @react-pdf/renderer.
  */
-import React from "react";
+import * as React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
 import type { ProtocolFullContent } from "@/types/protocol";
 import { ProtocolPdfDocument } from "./pdf-components/protocol-pdf-document"; // Main React component for PDF
@@ -20,16 +20,26 @@ export async function generateProtocolPdf(
   protocolMainTitle?: string,
 ): Promise<Buffer> {
   try {
+    // Debug logging
+    console.log("Starting PDF generation with data:", {
+      hasProtocolData: !!protocolData,
+      sectionsCount: Object.keys(protocolData || {}).length,
+      title: protocolMainTitle,
+    });
+
     // The ProtocolPdfDocument component encapsulates the PDF structure and styling.
-    const pdfStream = await renderToBuffer(
-      React.createElement(ProtocolPdfDocument, {
-        protocol: protocolData,
-        protocolTitle: protocolMainTitle,
-      }) as React.ReactElement,
-    );
+    const element = React.createElement(ProtocolPdfDocument, {
+      protocol: protocolData,
+      protocolTitle: protocolMainTitle,
+    });
+
+    console.log("Created React element:", element);
+
+    const pdfStream = await renderToBuffer(element);
     return pdfStream;
   } catch (error) {
-    console.error("Failed to generate PDF:", error);
+    console.error("Failed to generate PDF - Full error:", error);
+    console.error("Error stack:", (error as Error).stack);
     throw new Error(`PDF generation failed: ${(error as Error).message}`);
   }
 }

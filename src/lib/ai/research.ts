@@ -120,9 +120,40 @@ async function processDeepResearchResults(
       const content = response.content;
       if (content) {
         try {
-          const extractedData = JSON.parse(
-            content,
-          ) as ProcessedAIMedicalFinding[];
+          const parsedData = JSON.parse(content);
+          console.log(
+            `[Research] Parsed data type for ${article.id}:`,
+            typeof parsedData,
+            parsedData,
+          );
+
+          // Handle different response formats from OpenAI
+          let extractedData: ProcessedAIMedicalFinding[];
+
+          if (Array.isArray(parsedData)) {
+            extractedData = parsedData as ProcessedAIMedicalFinding[];
+          } else if (parsedData && typeof parsedData === "object") {
+            // If OpenAI returns an object with findings array
+            if (parsedData.findings && Array.isArray(parsedData.findings)) {
+              extractedData =
+                parsedData.findings as ProcessedAIMedicalFinding[];
+            } else if (
+              parsedData.results &&
+              Array.isArray(parsedData.results)
+            ) {
+              extractedData = parsedData.results as ProcessedAIMedicalFinding[];
+            } else {
+              // Convert single object to array
+              extractedData = [parsedData as ProcessedAIMedicalFinding];
+            }
+          } else {
+            console.warn(
+              `[Research] Unexpected data format from OpenAI for ${article.id}:`,
+              parsedData,
+            );
+            extractedData = [];
+          }
+
           extractedData.forEach((finding) => {
             if (!finding.id) finding.id = uuidv4();
             allFindings.push(finding);

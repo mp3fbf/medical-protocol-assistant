@@ -15,9 +15,17 @@ import type {
 import type { FlowchartDefinition } from "@/types/flowchart";
 import type { ValidationIssue } from "@/types/validation"; // Corrected import
 import { toast } from "sonner";
-import { Play, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Play,
+  ToggleLeft,
+  ToggleRight,
+  FileText,
+  FileType,
+} from "lucide-react";
+import { trpc } from "@/lib/api/client";
 
 interface ProtocolEditorLayoutProps {
+  protocolId: string;
   protocolTitle: string;
   protocolData: ProtocolFullContent | null;
   flowchartData: FlowchartDefinition | null;
@@ -27,6 +35,7 @@ interface ProtocolEditorLayoutProps {
   validationLastValidated?: Date | null;
   autoValidate?: boolean;
   isLoading: boolean;
+  currentVersionId?: string;
   onSelectSection: (sectionNumber: number) => void;
   onToggleAutoValidate?: () => void;
   onValidateNow?: () => void;
@@ -39,6 +48,7 @@ interface ProtocolEditorLayoutProps {
 }
 
 export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
+  protocolId,
   protocolTitle,
   protocolData,
   flowchartData,
@@ -48,6 +58,7 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
   validationLastValidated,
   autoValidate = true,
   isLoading,
+  currentVersionId,
   onSelectSection,
   onToggleAutoValidate,
   onValidateNow,
@@ -55,6 +66,7 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
   onSaveChanges,
   isSaving = false,
 }) => {
+  const exportMutation = trpc.export.exportProtocol.useMutation();
   const currentSection = protocolData
     ? {
         ...protocolData[currentSectionNumber.toString()],
@@ -165,6 +177,63 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
             )}
             {isSaving ? "Salvando..." : "Salvar Alterações"}
           </button>
+
+          {/* Export Buttons */}
+          <div className="flex items-center gap-2 border-l border-gray-300 pl-3 dark:border-gray-600">
+            <button
+              onClick={async () => {
+                const toastId = toast.loading("Gerando PDF...");
+                try {
+                  const result = await exportMutation.mutateAsync({
+                    protocolId,
+                    versionId: currentVersionId || "",
+                    format: "pdf",
+                  });
+
+                  if (result.url) {
+                    window.open(result.url, "_blank");
+                    toast.success("PDF gerado com sucesso!", { id: toastId });
+                  }
+                } catch (error) {
+                  console.error("Export error:", error);
+                  toast.error("Erro ao gerar PDF", { id: toastId });
+                }
+              }}
+              className="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              disabled={isLoading || !currentVersionId}
+              title="Exportar como PDF"
+            >
+              <FileText className="h-4 w-4" />
+              PDF
+            </button>
+
+            <button
+              onClick={async () => {
+                const toastId = toast.loading("Gerando DOCX...");
+                try {
+                  const result = await exportMutation.mutateAsync({
+                    protocolId,
+                    versionId: currentVersionId || "",
+                    format: "docx",
+                  });
+
+                  if (result.url) {
+                    window.open(result.url, "_blank");
+                    toast.success("DOCX gerado com sucesso!", { id: toastId });
+                  }
+                } catch (error) {
+                  console.error("Export error:", error);
+                  toast.error("Erro ao gerar DOCX", { id: toastId });
+                }
+              }}
+              className="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              disabled={isLoading || !currentVersionId}
+              title="Exportar como Word"
+            >
+              <FileType className="h-4 w-4" />
+              DOCX
+            </button>
+          </div>
         </div>
       </div>
 

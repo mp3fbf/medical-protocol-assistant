@@ -5,7 +5,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { generateProtocolDocx } from "@/lib/generators/docx";
-import { generateProtocolPdf } from "@/lib/generators/pdf";
+import { generateJsPDFProtocolPdf } from "@/lib/generators/pdf-jspdf";
 import { generateFlowchartSvg } from "@/lib/generators/svg";
 import { sanitizeFilename } from "@/lib/generators/utils";
 import {
@@ -16,8 +16,8 @@ import type { ProtocolFullContent } from "@/types/protocol";
 import type { FlowchartDefinition } from "@/types/flowchart"; // Use specific type
 
 const ExportInputSchema = z.object({
-  protocolId: z.string().uuid("ID de protocolo inválido."),
-  versionId: z.string().uuid("ID de versão de protocolo inválido."),
+  protocolId: z.string().min(1, "ID de protocolo inválido."),
+  versionId: z.string().min(1, "ID de versão de protocolo inválido."),
   format: z.enum(["docx", "pdf", "svg"]),
 });
 
@@ -65,7 +65,8 @@ export const exportRouter = router({
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
           break;
         case "pdf":
-          documentBody = await generateProtocolPdf(
+          // Use jsPDF generator
+          documentBody = await generateJsPDFProtocolPdf(
             protocolContent,
             protocolTitle,
           );

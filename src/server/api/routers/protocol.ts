@@ -182,6 +182,15 @@ export const protocolRouter = router({
               console.log(
                 "[TRPC /protocol.create] AI generation completed successfully",
               );
+              console.log(
+                "[TRPC /protocol.create] Sample section from generated content:",
+                {
+                  section1: protocolContent["1"],
+                  hasSection1: !!protocolContent["1"],
+                  section1SectionNumber: protocolContent["1"]?.sectionNumber,
+                  allSections: Object.keys(protocolContent),
+                },
+              );
             } else {
               console.warn(
                 "[TRPC /protocol.create] AI generation failed, using empty content",
@@ -490,6 +499,22 @@ export const protocolRouter = router({
       console.log(
         `[TRPC /protocol.getById] Successfully fetched protocol: ${protocol.id}`,
       );
+
+      // Debug protocol content structure
+      const latestVersion = protocol.ProtocolVersion[0];
+      if (latestVersion?.content) {
+        console.log(
+          "[TRPC /protocol.getById] Sample section from loaded content:",
+          {
+            section1: (latestVersion.content as any)["1"],
+            hasSection1: !!(latestVersion.content as any)["1"],
+            section1SectionNumber: (latestVersion.content as any)["1"]
+              ?.sectionNumber,
+            allSections: Object.keys(latestVersion.content as any),
+          },
+        );
+      }
+
       return protocol;
     }),
 

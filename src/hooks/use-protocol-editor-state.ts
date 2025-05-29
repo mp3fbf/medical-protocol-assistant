@@ -40,6 +40,7 @@ interface ProtocolEditorState {
   protocolData: ProtocolFullContent | null;
   flowchartData: FlowchartDefinition | null;
   currentSectionNumber: number;
+  currentVersionId: string | null;
   isLoading: boolean;
   error: string | null;
   validationIssues: import("@/types/validation").ValidationIssue[];
@@ -56,6 +57,7 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     protocolData: null,
     flowchartData: null,
     currentSectionNumber: 1,
+    currentVersionId: null,
     isLoading: true,
     error: null,
     validationIssues: [],
@@ -105,6 +107,7 @@ export function useProtocolEditorState(initialProtocolId?: string) {
           (data.ProtocolVersion?.[0]
             ?.flowchart as unknown as FlowchartDefinition) ||
           initialEmptyFlowchart,
+        currentVersionId: data.ProtocolVersion?.[0]?.id || null,
         isLoading: false,
         error: null,
       }));
@@ -416,6 +419,7 @@ export function useProtocolEditorState(initialProtocolId?: string) {
       // This ensures the saved content becomes the new "base" state
       setState((s) => ({
         ...s,
+        currentVersionId: newVersion.id,
         error: null,
       }));
 

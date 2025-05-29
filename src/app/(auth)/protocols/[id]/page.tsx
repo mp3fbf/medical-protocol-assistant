@@ -23,6 +23,7 @@ export default function ProtocolEditPage() {
     protocolData,
     flowchartData,
     currentSectionNumber,
+    currentVersionId,
     validationIssues,
     isLoading,
     error,
@@ -88,10 +89,12 @@ export default function ProtocolEditPage() {
 
   return (
     <ProtocolEditorLayout
+      protocolId={protocolId || ""}
       protocolTitle={protocolTitle}
       protocolData={protocolData}
       flowchartData={flowchartData}
       currentSectionNumber={currentSectionNumber}
+      currentVersionId={currentVersionId}
       validationIssues={validationIssues}
       validationLoading={validation.isLoading}
       validationLastValidated={validation.lastValidated}

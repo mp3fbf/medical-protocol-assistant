@@ -75,7 +75,7 @@ export const registerABNTFonts = () => {
   }
 };
 
-const CM_TO_PT = (cm: number) => (cm / 2.54) * 72;
+export const CM_TO_PT = (cm: number) => (cm / 2.54) * 72;
 
 export const abntStyles = StyleSheet.create({
   page: {

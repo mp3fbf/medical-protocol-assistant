@@ -23,7 +23,8 @@
       "Bash(pnpm lint:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(ls:*)"
     ]
   },
   "enableAllProjectMcpServers": false

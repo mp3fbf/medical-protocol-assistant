@@ -2,7 +2,7 @@
  * React component for rendering a single protocol section in a PDF document
  * using @react-pdf/renderer.
  */
-import React from "react";
+import * as React from "react";
 import { Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { ProtocolSectionData } from "@/types/protocol";
 import { abntStyles } from "./abnt-pdf-styles"; // Styles from your ABNT stylesheet
@@ -76,27 +76,20 @@ const renderContent = (content: any, depth = 0): JSX.Element[] => {
         .replace(/([A-Z])/g, " $1")
         .replace(/^./, (str) => str.toUpperCase());
       elements.push(
-        <Text
-          key={`obj-key-${key}`}
-          style={[abntStyles.paragraph, { marginLeft: indent }]}
-        >
-          <Text style={styles.boldKey}>{displayKey}: </Text>
-          {typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean"
-            ? String(value)
-            : "(Conteúdo estruturado)"}
-        </Text>,
+        <View key={`obj-key-${key}`} style={{ marginLeft: indent }}>
+          <Text style={abntStyles.paragraph}>
+            <Text style={styles.boldKey}>{displayKey}: </Text>
+            {typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+              ? String(value)
+              : null}
+          </Text>
+          {typeof value === "object" && value !== null && (
+            <View>{renderContent(value, depth + 1)}</View>
+          )}
+        </View>,
       );
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        elements.push(...renderContent(value, depth + 1));
-      } else if (Array.isArray(value)) {
-        elements.push(...renderContent(value, depth + 1));
-      }
     });
   } else if (content !== null && content !== undefined) {
     elements.push(
@@ -113,6 +106,12 @@ const renderContent = (content: any, depth = 0): JSX.Element[] => {
 };
 
 export const SectionPdf: React.FC<SectionPdfProps> = ({ section }) => {
+  // Validate section data
+  if (!section || typeof section !== "object") {
+    console.error("Invalid section data:", section);
+    return null;
+  }
+
   // Determine heading style based on section number depth (simplified)
   // A more robust solution would parse the section number string (e.g., "1.1", "1.1.1")
   const sectionTitleStyle = abntStyles.sectionTitleH1; // Default to H1 for now
