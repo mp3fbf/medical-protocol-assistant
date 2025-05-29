@@ -4,6 +4,35 @@
 import { jsPDF } from "jspdf";
 import type { ProtocolFullContent } from "@/types/protocol";
 
+// Translation mapping for common medical fields
+const fieldTranslations: Record<string, string> = {
+  // Medication fields
+  name: "Nome",
+  dose: "Dose",
+  route: "Via",
+  frequency: "Frequência",
+  duration: "Duração",
+  notes: "Observações",
+
+  // Treatment fields
+  medicamentos: "Medicamentos",
+  tratamentoPacientesInstaveis: "Tratamento Pacientes Instáveis",
+  intervencoesNaoFarmacologicas: "Intervenções Não Farmacológicas",
+
+  // General fields
+  definicao: "Definição",
+  epidemiologia: "Epidemiologia",
+  inclusao: "Inclusão",
+  exclusao: "Exclusão",
+  exameFisico: "Exame Físico",
+  sinaisVitais: "Sinais Vitais",
+  anamnese: "Anamnese",
+  anamneseFocada: "Anamnese Focada",
+  exameFisicoRelevante: "Exame Físico Relevante",
+
+  // Add more translations as needed
+};
+
 // Format structured content for display in PDF
 function formatStructuredContent(content: any): string {
   if (typeof content === "string") return content;
@@ -20,11 +49,16 @@ function formatStructuredContent(content: any): string {
   // Handle objects with known structures
   if (content && typeof content === "object") {
     Object.entries(content).forEach(([key, value]) => {
-      // Convert camelCase to readable format
-      const readableKey = key
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (str) => str.toUpperCase())
-        .trim();
+      // Try to find translation first
+      let readableKey = fieldTranslations[key];
+
+      if (!readableKey) {
+        // If no translation, convert camelCase to readable format
+        readableKey = key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase())
+          .trim();
+      }
 
       if (Array.isArray(value)) {
         formatted += `${readableKey}:\n`;
