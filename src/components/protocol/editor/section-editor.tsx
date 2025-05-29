@@ -458,12 +458,52 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     );
   };
 
+  // Format structured content for display
+  const formatStructuredContent = (content: any): string => {
+    if (typeof content === "string") return content;
+
+    let formatted = "";
+
+    // Handle arrays
+    if (Array.isArray(content)) {
+      return content
+        .map((item, index) => `${index + 1}. ${formatStructuredContent(item)}`)
+        .join("\n");
+    }
+
+    // Handle objects with known structures
+    if (content && typeof content === "object") {
+      Object.entries(content).forEach(([key, value]) => {
+        // Convert camelCase to readable format
+        const readableKey = key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase())
+          .trim();
+
+        if (Array.isArray(value)) {
+          formatted += `${readableKey}:\n`;
+          value.forEach((item) => {
+            formatted += `  • ${item}\n`;
+          });
+          formatted += "\n";
+        } else if (typeof value === "object" && value !== null) {
+          formatted += `${readableKey}:\n${formatStructuredContent(value)}\n\n`;
+        } else if (value) {
+          formatted += `${readableKey}: ${value}\n\n`;
+        }
+      });
+    }
+
+    return formatted.trim();
+  };
+
   // Generic text editor for other sections
   const renderTextEditor = () => {
-    const textContent =
-      typeof localContent === "string"
+    const textContent = isEditing
+      ? typeof localContent === "string"
         ? localContent
-        : JSON.stringify(localContent, null, 2);
+        : JSON.stringify(localContent, null, 2)
+      : formatStructuredContent(localContent);
 
     return (
       <div className="space-y-4">
@@ -481,10 +521,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             }}
             disabled={!isEditing}
             rows={12}
-            className="font-mono text-sm"
+            className={isEditing ? "font-mono text-sm" : "text-sm"}
             placeholder="Digite o conteúdo desta seção..."
           />
-          {jsonError && (
+          {jsonError && isEditing && (
             <Alert className="mt-2">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>{jsonError}</AlertDescription>
@@ -569,9 +609,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         );
       } else {
         displayContent = (
-          <pre className="whitespace-pre-wrap rounded border bg-gray-50 p-4 text-sm dark:bg-gray-800">
-            {JSON.stringify(localContent, null, 2)}
-          </pre>
+          <div className="whitespace-pre-wrap rounded border bg-gray-50 p-4 text-sm dark:bg-gray-800">
+            {formatStructuredContent(localContent)}
+          </div>
         );
       }
     } else {

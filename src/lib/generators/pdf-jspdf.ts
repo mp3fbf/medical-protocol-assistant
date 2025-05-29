@@ -4,6 +4,45 @@
 import { jsPDF } from "jspdf";
 import type { ProtocolFullContent } from "@/types/protocol";
 
+// Format structured content for display in PDF
+function formatStructuredContent(content: any): string {
+  if (typeof content === "string") return content;
+
+  let formatted = "";
+
+  // Handle arrays
+  if (Array.isArray(content)) {
+    return content
+      .map((item, index) => `${index + 1}. ${formatStructuredContent(item)}`)
+      .join("\n");
+  }
+
+  // Handle objects with known structures
+  if (content && typeof content === "object") {
+    Object.entries(content).forEach(([key, value]) => {
+      // Convert camelCase to readable format
+      const readableKey = key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+
+      if (Array.isArray(value)) {
+        formatted += `${readableKey}:\n`;
+        value.forEach((item) => {
+          formatted += `  • ${item}\n`;
+        });
+        formatted += "\n";
+      } else if (typeof value === "object" && value !== null) {
+        formatted += `${readableKey}:\n${formatStructuredContent(value)}\n\n`;
+      } else if (value) {
+        formatted += `${readableKey}: ${value}\n\n`;
+      }
+    });
+  }
+
+  return formatted.trim();
+}
+
 export async function generateJsPDFProtocolPdf(
   protocolData: ProtocolFullContent,
   protocolMainTitle?: string,
@@ -56,7 +95,9 @@ export async function generateJsPDFProtocolPdf(
       if (typeof section.content === "string") {
         content = section.content || "[Conteúdo vazio]";
       } else if (section.content && typeof section.content === "object") {
-        content = JSON.stringify(section.content, null, 2);
+        content = formatStructuredContent(section.content);
+      } else {
+        content = "[Conteúdo vazio]";
       }
 
       // Split content into lines
