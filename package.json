@@ -47,8 +47,8 @@
     "docx": "^8.5.0",
     "dotenv-cli": "^8.0.0",
     "lucide-react": "latest",
-    "mermaid": "^10.9.0",
-    "next": "^14.2.0",
+    "mermaid": "^11.6.0",
+    "next": "^15.3.2",
     "next-auth": "^4.24.0",
     "openai": "^4.47.0",
     "papaparse": "^5.4.0",
@@ -99,5 +99,11 @@
   },
   "prisma": {
     "seed": "tsx src/lib/db/seed.ts"
+  },
+  "pnpm": {
+    "overrides": {
+      "dompurify": "^3.2.4",
+      "next": "^15.3.2"
+    }
   }
 }
