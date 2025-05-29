@@ -15,7 +15,9 @@ export default defineConfig({
     screenshot: "on",
     video: "on",
     headless: false,
-    slowMo: 1000,
+    launchOptions: {
+      slowMo: 1000,
+    },
   },
 
   // SEM global setup
