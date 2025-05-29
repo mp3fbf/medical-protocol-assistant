@@ -4,7 +4,7 @@
  */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,9 +20,11 @@ import {
   Search,
   FileText,
   Zap,
+  Upload,
 } from "lucide-react";
+import { FileUpload } from "@/components/ui/file-upload";
 
-// Enhanced schema with generation mode and research options
+// Enhanced schema with generation mode, research options, and material upload
 const createProtocolFormSchema = z.object({
   title: z
     .string()
@@ -32,7 +34,7 @@ const createProtocolFormSchema = z.object({
     .string()
     .min(3, "A condição médica principal deve ter pelo menos 3 caracteres.")
     .max(150, "A condição médica não pode exceder 150 caracteres."),
-  generationMode: z.enum(["automatic", "manual"], {
+  generationMode: z.enum(["automatic", "manual", "material_based"], {
     required_error: "Selecione um modo de geração.",
   }),
   targetPopulation: z
@@ -42,8 +44,11 @@ const createProtocolFormSchema = z.object({
     .optional(),
   researchSources: z
     .array(z.enum(["pubmed", "scielo", "cfm", "mec"]))
-    .min(1, "Selecione pelo menos uma fonte de pesquisa."),
-  yearRange: z.number().min(1).max(10).default(5),
+    .min(1, "Selecione pelo menos uma fonte de pesquisa.")
+    .optional(),
+  yearRange: z.number().min(1).max(10).default(5).optional(),
+  materialFiles: z.array(z.any()).optional(), // Files will be handled separately
+  supplementWithResearch: z.boolean().default(false).optional(),
 });
 
 export type CreateProtocolFormValues = z.infer<typeof createProtocolFormSchema>;
@@ -64,6 +69,7 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
   >("idle");
   const [formError, setFormError] = useState<string | null>(null);
   const [researchProgress, setResearchProgress] = useState<string>("");
+  const [_uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -71,16 +77,28 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm<CreateProtocolFormValues>({
     resolver: zodResolver(createProtocolFormSchema),
     defaultValues: {
       generationMode: "automatic",
       researchSources: ["pubmed", "scielo"],
       yearRange: 5,
+      supplementWithResearch: false,
     },
   });
 
   const watchedGenerationMode = watch("generationMode");
+  const watchedSupplementWithResearch = watch("supplementWithResearch");
+
+  // Memoize the file selection handler to prevent infinite loops
+  const handleFilesSelected = useCallback(
+    (files: File[]) => {
+      setUploadedFiles(files);
+      setValue("materialFiles", files);
+    },
+    [setValue],
+  );
 
   const processSubmit: SubmitHandler<CreateProtocolFormValues> = async (
     data,
@@ -92,22 +110,44 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
     setResearchProgress("Iniciando pesquisa médica...");
 
     try {
-      // Simulate research progress
-      setTimeout(
-        () => setResearchProgress("Consultando bases de dados médicas..."),
-        1000,
-      );
-      setTimeout(
-        () => setResearchProgress("Analisando literatura científica..."),
-        2000,
-      );
-      setTimeout(
-        () => setResearchProgress("Extraindo evidências clínicas..."),
-        3000,
-      );
+      // Different progress messages based on generation mode
+      if (data.generationMode === "material_based") {
+        setTimeout(
+          () => setResearchProgress("Processando documentos enviados..."),
+          500,
+        );
+        setTimeout(
+          () => setResearchProgress("Extraindo conteúdo médico..."),
+          1500,
+        );
+        if (data.supplementWithResearch) {
+          setTimeout(
+            () => setResearchProgress("Buscando evidências complementares..."),
+            2500,
+          );
+        }
+      } else {
+        // Simulate research progress for automatic mode
+        setTimeout(
+          () => setResearchProgress("Consultando bases de dados médicas..."),
+          1000,
+        );
+        setTimeout(
+          () => setResearchProgress("Analisando literatura científica..."),
+          2000,
+        );
+        setTimeout(
+          () => setResearchProgress("Extraindo evidências clínicas..."),
+          3000,
+        );
+      }
 
       setFormStatus("loading");
-      setResearchProgress("Criando protocolo baseado em evidências...");
+      setResearchProgress(
+        data.generationMode === "material_based"
+          ? "Estruturando protocolo a partir do material..."
+          : "Criando protocolo baseado em evidências...",
+      );
 
       const result = await onSubmit(data);
       if (result.success) {
@@ -264,6 +304,26 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
                   </div>
                 </Label>
               </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="material_based"
+                  value="material_based"
+                  {...register("generationMode")}
+                  className="h-4 w-4 text-blue-600"
+                />
+                <Label
+                  htmlFor="material_based"
+                  className="flex-1 cursor-pointer"
+                >
+                  <div className="font-medium">Baseado em Material Próprio</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Upload de documentos médicos para gerar protocolo
+                    estruturado
+                  </div>
+                </Label>
+              </div>
             </div>
             {errors.generationMode && (
               <p className="mt-2 text-xs text-red-600">
@@ -273,59 +333,111 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
           </CardContent>
         </Card>
 
-        {/* Research Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
-              Configuração da Pesquisa Médica
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label className="mb-3 block text-sm font-medium">
-                Fontes de Pesquisa
-              </Label>
-              <div className="grid grid-cols-2 gap-3">
-                {(["pubmed", "scielo", "cfm", "mec"] as const).map((source) => (
-                  <div key={source} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={source}
-                      value={source}
-                      {...register("researchSources")}
-                      className="h-4 w-4 text-blue-600"
-                    />
-                    <Label htmlFor={source} className="cursor-pointer">
-                      {sourceLabels[source]}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-              {errors.researchSources && (
-                <p className="mt-2 text-xs text-red-600">
-                  {errors.researchSources.message}
-                </p>
-              )}
-            </div>
+        {/* Material Upload Section */}
+        {watchedGenerationMode === "material_based" && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload de Material Médico
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FileUpload
+                maxFiles={3}
+                maxSize={10 * 1024 * 1024} // 10MB
+                onFilesSelected={handleFilesSelected}
+                accept={{
+                  "application/pdf": [".pdf"],
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                    [".docx"],
+                  "text/plain": [".txt"],
+                }}
+              />
 
-            <div>
-              <Label htmlFor="yearRange" className="text-sm font-medium">
-                Período de Pesquisa (anos)
-              </Label>
-              <select
-                id="yearRange"
-                {...register("yearRange", { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value={1}>Último ano</option>
-                <option value={3}>Últimos 3 anos</option>
-                <option value={5}>Últimos 5 anos</option>
-                <option value={10}>Últimos 10 anos</option>
-              </select>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Option to supplement with research */}
+              <div className="flex items-center space-x-2 pt-4">
+                <input
+                  type="checkbox"
+                  id="supplementWithResearch"
+                  {...register("supplementWithResearch")}
+                  className="h-4 w-4 text-blue-600"
+                />
+                <Label
+                  htmlFor="supplementWithResearch"
+                  className="cursor-pointer"
+                >
+                  <div className="font-medium">
+                    Complementar com pesquisa científica
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Buscar evidências adicionais para enriquecer o protocolo
+                  </div>
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Research Configuration */}
+        {(watchedGenerationMode === "automatic" ||
+          (watchedGenerationMode === "material_based" &&
+            watchedSupplementWithResearch)) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Configuração da Pesquisa Médica
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="mb-3 block text-sm font-medium">
+                  Fontes de Pesquisa
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["pubmed", "scielo", "cfm", "mec"] as const).map(
+                    (source) => (
+                      <div key={source} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={source}
+                          value={source}
+                          {...register("researchSources")}
+                          className="h-4 w-4 text-blue-600"
+                        />
+                        <Label htmlFor={source} className="cursor-pointer">
+                          {sourceLabels[source]}
+                        </Label>
+                      </div>
+                    ),
+                  )}
+                </div>
+                {errors.researchSources && (
+                  <p className="mt-2 text-xs text-red-600">
+                    {errors.researchSources.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="yearRange" className="text-sm font-medium">
+                  Período de Pesquisa (anos)
+                </Label>
+                <select
+                  id="yearRange"
+                  {...register("yearRange", { valueAsNumber: true })}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value={1}>Último ano</option>
+                  <option value={3}>Últimos 3 anos</option>
+                  <option value={5}>Últimos 5 anos</option>
+                  <option value={10}>Últimos 10 anos</option>
+                </select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Error Display */}
         {formStatus === "error" && formError && (
@@ -371,7 +483,9 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
                 <Zap className="mr-2 h-4 w-4" />
                 {watchedGenerationMode === "automatic"
                   ? "Gerar Protocolo Completo"
-                  : "Iniciar Criação Manual"}
+                  : watchedGenerationMode === "material_based"
+                    ? "Processar Material e Criar Protocolo"
+                    : "Iniciar Criação Manual"}
               </>
             )}
           </Button>

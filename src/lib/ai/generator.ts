@@ -5,10 +5,7 @@
  * using AI, based on research data and predefined prompts.
  */
 // import { v4 as _uuidv4 } from "uuid"; // Marked as unused
-import {
-  getOpenAIClient as _getOpenAIClient,
-  createChatCompletion,
-} from "./client"; // _getOpenAIClient marked as unused
+import { createChatCompletion } from "./client";
 import {
   PROTOCOL_GENERATION_SYSTEM_PROMPT,
   createFullProtocolUserPrompt,
@@ -65,7 +62,7 @@ export async function generateFullProtocolAI(
       },
     );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       throw new OpenAIError(
         "AI returned empty content for full protocol generation.",
@@ -147,7 +144,7 @@ export async function generateProtocolSectionAI(
       },
     );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       throw new OpenAIError(
         `AI returned empty content for section ${sectionNumber}.`,

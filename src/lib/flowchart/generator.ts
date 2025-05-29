@@ -107,7 +107,7 @@ export async function generateFlowchartFromProtocolContent(
       },
     );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       throw new OpenAIError(
         "AI returned empty content for flowchart generation.",

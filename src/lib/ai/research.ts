@@ -117,7 +117,7 @@ async function processDeepResearchResults(
         },
       );
 
-      const content = response.choices[0]?.message?.content;
+      const content = response.content;
       if (content) {
         try {
           const extractedData = JSON.parse(

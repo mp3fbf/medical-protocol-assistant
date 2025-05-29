@@ -90,19 +90,31 @@ O projeto tem uma **arquitetura sólida** mas está funcionalmente **60% incompl
 
 #### Sprint 1: Core AI Pipeline (1 semana)
 
-1. **Conectar formulário → pesquisa → geração**
+1. **✅ Conectar formulário → pesquisa → geração**
 
-   - `src/app/(auth)/protocols/new/page.tsx` → trigger AI research
-   - `src/lib/ai/research.ts` → integrar com UI
-   - `src/lib/ai/generator.ts` → conectar geração com editor
+   - ✅ `src/app/(auth)/protocols/new/page.tsx` → trigger AI research
+   - ✅ `src/lib/ai/research.ts` → integrar com UI
+   - ✅ `src/lib/ai/generator.ts` → conectar geração com editor
 
-2. **Resolver problemas de estado no editor**
+2. **Camada de abstração para modelos de IA**
 
-   - Corrigir vazamento de conteúdo entre seções
-   - Implementar salvamento otimista
-   - Adicionar loading states
+   - ✅ Criar sistema modular para trocar provedores (OpenAI → Anthropic → Local)
+   - ✅ Registry de providers com configuração centralizada
+   - Migrar cliente OpenAI existente para nova arquitetura
 
-3. **Sistema básico de validação**
+3. **Sistema de upload de material**
+
+   - Funcionalidade para upload de documentos (PDF, DOCX, TXT)
+   - Parser de material médico existente
+   - Modo híbrido: material + pesquisa IA complementar
+
+4. **✅ Resolver problemas de estado no editor**
+
+   - ✅ Corrigir vazamento de conteúdo entre seções
+   - ✅ Implementar salvamento otimista
+   - ✅ Adicionar loading states
+
+5. **Sistema básico de validação**
    - Conectar `src/lib/validators/*` com editor
    - Mostrar erros em tempo real
    - Validação estrutural das 13 seções
@@ -181,19 +193,31 @@ O projeto tem uma **arquitetura sólida** mas está funcionalmente **60% incompl
 
 ### Esta Semana (Prioridade 1)
 
-1. **[CRÍTICO] Corrigir editor de seções**
+1. **✅ [CRÍTICO] Corrigir editor de seções**
 
-   - Resolver vazamento de conteúdo
-   - Garantir isolamento entre seções
-   - Testar salvamento
+   - ✅ Resolver vazamento de conteúdo
+   - ✅ Garantir isolamento entre seções
+   - ✅ Testar salvamento
 
-2. **[ALTA] Conectar pipeline de IA**
+2. **✅ [ALTA] Conectar pipeline de IA**
 
-   - Form creation → trigger research
-   - Research results → protocol generation
-   - Generated content → populate editor
+   - ✅ Form creation → trigger research
+   - ✅ Research results → protocol generation
+   - ✅ Generated content → populate editor
 
-3. **[ALTA] Implementar validação básica**
+3. **🔄 [NOVA] Abstração de modelos IA**
+
+   - ✅ Sistema modular de providers
+   - 🔄 Migrar cliente OpenAI existente
+   - Permitir switching fácil entre providers
+
+4. **🔄 [NOVA] Sistema de upload de material**
+
+   - Interface para upload de documentos
+   - Parser para extrair texto médico
+   - Modo: material próprio + pesquisa complementar
+
+5. **[ALTA] Implementar validação básica**
    - Rodar validators nas 13 seções
    - Mostrar status visual
    - Highlight problemas

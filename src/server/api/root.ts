@@ -10,6 +10,7 @@ import { userRouter } from "./routers/user";
 import { researchRouter } from "./routers/research";
 import { generationRouter } from "./routers/generation";
 import { exportRouter } from "./routers/export"; // Import the new export router
+import { uploadRouter } from "./routers/upload"; // Import the new upload router
 
 export const appRouter = router({
   protocol: protocolRouter,
@@ -17,6 +18,7 @@ export const appRouter = router({
   research: researchRouter,
   generation: generationRouter,
   export: exportRouter, // Add the export router
+  upload: uploadRouter, // Add the upload router
 
   // Example health check endpoint (can be kept or removed)
   healthCheck: publicProcedure.query(({ ctx }) => {

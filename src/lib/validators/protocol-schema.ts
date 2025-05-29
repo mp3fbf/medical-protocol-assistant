@@ -26,13 +26,18 @@ export const CreateProtocolInputSchema = z.object({
     .string()
     .min(3, "A condição médica deve ter pelo menos 3 caracteres.")
     .max(255, "A condição médica deve ter no máximo 255 caracteres."),
-  generationMode: z.enum(["automatic", "manual"]).optional().default("manual"),
+  generationMode: z
+    .enum(["automatic", "manual", "material_based"])
+    .optional()
+    .default("manual"),
   targetPopulation: z.string().max(100).optional(),
   researchSources: z
     .array(z.enum(["pubmed", "scielo", "cfm", "mec"]))
     .optional()
     .default(["pubmed", "scielo"]),
   yearRange: z.number().min(1).max(10).optional().default(5),
+  materialFiles: z.array(z.any()).optional(),
+  supplementWithResearch: z.boolean().optional().default(false),
 });
 
 export const UpdateProtocolInputSchema = z.object({

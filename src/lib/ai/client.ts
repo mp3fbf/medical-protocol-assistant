@@ -1,13 +1,18 @@
 /**
- * OpenAI Client Configuration
+ * AI Client - Unified interface using provider abstraction
  *
- * This module configures and exports a singleton instance of the OpenAI client.
- * It handles API key management and provides a configured client for use
- * in other AI-related services.
+ * This module provides both new abstracted AI functions and legacy OpenAI functions
+ * for backward compatibility during migration.
  */
 import OpenAI from "openai";
 import { OPENAI_API_TIMEOUT_MS } from "./config";
 import { OpenAIError } from "./errors";
+import type {
+  AIMessage,
+  AICompletionOptions,
+  AICompletionResponse,
+} from "./providers/types";
+import { createAICompletion } from "./providers";
 
 let openaiInstance: OpenAI | null = null;
 
@@ -59,16 +64,44 @@ export function getOpenAIClient(): OpenAI {
 }
 
 /**
- * Example of a higher-level function to interact with OpenAI's chat completions.
- * This function is illustrative and might be moved or adapted in later steps.
+ * NEW: Unified chat completion function using provider abstraction
  *
- * @param model The OpenAI model to use (e.g., "gpt-4-turbo-preview").
- * @param messages The array of messages for the chat completion.
- * @param options Additional options for the chat completion.
- * @returns The chat completion response.
- * @throws {OpenAIError} If the API call fails.
+ * @param model The AI model to use (depends on active provider)
+ * @param messages The array of messages for the chat completion
+ * @param options Additional options for the chat completion
+ * @returns The AI completion response (provider-agnostic)
+ * @throws {OpenAIError} If the API call fails
  */
 export async function createChatCompletion(
+  model: string,
+  messages: AIMessage[],
+  options?: AICompletionOptions,
+): Promise<AICompletionResponse> {
+  try {
+    return await createAICompletion(messages, {
+      model,
+      ...options,
+    });
+  } catch (error: any) {
+    console.error("AI API request failed:", error);
+    throw new OpenAIError(
+      `AI API request failed: ${error.message || "Unknown error"}`,
+      { cause: error },
+    );
+  }
+}
+
+/**
+ * LEGACY: OpenAI-specific chat completion function
+ * @deprecated Use createChatCompletion with AIMessage[] instead
+ *
+ * @param model The OpenAI model to use (e.g., "gpt-4-turbo-preview")
+ * @param messages The array of messages for the chat completion
+ * @param options Additional options for the chat completion
+ * @returns The OpenAI chat completion response
+ * @throws {OpenAIError} If the API call fails
+ */
+export async function createLegacyChatCompletion(
   model: string,
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
   options?: Partial<OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming>,
@@ -82,16 +115,12 @@ export async function createChatCompletion(
     });
     return completion;
   } catch (error: any) {
-    // Log the error and re-throw as a custom OpenAIError for better context
     console.error("OpenAI API request failed:", error);
-    // Check if running in test environment and an API key was expected but missing for a real call
     if (
       process.env.NODE_ENV === "test" &&
       !process.env.OPENAI_API_KEY &&
-      error.message?.includes("api_key_required") // Example error message check
+      error.message?.includes("api_key_required")
     ) {
-      // This indicates an unmocked API call in a test without an API key.
-      // Tests should mock this specific call.
       throw new OpenAIError(
         "OpenAI API call attempted in test without API key and without being mocked. Ensure API calls are mocked in tests.",
         { cause: error, statusCode: error.status, errorType: error.type },
