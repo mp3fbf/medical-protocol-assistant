@@ -31,6 +31,7 @@ export default function ProtocolEditPage() {
     saveProtocol,
     fetchProtocolData,
     isSaving,
+    validation,
   } = useProtocolEditorState(protocolId);
 
   useEffect(() => {
@@ -92,8 +93,13 @@ export default function ProtocolEditPage() {
       flowchartData={flowchartData}
       currentSectionNumber={currentSectionNumber}
       validationIssues={validationIssues}
+      validationLoading={validation.isLoading}
+      validationLastValidated={validation.lastValidated}
+      autoValidate={validation.autoValidate}
       isLoading={isLoading} // Pass the loading state for individual panes if needed
       onSelectSection={selectSection}
+      onToggleAutoValidate={validation.toggleAutoValidate}
+      onValidateNow={validation.validate}
       onUpdateSectionContent={updateSectionContent}
       onSaveChanges={saveProtocol}
       isSaving={isSaving}

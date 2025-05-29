@@ -36,22 +36,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **NextAuth** for authentication with RBAC (CREATOR/REVIEWER/ADMIN)
 - **React Query** for server state management
 - **ReactFlow** for protocol flowchart visualization
-- **OpenAI** integration for protocol generation
+- **Multi-Provider AI** integration (OpenAI, Anthropic, Gemini) with abstraction layer
 
 ### Core Concepts
 
 - **Medical Protocols**: 13-section structured documents with metadata, indications, procedures, and flowcharts
 - **Protocol Versions**: Immutable versions with audit logging for all changes
 - **Role-Based Access**: Users have creator, reviewer, or admin permissions
-- **AI Generation**: Structured prompts generate protocol content and flowcharts
+- **AI Generation**: Multiple generation modes with provider abstraction
+  - **Automatic**: AI research + full protocol generation
+  - **Manual**: Section-by-section with AI assistance
+  - **Material-Based**: Upload documents (PDF/DOCX/TXT) + optional research supplementation
+- **Document Upload**: Parse medical materials (PDF, DOCX, TXT) to generate protocols
+- **Advanced Validation**: Comprehensive medical content validation system
+  - **Medical Safety**: Dosage validation, procedure safety checks, contraindication warnings
+  - **Completeness**: Required fields validation, section completeness
+  - **Evidence-Based**: Bibliography and reference quality validation
+  - **Real-time Feedback**: Categorized validation with suggestions and priorities
+- **Smart Flowchart Generation**: AI-powered flowchart creation with medical intelligence
+  - **Protocol Type Detection**: Automatic classification (Emergency, Diagnostic, Therapeutic, Monitoring)
+  - **Intelligent Layouts**: Type-specific node arrangements and priorities
+  - **Medical Optimization**: Focus on critical decision points and safety protocols
 - **Document Export**: Generate DOCX/PDF with ABNT medical formatting standards
 
 ### Key Directories
 
 - `/src/app/` - Next.js App Router with (auth) protected routes
 - `/src/components/protocol/` - Protocol-specific UI components
-- `/src/lib/ai/` - OpenAI integration and structured prompts
-- `/src/lib/validators/` - Zod schemas for data validation
+- `/src/lib/ai/` - Multi-provider AI integration and structured prompts
+  - `/providers/` - AI provider abstraction (OpenAI, Anthropic, Gemini)
+  - `/prompts/` - Structured prompts for protocol generation
+- `/src/lib/upload/` - Document parsing system for medical materials
+- `/src/lib/validators/` - Comprehensive validation system
+  - `protocol-schema.ts` - Zod schemas for data validation
+  - `medical-content.ts` - Medical-specific validation rules
+  - `completeness.ts` - Protocol completeness validation
+  - `cross-validation.ts` - Cross-section consistency checks
+- `/src/lib/flowchart/` - Smart flowchart generation system
+  - `smart-generator.ts` - AI-powered flowchart generation with medical intelligence
+  - `generator.ts` - Basic flowchart generation
+  - `layout.ts` - Layout algorithms for different protocol types
 - `/src/server/api/routers/` - tRPC API endpoints
 - `/tests/e2e/` - Playwright tests with authentication setup
 

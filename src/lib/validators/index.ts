@@ -10,6 +10,7 @@ import { validateMedications } from "./medication";
 import { validateCompleteness } from "./completeness";
 import { validateCrossConsistency } from "./cross-validation";
 import { validateFlowchart } from "./flowchart"; // Assuming this exists for direct flowchart validation
+import { validateMedicalContent } from "./medical-content";
 
 export {
   validateProtocolStructure,
@@ -17,6 +18,7 @@ export {
   validateCompleteness,
   validateCrossConsistency,
   validateFlowchart,
+  validateMedicalContent,
 };
 
 /**
@@ -34,12 +36,24 @@ export async function validateFullProtocol(
   content: ProtocolFullContent,
   flowchart?: FlowchartData,
 ): Promise<ValidationReport> {
+  console.log("[validateFullProtocol] Starting validation", {
+    protocolId,
+    versionId,
+    contentSections: Object.keys(content || {}),
+    hasFlowchart: !!flowchart,
+  });
+
   const allIssues: ValidationIssue[] = [];
 
   // Perform all validation checks
+  console.log("[validateFullProtocol] Running structure validation...");
   allIssues.push(...(await validateProtocolStructure(content, flowchart)));
+  console.log("[validateFullProtocol] Running completeness validation...");
   allIssues.push(...(await validateCompleteness(content, flowchart)));
+  console.log("[validateFullProtocol] Running medications validation...");
   allIssues.push(...(await validateMedications(content, flowchart)));
+  console.log("[validateFullProtocol] Running medical content validation...");
+  allIssues.push(...(await validateMedicalContent(content, flowchart)));
 
   if (flowchart) {
     allIssues.push(...(await validateFlowchart(flowchart))); // Validates flowchart-specific rules (e.g., orphans, loops)
@@ -60,7 +74,7 @@ export async function validateFullProtocol(
     (issue) => issue.severity === "warning",
   ).length;
 
-  return {
+  const result = {
     protocolId,
     versionId,
     isValid: errors === 0, // Protocol is valid if there are no errors (warnings are acceptable)
@@ -72,4 +86,14 @@ export async function validateFullProtocol(
       warnings,
     },
   };
+
+  console.log("[validateFullProtocol] Validation completed", {
+    totalIssues: allIssues.length,
+    errors,
+    warnings,
+    isValid: result.isValid,
+    firstFewIssues: allIssues.slice(0, 3),
+  });
+
+  return result;
 }

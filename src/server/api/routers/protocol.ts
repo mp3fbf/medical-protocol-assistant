@@ -25,6 +25,7 @@ import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 import { performMedicalResearch } from "@/lib/ai/research";
 import { generateFullProtocolAI } from "@/lib/ai/generator";
 import type { DeepResearchQuery } from "@/types/research";
+import { documentParser } from "@/lib/upload/document-parser";
 
 const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
   SECTION_DEFINITIONS.map((def) => [
@@ -93,6 +94,8 @@ export const protocolRouter = router({
         targetPopulation,
         researchSources = ["pubmed", "scielo"],
         yearRange = 5,
+        materialFiles,
+        supplementWithResearch = false,
       } = input;
 
       // Log the generation configuration for future implementation
@@ -194,6 +197,155 @@ export const protocolRouter = router({
             // Continue with empty content if AI fails
             changelogNotes =
               "Versão inicial criada (erro na geração IA - conteúdo vazio).";
+          }
+        } else if (generationMode === "material_based") {
+          console.log(
+            "[TRPC /protocol.create] Starting material-based generation pipeline...",
+          );
+
+          try {
+            // Step 1: Parse uploaded documents
+            if (!materialFiles || materialFiles.length === 0) {
+              throw new Error(
+                "No material files provided for material-based generation",
+              );
+            }
+
+            console.log(
+              `[TRPC /protocol.create] Processing ${materialFiles.length} uploaded documents...`,
+            );
+
+            let combinedMaterialContent = "";
+            const documentSummaries: string[] = [];
+
+            // Parse each uploaded file
+            for (const file of materialFiles) {
+              if (!file.buffer || !file.name) {
+                console.warn(
+                  "[TRPC /protocol.create] Skipping invalid file:",
+                  file,
+                );
+                continue;
+              }
+
+              try {
+                // Convert base64 to buffer if needed
+                const buffer = Buffer.isBuffer(file.buffer)
+                  ? file.buffer
+                  : Buffer.from(file.buffer, "base64");
+
+                const parsedDoc = await documentParser.parseFile(
+                  buffer,
+                  file.name,
+                );
+
+                combinedMaterialContent += `\n\n=== DOCUMENTO: ${parsedDoc.metadata.fileName} ===\n`;
+                combinedMaterialContent += parsedDoc.content;
+
+                documentSummaries.push(
+                  `${parsedDoc.metadata.fileName} (${parsedDoc.metadata.fileType}, ${Math.round(parsedDoc.metadata.fileSize / 1024)}KB)`,
+                );
+
+                console.log(
+                  `[TRPC /protocol.create] Successfully parsed: ${parsedDoc.metadata.fileName}`,
+                );
+              } catch (parseError) {
+                console.error(
+                  `[TRPC /protocol.create] Failed to parse file ${file.name}:`,
+                  parseError,
+                );
+                // Continue with other files
+              }
+            }
+
+            if (!combinedMaterialContent.trim()) {
+              throw new Error(
+                "No content could be extracted from uploaded files",
+              );
+            }
+
+            // Step 2: Optional research supplementation
+            let researchData = undefined;
+            if (supplementWithResearch && researchSources.length > 0) {
+              console.log(
+                "[TRPC /protocol.create] Supplementing with medical research...",
+              );
+
+              const researchQuery: DeepResearchQuery = {
+                condition,
+                sources: researchSources as any,
+                yearRange,
+                keywords: targetPopulation ? [targetPopulation] : undefined,
+              };
+
+              researchData = await performMedicalResearch(researchQuery);
+              console.log(
+                "[TRPC /protocol.create] Research supplementation completed",
+              );
+            }
+
+            // Step 3: Generate protocol from material + optional research
+            console.log(
+              "[TRPC /protocol.create] Generating protocol from material content...",
+            );
+
+            const materialInstructions = [
+              `Baseie o protocolo principalmente no seguinte material médico fornecido:`,
+              ``,
+              combinedMaterialContent,
+              ``,
+              `=== INSTRUÇÕES ===`,
+              `- Use o conteúdo acima como base principal para o protocolo`,
+              `- Mantenha a estrutura e as recomendações do material original`,
+              `- Documente as fontes dos documentos: ${documentSummaries.join(", ")}`,
+            ];
+
+            if (targetPopulation) {
+              materialInstructions.push(
+                `- População alvo: ${targetPopulation}`,
+              );
+            }
+
+            if (supplementWithResearch && researchData) {
+              materialInstructions.push(
+                `- Complementar com evidências da pesquisa científica quando apropriado`,
+              );
+            }
+
+            const generationResult = await generateFullProtocolAI({
+              medicalCondition: condition,
+              researchData: researchData || {
+                query: condition,
+                findings: [],
+                timestamp: new Date().toISOString(),
+              },
+              specificInstructions: materialInstructions.join("\n"),
+            });
+
+            if (generationResult.protocolContent) {
+              protocolContent = generationResult.protocolContent;
+              changelogNotes = supplementWithResearch
+                ? `Versão inicial criada a partir de material próprio e pesquisa complementar. Documentos: ${documentSummaries.join(", ")}.`
+                : `Versão inicial criada a partir de material próprio. Documentos: ${documentSummaries.join(", ")}.`;
+
+              console.log(
+                "[TRPC /protocol.create] Material-based generation completed successfully",
+              );
+            } else {
+              console.warn(
+                "[TRPC /protocol.create] Material-based generation failed, using empty content",
+              );
+              changelogNotes =
+                "Versão inicial criada (geração baseada em material falhou - conteúdo vazio).";
+            }
+          } catch (materialError) {
+            console.error(
+              "[TRPC /protocol.create] Material-based pipeline error:",
+              materialError,
+            );
+            // Continue with empty content if material processing fails
+            changelogNotes =
+              "Versão inicial criada (erro no processamento de material - conteúdo vazio).";
           }
         }
 

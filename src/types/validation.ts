@@ -20,6 +20,7 @@ export interface ValidationIssue {
     | "CONTENT_SPECIFIC";
   details?: Record<string, any>; // Additional details about the issue
   // E.g., for a medication issue: { medicationName: "Dipirona", expected: "500mg", found: "5g" }
+  suggestion?: string; // Optional suggestion for fixing the issue
 }
 
 export interface ValidationReport {

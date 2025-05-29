@@ -3,7 +3,6 @@
  * Displays a list of all available medical protocols using cards.
  */
 "use client";
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,13 @@ import {
   ProtocolCard,
   type ProtocolCardProps,
 } from "@/components/protocol/list/protocol-card";
-import { PlusCircle, Filter, ListOrdered, FileText, Loader2 } from "lucide-react";
+import {
+  PlusCircle,
+  Filter,
+  ListOrdered,
+  FileText,
+  Loader2,
+} from "lucide-react";
 import { trpc } from "@/lib/api/client";
 
 // Note: metadata export removed since this is now a client component
@@ -24,19 +29,20 @@ export default function ProtocolsPage() {
     sortOrder: "desc",
   });
 
-  const protocols: ProtocolCardProps[] = data?.items?.map((protocol) => ({
-    id: protocol.id,
-    title: protocol.title,
-    condition: protocol.condition,
-    status: protocol.status,
-    updatedAt: new Date(protocol.updatedAt).toLocaleDateString("pt-BR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }),
-    latestVersionNumber: protocol.ProtocolVersion[0]?.versionNumber,
-    versionCount: protocol._count.ProtocolVersion,
-  })) || [];
+  const protocols: ProtocolCardProps[] =
+    data?.items?.map((protocol) => ({
+      id: protocol.id,
+      title: protocol.title,
+      condition: protocol.condition,
+      status: protocol.status,
+      updatedAt: new Date(protocol.updatedAt).toLocaleDateString("pt-BR", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      latestVersionNumber: protocol.ProtocolVersion[0]?.versionNumber,
+      versionCount: protocol._count.ProtocolVersion,
+    })) || [];
 
   return (
     <div className="space-y-6">
@@ -116,7 +122,6 @@ export default function ProtocolsPage() {
           (Paginação a ser implementada)
         </p>
       </div>
-
     </div>
   );
 }

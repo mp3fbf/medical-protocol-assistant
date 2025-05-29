@@ -78,7 +78,7 @@ export function FileUpload({
         return limited;
       });
     },
-    [maxFiles, onFilesSelected],
+    [maxFiles],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

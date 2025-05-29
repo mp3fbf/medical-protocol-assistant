@@ -11,6 +11,8 @@ import { researchRouter } from "./routers/research";
 import { generationRouter } from "./routers/generation";
 import { exportRouter } from "./routers/export"; // Import the new export router
 import { uploadRouter } from "./routers/upload"; // Import the new upload router
+import { validationRouter } from "./routers/validation"; // Import the validation router
+import { flowchartRouter } from "./routers/flowchart"; // Import the flowchart router
 
 export const appRouter = router({
   protocol: protocolRouter,
@@ -19,6 +21,8 @@ export const appRouter = router({
   generation: generationRouter,
   export: exportRouter, // Add the export router
   upload: uploadRouter, // Add the upload router
+  validation: validationRouter, // Add the validation router
+  flowchart: flowchartRouter, // Add the flowchart router
 
   // Example health check endpoint (can be kept or removed)
   healthCheck: publicProcedure.query(({ ctx }) => {

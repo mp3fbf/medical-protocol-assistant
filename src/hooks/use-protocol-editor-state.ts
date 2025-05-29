@@ -12,6 +12,7 @@ import type {
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 import { trpc } from "@/lib/api/client"; // For actual data fetching
+import { useProtocolValidation } from "./use-protocol-validation";
 
 const generateMockProtocolData = (
   _protocolIdTitlePart: string,
@@ -59,6 +60,13 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     error: null,
     validationIssues: [],
   });
+
+  // Initialize validation hook (manual only to avoid loops)
+  const validation = useProtocolValidation();
+  console.log(
+    "[useProtocolEditorState] validation hook initialized:",
+    validation,
+  );
 
   const utils = trpc.useUtils();
   const protocolQuery = trpc.protocol.getById.useQuery(
@@ -235,6 +243,8 @@ export function useProtocolEditorState(initialProtocolId?: string) {
       }));
     }
   }, [initialProtocolId, protocolQuery.isLoading, protocolQuery.error]);
+
+  // Validation is manual only to prevent infinite loops
 
   const selectSection = (sectionNumber: number) => {
     if (sectionNumber >= 1 && sectionNumber <= SECTION_DEFINITIONS.length) {
@@ -420,12 +430,51 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     }
   };
 
+  console.log("[useProtocolEditorState] Current validation state:", {
+    issues: validation.issues,
+    isLoading: validation.isLoading,
+    lastValidated: validation.lastValidated,
+  });
+
   return {
     ...state,
+    validationIssues: validation.issues,
     selectSection,
     fetchProtocolData,
     updateSectionContent,
     saveProtocol,
     isSaving: updateProtocolMutation.isPending,
+    // Validation controls
+    validation: {
+      issues: validation.issues,
+      summary: validation.summary,
+      isValid: validation.isValid,
+      isLoading: validation.isLoading,
+      error: validation.error,
+      lastValidated: validation.lastValidated,
+      autoValidate: true, // Real-time validation always active
+      toggleAutoValidate: () => {}, // Not needed with real-time validation
+      validate: () => {
+        console.log("[useProtocolEditorState] Validate button clicked");
+        console.log(
+          "[useProtocolEditorState] Current protocolData:",
+          state.protocolData,
+        );
+        console.log(
+          "[useProtocolEditorState] Current flowchartData:",
+          state.flowchartData,
+        );
+        if (state.protocolData) {
+          validation.validate(
+            state.protocolData,
+            state.flowchartData || undefined,
+          );
+        } else {
+          console.warn(
+            "[useProtocolEditorState] No protocolData available for validation",
+          );
+        }
+      },
+    },
   };
 }
