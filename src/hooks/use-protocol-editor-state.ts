@@ -270,7 +270,7 @@ export function useProtocolEditorState(initialProtocolId?: string) {
           "[useProtocolEditorState] Auto-validation triggered after debounce",
         );
         validation.validateIfNeeded(
-          state.protocolData,
+          state.protocolData!,
           state.flowchartData || undefined,
         );
       }, 2000); // 2 second debounce
