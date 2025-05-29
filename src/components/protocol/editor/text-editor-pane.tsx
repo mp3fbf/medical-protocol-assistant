@@ -35,7 +35,7 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
   _onSaveToDatabase,
   isLoading,
 }) => {
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);

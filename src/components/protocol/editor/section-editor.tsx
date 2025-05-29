@@ -15,14 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  User,
-  Building,
-  Stethoscope,
-  AlertTriangle,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { User, Building, Stethoscope, Plus, Trash2 } from "lucide-react";
 
 interface SectionEditorProps {
   section: ProtocolSectionData;
@@ -38,7 +31,6 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   onContentChange,
 }) => {
   const [localContent, setLocalContent] = useState(section.content);
-  const [jsonError, setJsonError] = useState<string | null>(null);
   const isUserEditingRef = useRef(false); // Track if user is actively editing
 
   // CRITICAL FIX: Sync with parent content but avoid infinite loops
@@ -46,7 +38,6 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     // Only sync if user is not actively editing (prevents overwriting during typing)
     if (!isUserEditingRef.current) {
       setLocalContent(section.content);
-      setJsonError(null);
     }
   }, [section.sectionNumber, section.content]); // Sync when section OR parent content changes
 
@@ -74,17 +65,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     }, 100);
   };
 
-  const handleJsonStringChange = (jsonString: string) => {
-    try {
-      const parsed = JSON.parse(jsonString);
-      setJsonError(null);
-      handleContentUpdate(parsed);
-    } catch (_error) {
-      setJsonError("JSON inválido - verifique a sintaxe");
-      // Still update local state for editing
-      setLocalContent(jsonString);
-    }
-  };
+  // Removed JSON string handling - no longer needed
 
   // Section 1: Metadata Editor
   const renderMetadataEditor = () => {
@@ -483,7 +464,11 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         if (Array.isArray(value)) {
           formatted += `${readableKey}:\n`;
           value.forEach((item) => {
-            formatted += `  • ${item}\n`;
+            if (typeof item === "object" && item !== null) {
+              formatted += `  • ${formatStructuredContent(item)}\n`;
+            } else {
+              formatted += `  • ${item}\n`;
+            }
           });
           formatted += "\n";
         } else if (typeof value === "object" && value !== null) {
@@ -499,36 +484,52 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
   // Generic text editor for other sections
   const renderTextEditor = () => {
-    const textContent = isEditing
-      ? typeof localContent === "string"
-        ? localContent
-        : JSON.stringify(localContent, null, 2)
-      : formatStructuredContent(localContent);
+    // Always show formatted content, even in edit mode
+    const textContent = formatStructuredContent(localContent);
 
     return (
       <div className="space-y-4">
         <div>
           <Label htmlFor="sectionContent">Conteúdo da Seção</Label>
-          <Textarea
-            id="sectionContent"
-            value={textContent}
-            onChange={(e) => {
-              if (typeof localContent === "string") {
-                handleContentUpdate(e.target.value);
-              } else {
-                handleJsonStringChange(e.target.value);
-              }
-            }}
-            disabled={!isEditing}
-            rows={12}
-            className={isEditing ? "font-mono text-sm" : "text-sm"}
-            placeholder="Digite o conteúdo desta seção..."
-          />
-          {jsonError && isEditing && (
-            <Alert className="mt-2">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{jsonError}</AlertDescription>
-            </Alert>
+          {typeof localContent === "string" || !localContent ? (
+            <Textarea
+              id="sectionContent"
+              value={textContent}
+              onChange={(e) => handleContentUpdate(e.target.value)}
+              disabled={!isEditing}
+              rows={12}
+              className="text-sm"
+              placeholder="Digite o conteúdo desta seção..."
+            />
+          ) : (
+            <div
+              className={`rounded-md border ${isEditing ? "border-blue-300 bg-blue-50/50" : "border-gray-200 bg-gray-50"} p-4`}
+            >
+              {isEditing ? (
+                <div className="space-y-4">
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <AlertDescription className="text-sm">
+                      <strong>Modo de edição:</strong> Para editar conteúdo
+                      estruturado, use a opção &quot;Gerar com IA&quot; ou edite
+                      o texto abaixo e salve para converter em formato
+                      estruturado.
+                    </AlertDescription>
+                  </Alert>
+                  <Textarea
+                    value={textContent}
+                    onChange={(e) => {
+                      // For now, store as string when editing structured content
+                      handleContentUpdate(e.target.value);
+                    }}
+                    rows={12}
+                    className="text-sm"
+                    placeholder="Digite o conteúdo formatado..."
+                  />
+                </div>
+              ) : (
+                <div className="whitespace-pre-wrap text-sm">{textContent}</div>
+              )}
+            </div>
           )}
         </div>
 

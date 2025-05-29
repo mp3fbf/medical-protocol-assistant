@@ -29,7 +29,11 @@ function formatStructuredContent(content: any): string {
       if (Array.isArray(value)) {
         formatted += `${readableKey}:\n`;
         value.forEach((item) => {
-          formatted += `  • ${item}\n`;
+          if (typeof item === "object" && item !== null) {
+            formatted += `  • ${formatStructuredContent(item)}\n`;
+          } else {
+            formatted += `  • ${item}\n`;
+          }
         });
         formatted += "\n";
       } else if (typeof value === "object" && value !== null) {
