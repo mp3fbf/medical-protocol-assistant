@@ -39,6 +39,29 @@ export default function NewProtocolPage() {
         "[NewProtocolPage] Calling createProtocolMutation.mutateAsync with enhanced data:",
         data,
       );
+
+      // Convert File objects to base64 if material files are present
+      let materialFilesData = undefined;
+      if (data.materialFiles && data.materialFiles.length > 0) {
+        console.log("[NewProtocolPage] Converting material files to base64...");
+        materialFilesData = await Promise.all(
+          data.materialFiles.map(async (file) => {
+            const buffer = await file.arrayBuffer();
+            const base64 = Buffer.from(buffer).toString("base64");
+            return {
+              name: file.name,
+              buffer: base64,
+              type: file.type,
+              size: file.size,
+            };
+          }),
+        );
+        console.log(
+          "[NewProtocolPage] Converted files:",
+          materialFilesData.map((f) => f.name),
+        );
+      }
+
       // Pass all form data including the new fields
       const result = await createProtocolMutation.mutateAsync({
         title: data.title,
@@ -47,6 +70,8 @@ export default function NewProtocolPage() {
         targetPopulation: data.targetPopulation,
         researchSources: data.researchSources,
         yearRange: data.yearRange,
+        materialFiles: materialFilesData,
+        supplementWithResearch: data.supplementWithResearch,
       });
       console.log(
         "[NewProtocolPage] Protocol mutation successful, result data:",
