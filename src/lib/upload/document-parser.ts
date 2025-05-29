@@ -75,6 +75,10 @@ export class DocumentParser {
         content = await this.parseTXT(buffer);
         break;
 
+      case "text/markdown":
+        content = await this.parseMarkdown(buffer);
+        break;
+
       default:
         throw new Error(`Unsupported file type: ${detectedType}`);
     }
@@ -142,6 +146,50 @@ export class DocumentParser {
     }
   }
 
+  private async parseMarkdown(buffer: Buffer): Promise<string> {
+    try {
+      const content = buffer.toString("utf-8");
+
+      // Convert Markdown to plain text by removing Markdown syntax
+      return (
+        content
+          // Remove headers (# ## ###)
+          .replace(/^#{1,6}\s+(.+)$/gm, "$1")
+          // Remove bold (**text** or __text__)
+          .replace(/\*\*(.*?)\*\*/g, "$1")
+          .replace(/__(.*?)__/g, "$1")
+          // Remove italic (*text* or _text_)
+          .replace(/\*(.*?)\*/g, "$1")
+          .replace(/_(.*?)_/g, "$1")
+          // Remove strikethrough (~~text~~)
+          .replace(/~~(.*?)~~/g, "$1")
+          // Remove links [text](url)
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+          // Remove images ![alt](url)
+          .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+          // Remove code blocks ```
+          .replace(/```[\s\S]*?```/g, "")
+          // Remove inline code `text`
+          .replace(/`([^`]+)`/g, "$1")
+          // Remove horizontal rules
+          .replace(/^[-*_]{3,}$/gm, "")
+          // Remove list markers (- * +)
+          .replace(/^[\s]*[-*+]\s+/gm, "")
+          // Remove numbered list markers
+          .replace(/^[\s]*\d+\.\s+/gm, "")
+          // Remove blockquotes (>)
+          .replace(/^>\s*/gm, "")
+          // Clean up extra whitespace
+          .replace(/\n{3,}/g, "\n\n")
+          .trim()
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to parse Markdown: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
   private getFileTypeFromExtension(fileName: string): string {
     const extension = fileName.toLowerCase().split(".").pop();
     switch (extension) {
@@ -151,6 +199,9 @@ export class DocumentParser {
         return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       case "txt":
         return "text/plain";
+      case "md":
+      case "markdown":
+        return "text/markdown";
       default:
         return "application/octet-stream";
     }

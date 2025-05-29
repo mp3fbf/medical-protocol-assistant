@@ -352,6 +352,7 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
                   "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                     [".docx"],
                   "text/plain": [".txt"],
+                  "text/markdown": [".md", ".markdown"],
                 }}
               />
 
