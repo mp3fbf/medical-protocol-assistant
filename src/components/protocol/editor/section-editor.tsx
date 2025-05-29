@@ -6,7 +6,7 @@
  */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { ProtocolSectionData } from "@/types/protocol";
 import type { StandardSectionDefinition } from "@/types/ai-generation";
 import { Button } from "@/components/ui/button";
@@ -16,15 +16,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  FileText,
-  Calendar,
   User,
   Building,
   Stethoscope,
   AlertTriangle,
   Plus,
   Trash2,
-  Edit3,
 } from "lucide-react";
 
 interface SectionEditorProps {
@@ -43,15 +40,69 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   const [localContent, setLocalContent] = useState(section.content);
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  // Update local content when section changes
+  // CRITICAL FIX: Always sync with parent content to prevent stale data
   useEffect(() => {
+    console.log("[SectionEditor] ========== CONTENT SYNC ==========");
+    console.log("[SectionEditor] Section number:", section.sectionNumber);
+    console.log("[SectionEditor] Parent content:", section.content);
+    console.log("[SectionEditor] Local content before sync:", localContent);
+
+    // Always sync with parent content - the parent manages isolation
     setLocalContent(section.content);
     setJsonError(null);
-  }, [section]);
+
+    console.log("[SectionEditor] Local content after sync:", section.content);
+    console.log("[SectionEditor] ========== CONTENT SYNC END ==========");
+  }, [section.sectionNumber, section.content, localContent]); // Sync whenever section or content changes
+
+  // Create a ref to store the timeout
+  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced function to prevent constant parent updates on every keystroke
+  const debouncedOnContentChange = useCallback(
+    (newContent: any) => {
+      // Clear any existing timeout
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      // Set a new timeout for debounced update
+      updateTimeoutRef.current = setTimeout(() => {
+        console.log(
+          "[SectionEditor] Debounced content change for section:",
+          section.sectionNumber,
+        );
+        onContentChange(newContent);
+      }, 300); // 300ms debounce
+    },
+    [onContentChange, section.sectionNumber],
+  );
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleContentUpdate = (newContent: any) => {
+    console.log("[SectionEditor] ========== CONTENT UPDATE DEBUG ==========");
+    console.log("[SectionEditor] Section number:", section.sectionNumber);
+    console.log("[SectionEditor] Previous localContent:", localContent);
+    console.log("[SectionEditor] New content:", newContent);
+    console.log("[SectionEditor] Updating LOCAL content only...");
+
+    // Update local content immediately for UI responsiveness
     setLocalContent(newContent);
-    onContentChange(newContent);
+
+    // Call parent update (this should NOT trigger save immediately)
+    debouncedOnContentChange(newContent);
+
+    console.log(
+      "[SectionEditor] ========== CONTENT UPDATE DEBUG END ==========",
+    );
   };
 
   const handleJsonStringChange = (jsonString: string) => {
@@ -574,19 +625,61 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   };
 
   const getEditorForSection = () => {
+    console.log("[SectionEditor] ========== EDITOR SELECTION DEBUG ==========");
+    console.log("[SectionEditor] Section number:", section.sectionNumber);
+    console.log("[SectionEditor] IsEditing:", isEditing);
+    console.log("[SectionEditor] Local content:", localContent);
+    console.log("[SectionEditor] Local content type:", typeof localContent);
+    console.log("[SectionEditor] Section definition:", sectionDefinition);
+
     if (!isEditing) {
+      console.log("[SectionEditor] Rendering read-only display");
       return renderReadOnlyDisplay();
     }
 
+    let editor;
     switch (section.sectionNumber) {
       case 1:
-        return renderMetadataEditor();
+        console.log("[SectionEditor] FORCING metadata editor for section 1");
+        console.log(
+          "[SectionEditor] Content for metadata editor:",
+          localContent,
+        );
+        editor = renderMetadataEditor();
+        break;
       case 2:
-        return renderTechnicalRecordEditor();
+        console.log(
+          "[SectionEditor] FORCING technical record editor for section 2",
+        );
+        console.log(
+          "[SectionEditor] Content for technical editor:",
+          localContent,
+        );
+        editor = renderTechnicalRecordEditor();
+        break;
       default:
-        return renderTextEditor();
+        console.log(
+          "[SectionEditor] Rendering text editor for section",
+          section.sectionNumber,
+        );
+        editor = renderTextEditor();
+        break;
     }
+
+    console.log(
+      "[SectionEditor] ========== EDITOR SELECTION DEBUG END ==========",
+    );
+    return editor;
   };
 
-  return <div className="space-y-4">{getEditorForSection()}</div>;
+  return (
+    <div className="space-y-4">
+      <div className="mb-2 border border-yellow-200 bg-yellow-50 p-1 text-xs">
+        <strong>📝 EDITOR:</strong> S{section.sectionNumber} | Mode:{" "}
+        {isEditing ? "EDIT" : "VIEW"} | Local: {typeof localContent} | Def:{" "}
+        {sectionDefinition ? "✅" : "❌"}
+      </div>
+      {getEditorForSection()}
+    </div>
+  );
 };

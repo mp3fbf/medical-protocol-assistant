@@ -12,29 +12,19 @@ import type {
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 import { trpc } from "@/lib/api/client"; // For actual data fetching
-import { type TRPCClientErrorLike } from "@trpc/client";
-import { type inferProcedureOutput } from "@trpc/server";
-import { type AppRouter } from "@/server/api/root";
-
-// Define a type alias for the procedure output for cleaner usage
-type ProtocolGetByIdOutput = inferProcedureOutput<
-  AppRouter["protocol"]["getById"]
->;
 
 const generateMockProtocolData = (
-  protocolIdTitlePart: string,
+  _protocolIdTitlePart: string,
 ): ProtocolFullContent => {
   const content: ProtocolFullContent = {};
   SECTION_DEFINITIONS.forEach((def) => {
     content[def.sectionNumber.toString()] = {
       sectionNumber: def.sectionNumber,
       title: def.titlePT,
-      content:
-        typeof def.example === "string"
-          ? `${def.example} (Exemplo para ${protocolIdTitlePart})`
-          : (def.example ?? `Conteúdo de exemplo para ${def.titlePT}.`),
+      content: def.example ?? `Conteúdo de exemplo para ${def.titlePT}.`,
     };
   });
+  console.log("[generateMockProtocolData] Generated protocol data:", content);
   return content;
 };
 
@@ -86,10 +76,18 @@ export function useProtocolEditorState(initialProtocolId?: string) {
   useEffect(() => {
     if (protocolQuery.isSuccess && protocolQuery.data) {
       const data = protocolQuery.data;
-      const protocolContent =
-        (data.ProtocolVersion?.[0]
-          ?.content as unknown as ProtocolFullContent) ||
-        generateMockProtocolData(data.title);
+      // Ensure protocol content from DB has proper structure with sectionNumber
+      const rawContent = data.ProtocolVersion?.[0]
+        ?.content as unknown as ProtocolFullContent;
+      const protocolContent = rawContent
+        ? Object.entries(rawContent).reduce((acc, [key, section]) => {
+            acc[key] = {
+              ...section,
+              sectionNumber: parseInt(key, 10), // Ensure sectionNumber exists
+            };
+            return acc;
+          }, {} as ProtocolFullContent)
+        : generateMockProtocolData(data.title);
       setState((s) => ({
         ...s,
         protocolId: data.id,
@@ -138,28 +136,25 @@ export function useProtocolEditorState(initialProtocolId?: string) {
           protocolId: id,
         }));
         try {
-          await utils.protocol.getById.invalidate({ protocolId: id }); // Invalidate to force refetch
-          const data = await utils.protocol.getById.fetch({ protocolId: id });
-          if (data) {
-            console.log("[useProtocolEditorState] Manual fetch success:", data);
-            setState((s) => ({
-              ...s,
-              protocolId: data.id,
-              protocolTitle: data.title,
-              protocolData:
-                (data.ProtocolVersion?.[0]
-                  ?.content as unknown as ProtocolFullContent) ||
-                generateMockProtocolData(data.title),
-              flowchartData:
-                (data.ProtocolVersion?.[0]
-                  ?.flowchart as unknown as FlowchartDefinition) ||
-                initialEmptyFlowchart,
-              isLoading: false,
-              error: null,
-            }));
-          } else {
-            throw new Error("Protocolo não encontrado após fetch manual.");
-          }
+          // CRITICAL FIX: Do NOT manually fetch and overwrite - this causes section bleeding
+          // Instead, just invalidate cache and let the useQuery handle the refresh
+          console.log(
+            "[useProtocolEditorState] Invalidating cache for protocolId:",
+            id,
+          );
+          await utils.protocol.getById.invalidate({ protocolId: id });
+
+          // Set loading state and let useQuery handle the data fetching
+          setState((s) => ({
+            ...s,
+            protocolId: id,
+            isLoading: false, // useQuery will handle loading state
+            error: null,
+          }));
+
+          console.log(
+            "[useProtocolEditorState] Cache invalidated, useQuery will handle refresh without overwriting local edits",
+          );
         } catch (err) {
           console.error("[useProtocolEditorState] Manual fetch error:", err);
           setState((s) => ({
@@ -251,30 +246,125 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     sectionNumber: number,
     newContent: ProtocolSectionData["content"],
   ) => {
+    console.log(
+      "[useProtocolEditorState] ========== UPDATE SECTION CONTENT DEBUG ==========",
+    );
+    console.log("[useProtocolEditorState] Section number:", sectionNumber);
+    console.log("[useProtocolEditorState] New content:", newContent);
+
+    // Validate inputs to prevent crashes
+    if (
+      typeof sectionNumber !== "number" ||
+      sectionNumber < 1 ||
+      sectionNumber > 13
+    ) {
+      console.error(
+        "[useProtocolEditorState] Invalid sectionNumber:",
+        sectionNumber,
+      );
+      return;
+    }
+
+    if (newContent === undefined) {
+      console.error("[useProtocolEditorState] newContent is undefined");
+      return;
+    }
+
     setState((s) => {
-      if (!s.protocolData) return s;
+      if (!s.protocolData) {
+        console.warn(
+          "[useProtocolEditorState] protocolData is null, cannot update section",
+        );
+        return s;
+      }
+
       const key = sectionNumber.toString();
-      return {
-        ...s,
-        protocolData: {
-          ...s.protocolData,
-          [key]: {
-            // Ensure existing section data is spread if it exists, or create new
-            ...(s.protocolData[key] || {
-              sectionNumber,
-              title:
-                SECTION_DEFINITIONS.find(
-                  (sd) => sd.sectionNumber === sectionNumber,
-                )?.titlePT || `Seção ${sectionNumber}`,
-            }),
-            content: newContent,
-          },
-        },
+      const existingSection = s.protocolData[key];
+
+      console.log(
+        "[useProtocolEditorState] Existing section data:",
+        existingSection,
+      );
+      console.log(
+        "[useProtocolEditorState] Current protocol data keys:",
+        Object.keys(s.protocolData),
+      );
+
+      // CRITICAL FIX: Create a completely new protocolData object to prevent reference sharing
+      // This ensures section isolation and prevents bleeding between sections
+      const newProtocolData = { ...s.protocolData };
+      newProtocolData[key] = {
+        // Ensure existing section data is spread if it exists, or create new
+        ...(existingSection || {
+          sectionNumber,
+          title:
+            SECTION_DEFINITIONS.find((sd) => sd.sectionNumber === sectionNumber)
+              ?.titlePT || `Seção ${sectionNumber}`,
+        }),
+        content: newContent,
       };
+
+      const newState = {
+        ...s,
+        protocolData: newProtocolData,
+      };
+
+      console.log(
+        "[useProtocolEditorState] Updated section data:",
+        newState.protocolData[key],
+      );
+      console.log(
+        "[useProtocolEditorState] ONLY section",
+        sectionNumber,
+        "should be affected",
+      );
+      console.log(
+        "[useProtocolEditorState] ========== UPDATE SECTION CONTENT DEBUG END ==========",
+      );
+
+      return newState;
     });
   };
 
-  const saveProtocol = async () => {
+  const updateProtocolMutation = trpc.protocol.update.useMutation({
+    onSuccess: async (newVersion) => {
+      console.log(
+        "[useProtocolEditorState] Protocol updated successfully",
+        newVersion,
+      );
+
+      // CRITICAL FIX: DO NOT refresh from database after save to prevent overwriting local edits
+      console.log(
+        "[useProtocolEditorState] NOT refreshing from database to preserve local section edits",
+      );
+
+      // Just clear the error state since save was successful
+      setState((s) => ({
+        ...s,
+        error: null,
+      }));
+
+      console.log(
+        "[useProtocolEditorState] Save completed without overwriting local state",
+      );
+    },
+    onError: (error) => {
+      console.error("[useProtocolEditorState] Error updating protocol:", error);
+      setState((s) => ({ ...s, error: `Erro ao salvar: ${error.message}` }));
+    },
+  });
+
+  const saveProtocol = async (): Promise<boolean> => {
+    console.log(
+      "[useProtocolEditorState] ========== SAVE PROTOCOL DEBUG ==========",
+    );
+    console.log("[useProtocolEditorState] Protocol ID:", state.protocolId);
+    console.log("[useProtocolEditorState] Protocol Data:", state.protocolData);
+    console.log(
+      "[useProtocolEditorState] Protocol Title:",
+      state.protocolTitle,
+    );
+
     if (
       !state.protocolData ||
       !state.protocolId ||
@@ -283,20 +373,51 @@ export function useProtocolEditorState(initialProtocolId?: string) {
       console.error(
         "[useProtocolEditorState] Cannot save: protocol data or ID is missing/invalid.",
       );
-      // TODO: Implement actual save logic (e.g., tRPC mutation for update)
-      // This would likely be create if ID is "new", or update if ID is a CUID.
-      alert(
-        "Funcionalidade de salvar ainda não implementada completamente ou ID de protocolo inválido.",
-      );
-      return;
+      setState((s) => ({
+        ...s,
+        error: "Não é possível salvar: dados do protocolo ou ID inválidos.",
+      }));
+      return false;
     }
-    console.log(
-      "[useProtocolEditorState] Simulating save for protocol:",
-      state.protocolId,
-      state.protocolData,
-    );
-    // Example: await trpc.protocol.update.mutateAsync({ protocolId: state.protocolId, content: state.protocolData, flowchart: state.flowchartData });
-    alert(`Protocolo ${state.protocolTitle} salvo (simulação).`);
+
+    try {
+      console.log("[useProtocolEditorState] Attempting to save to database...");
+      console.log(
+        "[useProtocolEditorState] Mutation pending:",
+        updateProtocolMutation.isPending,
+      );
+
+      const newVersion = await updateProtocolMutation.mutateAsync({
+        protocolId: state.protocolId,
+        content: state.protocolData,
+        flowchart: (state.flowchartData || { nodes: [], edges: [] }) as any,
+        changelogNotes: "Atualização via editor",
+      });
+
+      console.log(
+        `[useProtocolEditorState] Protocol ${state.protocolTitle} saved successfully`,
+        newVersion,
+      );
+      console.log(
+        "[useProtocolEditorState] ========== SAVE PROTOCOL DEBUG END ==========",
+      );
+
+      // Update the local state to reflect the saved data
+      // This ensures the saved content becomes the new "base" state
+      setState((s) => ({
+        ...s,
+        error: null,
+      }));
+
+      return true;
+    } catch (error) {
+      console.error("[useProtocolEditorState] Save error:", error);
+      console.log(
+        "[useProtocolEditorState] ========== SAVE PROTOCOL DEBUG END (ERROR) ==========",
+      );
+      // Error is handled by the mutation's onError callback
+      return false;
+    }
   };
 
   return {
@@ -305,5 +426,6 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     fetchProtocolData,
     updateSectionContent,
     saveProtocol,
+    isSaving: updateProtocolMutation.isPending,
   };
 }

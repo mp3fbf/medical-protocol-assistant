@@ -8,7 +8,7 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 
 - Node.js (v20 or higher recommended)
 - pnpm (https://pnpm.io/installation)
-- Docker & Docker Compose (for local PostgreSQL database and running the app locally in a container)
+- PostgreSQL database (local installation or cloud service like Supabase)
 
 ### Installation
 
@@ -56,22 +56,14 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 
 ## Running Locally
 
-### Option 1: Using Docker Compose (Recommended for full stack)
+### Database Setup
 
-This method runs the Next.js app and a PostgreSQL database in Docker containers.
+This application requires a PostgreSQL database. You have two options:
 
-1.  Ensure Docker and Docker Compose are installed and running.
-2.  Make sure your `.env.local` file is populated, especially `DATABASE_URL` pointing to the Docker DB if you use that:
-    `DATABASE_URL="postgresql://postgres:password@db:5432/medical_protocols"` (Note: `db` is the service name in `docker-compose.yml`, and port is `5432` _inside_ Docker network).
-3.  Run:
-    ```bash
-    docker-compose up --build
-    ```
-    The application will be available at `http://localhost:3000`. The database will be on host port `54322` (or as configured in `docker-compose.yml`).
+1. **Local PostgreSQL**: Install PostgreSQL locally and create a database
+2. **Cloud Service**: Use a service like Supabase (recommended for easier setup)
 
-### Option 2: Running Next.js dev server directly
-
-This method requires a separate PostgreSQL database instance (either local or remote, like Supabase).
+### Running the Application
 
 1.  Ensure your `.env.local` has `DATABASE_URL` pointing to your accessible PostgreSQL instance.
 2.  Run database migrations:

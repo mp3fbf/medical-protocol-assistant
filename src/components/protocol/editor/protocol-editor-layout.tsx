@@ -14,6 +14,7 @@ import type {
 } from "@/types/protocol";
 import type { FlowchartDefinition } from "@/types/flowchart";
 import type { ValidationIssue } from "@/types/validation"; // Corrected import
+import { toast } from "sonner";
 
 interface ProtocolEditorLayoutProps {
   protocolTitle: string;
@@ -27,7 +28,8 @@ interface ProtocolEditorLayoutProps {
     sectionNumber: number,
     newContent: ProtocolSectionData["content"],
   ) => void;
-  onSaveChanges: () => void;
+  onSaveChanges: () => Promise<boolean>;
+  isSaving?: boolean;
 }
 
 export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
@@ -40,9 +42,13 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
   onSelectSection,
   onUpdateSectionContent,
   onSaveChanges,
+  isSaving = false,
 }) => {
   const currentSection = protocolData
-    ? protocolData[currentSectionNumber.toString()]
+    ? {
+        ...protocolData[currentSectionNumber.toString()],
+        sectionNumber: currentSectionNumber, // Ensure sectionNumber is always present
+      }
     : null;
 
   return (
@@ -53,11 +59,49 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
           {isLoading ? "Carregando Protocolo..." : protocolTitle}
         </h2>
         <button
-          onClick={onSaveChanges}
-          className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-          disabled={isLoading}
+          onClick={async () => {
+            try {
+              const success = await onSaveChanges();
+              if (success) {
+                toast.success("✅ Protocolo salvo com sucesso!", {
+                  description:
+                    "Todas as alterações foram persistidas no banco de dados.",
+                });
+              } else {
+                toast.error("❌ Erro ao salvar protocolo", {
+                  description:
+                    "Ocorreu um erro ao salvar as alterações. Tente novamente.",
+                });
+              }
+            } catch (error) {
+              console.error(error);
+              toast.error("❌ Erro ao salvar protocolo", {
+                description: "Ocorreu um erro inesperado. Tente novamente.",
+              });
+            }
+          }}
+          className="flex items-center gap-2 rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+          disabled={isLoading || isSaving}
         >
-          Salvar Alterações (Mock)
+          {isSaving && (
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          )}
+          {isSaving ? "Salvando..." : "Salvar Alterações"}
         </button>
       </div>
 
@@ -85,6 +129,7 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
           <TextEditorPane
             currentSection={currentSection}
             onUpdateSectionContent={onUpdateSectionContent}
+            _onSaveToDatabase={onSaveChanges}
             isLoading={isLoading}
           />
         </div>

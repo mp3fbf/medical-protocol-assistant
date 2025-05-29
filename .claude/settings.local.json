@@ -1,3 +1,25 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pkill:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(curl:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(node:*)",
+      "Bash(npx playwright:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm exec playwright test:*)",
+      "Bash(true)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm playwright test:*)",
+      "Bash(pnpm exec:*)"
+    ]
+  },
   "enableAllProjectMcpServers": false
 }

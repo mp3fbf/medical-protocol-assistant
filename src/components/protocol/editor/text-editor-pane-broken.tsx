@@ -1,8 +1,8 @@
 /**
- * VERSÃO CORRIGIDA - Enhanced pane for editing protocol sections with PROPER ISOLATION
+ * Enhanced pane for editing protocol sections with structured forms and AI assistance.
  */
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { ProtocolSectionData } from "@/types/protocol";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,17 +35,31 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
   _onSaveToDatabase,
   isLoading,
 }) => {
-  const [isEditing, setIsEditing] = useState(true);
+  // DEBUG LOG
+  useEffect(() => {
+    console.log("[TextEditorPane] Props received:", {
+      currentSection: currentSection
+        ? {
+            sectionNumber: currentSection.sectionNumber,
+            title: currentSection.title,
+            hasContent: !!currentSection.content,
+          }
+        : "NULL",
+      isLoading,
+    });
+  }, [currentSection, isLoading]);
+  const [isEditing, setIsEditing] = useState(true); // Default to editing mode
   const [isDirty, setIsDirty] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [validationStatus, setValidationStatus] = useState<
     "valid" | "warning" | "error" | null
   >(null);
-
-  // CORREÇÃO CRÍTICA: Armazenar conteúdo editado localmente
-  const [localContent, setLocalContent] = useState<any>(null);
-  const lastSectionNumberRef = useRef<number | null>(null);
+  // CRITICAL FIX: Store content separately per section to prevent bleeding
+  // Store a map of edited content per section (only for unsaved changes)
+  const [editedContentBySection, setEditedContentBySection] = useState<
+    Record<number, ProtocolSectionData["content"]>
+  >({});
 
   // Get section definition for AI assistance
   const sectionDefinition = currentSection
@@ -54,70 +68,111 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
       )
     : null;
 
-  // CORREÇÃO: Resetar conteúdo local quando mudar de seção
+  // CRITICAL: Ensure we always have a valid section number
+  const safeSectionNumber = currentSection?.sectionNumber || 1;
+
+  // Get the current content - either edited (if exists) or original
+  const getCurrentContent = () => {
+    if (!currentSection) return null;
+
+    // Check if we have edited content for this section
+    const editedContent = editedContentBySection[safeSectionNumber];
+
+    // If we have edited content, use it; otherwise use the original
+    return editedContent !== undefined ? editedContent : currentSection.content;
+  };
+
+  // Check if current section has unsaved changes
+  const hasUnsavedChanges = () => {
+    if (!currentSection) return false;
+    return editedContentBySection[safeSectionNumber] !== undefined;
+  };
+
+  // Clear unsaved changes when switching sections
   useEffect(() => {
-    if (!currentSection) return;
-
-    const currentSectionNumber = currentSection.sectionNumber;
-    const lastSectionNumber = lastSectionNumberRef.current;
-
-    // Se mudou de seção
-    if (
-      lastSectionNumber !== null &&
-      lastSectionNumber !== currentSectionNumber
-    ) {
+    // When section changes, check if we had unsaved changes
+    if (isDirty) {
       console.log(
-        "[FIXED] Seção mudou de",
-        lastSectionNumber,
-        "para",
-        currentSectionNumber,
+        "[TextEditorPane] Section changed with unsaved changes - discarding them",
       );
-      console.log("[FIXED] Resetando conteúdo local para o original");
-
-      // IMPORTANTE: Resetar para o conteúdo original da nova seção
-      setLocalContent(currentSection.content);
       setIsDirty(false);
       setValidationStatus(null);
-    } else if (lastSectionNumber === null) {
-      // Primeira vez carregando
-      console.log("[FIXED] Primeira carga da seção", currentSectionNumber);
-      setLocalContent(currentSection.content);
     }
-
-    lastSectionNumberRef.current = currentSectionNumber;
-  }, [currentSection]);
+  }, [currentSection?.sectionNumber, isDirty]);
 
   const handleSave = useCallback(async () => {
-    if (!currentSection || localContent === null) {
-      console.log("[FIXED] Nada para salvar");
+    if (!currentSection) {
+      console.log("[TextEditorPane] No current section to save");
+      return;
+    }
+
+    const contentToSave = getCurrentContent();
+    if (contentToSave === null) {
+      console.log("[TextEditorPane] No content to save");
       return;
     }
 
     try {
-      console.log("[FIXED] Salvando conteúdo local para estado principal");
+      console.log("[TextEditorPane] ========== SAVE DEBUG ==========");
+      console.log(
+        "[TextEditorPane] Current section:",
+        currentSection.sectionNumber,
+      );
+      console.log("[TextEditorPane] Content to save:", contentToSave);
+      console.log("[TextEditorPane] Has unsaved changes:", hasUnsavedChanges());
 
-      // Salvar no estado principal
-      onUpdateSectionContent(currentSection.sectionNumber, localContent);
+      // Update the main protocol state with the edited content
+      onUpdateSectionContent(currentSection.sectionNumber, contentToSave);
 
-      // Marcar como salvo
+      // Remove from edited content map since it's now saved
+      setEditedContentBySection((prev) => {
+        const newMap = { ...prev };
+        delete newMap[currentSection.sectionNumber];
+        return newMap;
+      });
+
+      // Mark as saved
       setIsDirty(false);
       setLastSaved(new Date());
       setValidationStatus("valid");
 
-      console.log("[FIXED] Conteúdo salvo com sucesso");
+      console.log(
+        "[TextEditorPane] Section",
+        currentSection.sectionNumber,
+        "content saved to main state",
+      );
+      console.log("[TextEditorPane] ========== SAVE DEBUG END ==========");
     } catch (error) {
-      console.error("[FIXED] Erro ao salvar:", error);
+      console.error("[TextEditorPane] Error saving section content:", error);
       setValidationStatus("error");
     }
-  }, [currentSection, localContent, onUpdateSectionContent]);
+  }, [
+    currentSection,
+    onUpdateSectionContent,
+    getCurrentContent,
+    hasUnsavedChanges,
+  ]);
+
+  // DISABLED AUTO-SAVE to prevent bleeding - only manual saves now
+  // useEffect(() => {
+  //   if (isDirty && currentSection) {
+  //     const autoSaveTimer = setTimeout(() => {
+  //       handleSave();
+  //     }, 2000); // Auto-save after 2 seconds of inactivity
+
+  //     return () => clearTimeout(autoSaveTimer);
+  //   }
+  // }, [isDirty, currentSection, handleSave]);
 
   const handleGenerateWithAI = async () => {
     if (!currentSection || !sectionDefinition) return;
 
     setIsGenerating(true);
     try {
+      // Simulate AI generation
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
+      // Mock generated content based on section
       let generatedContent;
       if (sectionDefinition.sectionNumber === 1) {
         generatedContent = {
@@ -133,10 +188,14 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
           ambitoAplicacao: "Unidades de emergência da rede",
         };
       } else {
-        generatedContent = `Conteúdo gerado pela IA para ${sectionDefinition.titlePT}.\n\nEste é um exemplo de conteúdo estruturado baseado em evidências médicas e diretrizes atuais.`;
+        generatedContent = `Conteúdo gerado pela IA para ${sectionDefinition.titlePT}.\n\nEste é um exemplo de conteúdo estruturado baseado em evidências médicas e diretrizes atuais. O conteúdo real seria gerado baseado na pesquisa médica realizada durante a criação do protocolo.`;
       }
 
-      setLocalContent(generatedContent);
+      // Store generated content in edited map
+      setEditedContentBySection((prev) => ({
+        ...prev,
+        [currentSection.sectionNumber]: generatedContent,
+      }));
       setIsDirty(true);
       setValidationStatus("valid");
     } catch (error) {
@@ -308,28 +367,56 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
 
           {currentSection ? (
             <div>
-              <div className="mb-2 border border-yellow-200 bg-yellow-50 p-2 text-xs">
-                <strong>🔧 VERSÃO CORRIGIDA:</strong> S
-                {currentSection.sectionNumber} | Editing:{" "}
-                {isEditing ? "✅" : "❌"} | Dirty: {isDirty ? "🔴" : "⚪"} |
-                Local: {localContent !== null ? "✅" : "❌"}
+              <div className="mb-2 border border-blue-200 bg-blue-50 p-2 text-xs">
+                <strong>🔍 DEBUG:</strong> S{currentSection.sectionNumber} |
+                Editing: {isEditing ? "✅" : "❌"} | Dirty:{" "}
+                {isDirty ? "🔴" : "⚪"} | Content: {typeof getCurrentContent()}{" "}
+                | Changed: {hasUnsavedChanges() ? "📝" : "⚪"}
               </div>
               <SectionEditor
                 section={{
                   sectionNumber: currentSection.sectionNumber,
                   title: currentSection.title,
-                  // CORREÇÃO: Sempre usar conteúdo local
-                  content: localContent ?? currentSection.content ?? "",
+                  // CRITICAL FIX: Use the current content (edited or original)
+                  content: (getCurrentContent() ?? "") as
+                    | string
+                    | Record<string, any>
+                    | any[],
                 }}
                 sectionDefinition={sectionDefinition}
                 isEditing={isEditing}
                 onContentChange={(newContent) => {
+                  if (!currentSection) {
+                    console.warn(
+                      "[TextEditorPane] No current section - ignoring content change",
+                    );
+                    return;
+                  }
+
                   console.log(
-                    "[FIXED] Conteúdo mudou, atualizando LOCAL apenas",
+                    "[TextEditorPane] Content changed for section",
+                    currentSection.sectionNumber,
                   );
-                  setLocalContent(newContent);
+                  console.log(
+                    "[TextEditorPane] Updating LOCAL content only - NOT main state",
+                  );
+
+                  // CRITICAL FIX: Store in edited content map, NOT main protocol state
+                  // This prevents bleeding between sections
+                  setEditedContentBySection((prev) => ({
+                    ...prev,
+                    [currentSection.sectionNumber]: newContent,
+                  }));
                   setIsDirty(true);
                   setValidationStatus(null);
+
+                  console.log(
+                    "[TextEditorPane] Content stored in edited map for section",
+                    currentSection.sectionNumber,
+                  );
+                  console.log(
+                    "[TextEditorPane] Changes will only be saved to main state when user clicks 'Aplicar'",
+                  );
                 }}
               />
             </div>

@@ -11,6 +11,7 @@ import React from "react";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import { TRPCReactProvider } from "@/lib/api/client";
+import { Toaster } from "sonner";
 
 interface GlobalProvidersProps {
   children: React.ReactNode;
@@ -20,7 +21,10 @@ interface GlobalProvidersProps {
 export function GlobalProviders({ children, session }: GlobalProvidersProps) {
   return (
     <SessionProvider session={session}>
-      <TRPCReactProvider>{children}</TRPCReactProvider>
+      <TRPCReactProvider>
+        {children}
+        <Toaster position="top-center" richColors closeButton duration={5000} />
+      </TRPCReactProvider>
     </SessionProvider>
   );
 }
