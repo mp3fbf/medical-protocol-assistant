@@ -94,7 +94,7 @@ export default function ProtocolEditPage() {
       protocolData={protocolData}
       flowchartData={flowchartData}
       currentSectionNumber={currentSectionNumber}
-      currentVersionId={currentVersionId}
+      currentVersionId={currentVersionId || undefined}
       validationIssues={validationIssues}
       validationLoading={validation.isLoading}
       validationLastValidated={validation.lastValidated}

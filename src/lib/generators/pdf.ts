@@ -35,7 +35,7 @@ export async function generateProtocolPdf(
 
     console.log("Created React element:", element);
 
-    const pdfStream = await renderToBuffer(element);
+    const pdfStream = await renderToBuffer(element as any);
     return pdfStream;
   } catch (error) {
     console.error("Failed to generate PDF - Full error:", error);

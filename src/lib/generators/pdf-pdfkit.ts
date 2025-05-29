@@ -22,7 +22,6 @@ export async function generatePDFKitProtocolPdf(
           right: 72,
         },
         autoFirstPage: true,
-        font: null, // Não carregar fonte padrão
       });
 
       // Buffer to store PDF data

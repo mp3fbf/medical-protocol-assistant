@@ -6,7 +6,7 @@ import * as React from "react";
 import { Page, Document, View, Text } from "@react-pdf/renderer";
 import type { ProtocolFullContent } from "@/types/protocol";
 import { SectionPdf } from "./section-pdf";
-import { abntStyles, registerABNTFonts, CM_TO_PT } from "./abnt-pdf-styles";
+import { abntStyles, registerABNTFonts } from "./abnt-pdf-styles";
 
 interface ProtocolPdfDocumentProps {
   protocol: ProtocolFullContent;

@@ -35,7 +35,7 @@ export async function generateJsPDFProtocolPdf(
     yPosition += lineHeight * 2;
 
     // Process each section
-    Object.values(protocolData || {}).forEach((section, index) => {
+    Object.values(protocolData || {}).forEach((section) => {
       // Check if need new page
       if (yPosition > 250) {
         doc.addPage();
@@ -44,12 +44,12 @@ export async function generateJsPDFProtocolPdf(
 
       // Section title
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text(section.title, leftMargin, yPosition);
       yPosition += lineHeight;
 
       // Section content
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
 
       let content = "";
