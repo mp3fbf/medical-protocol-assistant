@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type {
   ProtocolFullContent,
   ProtocolSectionData,
@@ -12,7 +12,7 @@ import type {
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
 import { trpc } from "@/lib/api/client"; // For actual data fetching
-import { useProtocolValidation } from "./use-protocol-validation";
+import { useProtocolEditorValidation } from "./use-protocol-validation";
 
 const generateMockProtocolData = (
   _protocolIdTitlePart: string,
@@ -63,8 +63,10 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     validationIssues: [],
   });
 
-  // Initialize validation hook (manual only to avoid loops)
-  const validation = useProtocolValidation();
+  // Initialize validation hook with auto-validation support
+  const validation = useProtocolEditorValidation();
+  const validationTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   console.log(
     "[useProtocolEditorState] validation hook initialized:",
     validation,
@@ -247,7 +249,33 @@ export function useProtocolEditorState(initialProtocolId?: string) {
     }
   }, [initialProtocolId, protocolQuery.isLoading, protocolQuery.error]);
 
-  // Validation is manual only to prevent infinite loops
+  // Cleanup validation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimerRef.current) {
+        clearTimeout(validationTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced validation trigger
+  const triggerValidation = useCallback(() => {
+    if (validationTimerRef.current) {
+      clearTimeout(validationTimerRef.current);
+    }
+
+    if (validation.autoValidate && state.protocolData && !state.isLoading) {
+      validationTimerRef.current = setTimeout(() => {
+        console.log(
+          "[useProtocolEditorState] Auto-validation triggered after debounce",
+        );
+        validation.validateIfNeeded(
+          state.protocolData,
+          state.flowchartData || undefined,
+        );
+      }, 2000); // 2 second debounce
+    }
+  }, [validation, state.protocolData, state.flowchartData, state.isLoading]);
 
   const selectSection = (sectionNumber: number) => {
     if (sectionNumber >= 1 && sectionNumber <= SECTION_DEFINITIONS.length) {
@@ -337,6 +365,9 @@ export function useProtocolEditorState(initialProtocolId?: string) {
 
       return newState;
     });
+
+    // Trigger auto-validation after content update
+    triggerValidation();
   };
 
   const updateProtocolMutation = trpc.protocol.update.useMutation({
@@ -456,8 +487,8 @@ export function useProtocolEditorState(initialProtocolId?: string) {
       isLoading: validation.isLoading,
       error: validation.error,
       lastValidated: validation.lastValidated,
-      autoValidate: true, // Real-time validation always active
-      toggleAutoValidate: () => {}, // Not needed with real-time validation
+      autoValidate: validation.autoValidate,
+      toggleAutoValidate: validation.toggleAutoValidate,
       validate: () => {
         console.log("[useProtocolEditorState] Validate button clicked");
         console.log(
