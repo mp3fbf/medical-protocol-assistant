@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste Manual - Isolamento de Seções</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .step {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .step h3 {
+        margin-top: 0;
+        color: #007bff;
+      }
+      .warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .success {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .error {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      code {
+        background: #e9ecef;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Courier New", monospace;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 20px;
+      }
+      .button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Teste Manual - Isolamento de Seções</h1>
+
+      <div class="warning">
+        <h3>⚠️ Preparação</h3>
+        <p>1. Execute <code>pnpm dev</code> para iniciar o servidor</p>
+        <p>
+          2. Execute <code>pnpm prisma:seed</code> para criar usuários de teste
+        </p>
+        <p>
+          3. Acesse:
+          <a href="http://localhost:3000" target="_blank"
+            >http://localhost:3000</a
+          >
+        </p>
+      </div>
+
+      <div class="step">
+        <h3>Passo 1: Login</h3>
+        <p>Use uma das credenciais:</p>
+        <ul>
+          <li>
+            Email: <code>dev-mock@example.com</code> / Senha:
+            <code>password</code>
+          </li>
+          <li>
+            Email: <code>admin@example.com</code> / Senha:
+            <code>adminDefaultPassword123!</code>
+          </li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3>Passo 2: Abrir um Protocolo</h3>
+        <p>1. Vá para <strong>Protocolos</strong> no menu</p>
+        <p>2. Clique em qualquer protocolo da lista</p>
+        <p>3. Aguarde o editor carregar</p>
+      </div>
+
+      <div class="step">
+        <h3>Passo 3: Teste de Isolamento</h3>
+        <p><strong>Este é o teste crítico!</strong></p>
+        <ol>
+          <li>Clique em <strong>Seção 1</strong> na navegação lateral</li>
+          <li>
+            Edite o campo <strong>Código do Protocolo</strong> (digite qualquer
+            coisa, ex: "TESTE123")
+          </li>
+          <li>
+            <strong>SEM CLICAR EM "APLICAR"</strong>, clique em
+            <strong>Seção 2</strong>
+          </li>
+          <li>Agora volte para <strong>Seção 1</strong></li>
+        </ol>
+      </div>
+
+      <div class="error">
+        <h3>❌ Se o bug NÃO foi corrigido:</h3>
+        <p>
+          O campo "Código do Protocolo" ainda mostrará "TESTE123" (sua edição
+          vazou)
+        </p>
+      </div>
+
+      <div class="success">
+        <h3>✅ Se o bug FOI corrigido:</h3>
+        <p>
+          O campo "Código do Protocolo" voltará ao valor original (edição foi
+          descartada)
+        </p>
+      </div>
+
+      <div class="step">
+        <h3>Passo 4: Teste de Salvamento</h3>
+        <ol>
+          <li>Edite o campo novamente</li>
+          <li>Desta vez, clique em <strong>"Aplicar"</strong></li>
+          <li>Mude de seção e volte</li>
+          <li>A edição deve estar salva agora</li>
+        </ol>
+      </div>
+
+      <div class="warning">
+        <h3>📸 Capturas de Tela</h3>
+        <p>Tire screenshots de cada etapa para documentar o resultado!</p>
+      </div>
+
+      <a href="http://localhost:3000" class="button" target="_blank"
+        >Iniciar Teste</a
+      >
+    </div>
+  </body>
+</html>

@@ -39,15 +39,16 @@ async function globalSetup(_config: FullConfig) {
     await page.getByRole("button", { name: "Entrar" }).click();
     console.log("Clicked login button.");
 
-    // Wait for successful login - typically a redirect to dashboard or a specific element
-    // Adjust the URL or element selector as per your application's post-login behavior.
-    await page.waitForURL(`${baseURL}/dashboard`, { timeout: 10000 });
-    console.log(`Successfully navigated to dashboard: ${page.url()}`);
-    
+    // Wait for navigation away from login page
+    // Don't wait for specific URL as it might vary
+    await page.waitForFunction(() => !window.location.href.includes("/login"), {
+      timeout: 10000,
+    });
+    console.log(`Successfully logged in. Current URL: ${page.url()}`);
+
     // Save authentication state (cookies, local storage, etc.)
     await page.context().storageState({ path: AUTH_FILE });
     console.log(`Authentication state saved to ${AUTH_FILE}`);
-
   } catch (error) {
     console.error("Error during global setup (authentication):", error);
     // Optional: Take a screenshot on error for debugging

@@ -5,14 +5,16 @@
  * related to medical protocols.
  */
 import { z } from "zod";
-import { ProtocolStatus } from "@prisma/client"; 
+import { ProtocolStatus } from "@prisma/client";
 
 export const ProtocolIdInputSchema = z.object({
-  protocolId: z.string().cuid("ID de protocolo inválido (esperado CUID)."), 
+  protocolId: z.string().cuid("ID de protocolo inválido (esperado CUID)."),
 });
 
 export const ProtocolVersionIdInputSchema = z.object({
-  versionId: z.string().cuid("ID de versão de protocolo inválido (esperado CUID)."), // Changed to CUID
+  versionId: z
+    .string()
+    .cuid("ID de versão de protocolo inválido (esperado CUID)."), // Changed to CUID
 });
 
 export const CreateProtocolInputSchema = z.object({
@@ -24,10 +26,17 @@ export const CreateProtocolInputSchema = z.object({
     .string()
     .min(3, "A condição médica deve ter pelo menos 3 caracteres.")
     .max(255, "A condição médica deve ter no máximo 255 caracteres."),
+  generationMode: z.enum(["automatic", "manual"]).optional().default("manual"),
+  targetPopulation: z.string().max(100).optional(),
+  researchSources: z
+    .array(z.enum(["pubmed", "scielo", "cfm", "mec"]))
+    .optional()
+    .default(["pubmed", "scielo"]),
+  yearRange: z.number().min(1).max(10).optional().default(5),
 });
 
 export const UpdateProtocolInputSchema = z.object({
-  protocolId: z.string().cuid(), 
+  protocolId: z.string().cuid(),
   title: z
     .string()
     .min(3, "O título deve ter pelo menos 3 caracteres.")
@@ -46,8 +55,8 @@ export const ListProtocolsInputSchema = z.object({
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20),
-  sortBy: z.string().optional().default("updatedAt"), 
-  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"), 
+  sortBy: z.string().optional().default("updatedAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export const ProtocolSectionContentSchema = z.object({
@@ -57,7 +66,7 @@ export const ProtocolSectionContentSchema = z.object({
 });
 
 export const ProtocolFullContentSchema = z.record(
-  z.string().regex(/^\d{1,2}$/), 
+  z.string().regex(/^\d{1,2}$/),
   ProtocolSectionContentSchema,
 );
 
@@ -94,9 +103,9 @@ export const NewProtocolVersionContentInputSchema = z.object({
 });
 
 export const UpdateProtocolVersionInputSchema = z.object({
-  protocolId: z.string().cuid(), 
-  content: ProtocolFullContentSchema.optional(), 
-  flowchart: FlowchartDataSchema.optional(), 
+  protocolId: z.string().cuid(),
+  content: ProtocolFullContentSchema.optional(),
+  flowchart: FlowchartDataSchema.optional(),
   changelogNotes: z.string().optional(),
 });
 

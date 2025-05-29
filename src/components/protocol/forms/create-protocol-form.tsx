@@ -1,6 +1,6 @@
 /**
  * CreateProtocolForm component
- * A form for initiating the creation of a new medical protocol.
+ * A form for initiating the creation of a new medical protocol with AI research.
  */
 "use client";
 
@@ -11,9 +11,18 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Search,
+  FileText,
+  Zap,
+} from "lucide-react";
 
+// Enhanced schema with generation mode and research options
 const createProtocolFormSchema = z.object({
   title: z
     .string()
@@ -23,6 +32,18 @@ const createProtocolFormSchema = z.object({
     .string()
     .min(3, "A condição médica principal deve ter pelo menos 3 caracteres.")
     .max(150, "A condição médica não pode exceder 150 caracteres."),
+  generationMode: z.enum(["automatic", "manual"], {
+    required_error: "Selecione um modo de geração.",
+  }),
+  targetPopulation: z
+    .string()
+    .min(2, "A população alvo deve ter pelo menos 2 caracteres.")
+    .max(100, "A população alvo não pode exceder 100 caracteres.")
+    .optional(),
+  researchSources: z
+    .array(z.enum(["pubmed", "scielo", "cfm", "mec"]))
+    .min(1, "Selecione pelo menos uma fonte de pesquisa."),
+  yearRange: z.number().min(1).max(10).default(5),
 });
 
 export type CreateProtocolFormValues = z.infer<typeof createProtocolFormSchema>;
@@ -31,7 +52,7 @@ interface CreateProtocolFormProps {
   onSubmit: (
     data: CreateProtocolFormValues,
   ) => Promise<{ success: boolean; data?: any; error?: string }>;
-  onSuccess?: (data?: any) => void; 
+  onSuccess?: (data?: any) => void;
 }
 
 export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
@@ -39,33 +60,60 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
   onSuccess,
 }) => {
   const [formStatus, setFormStatus] = useState<
-    "idle" | "loading" | "success" | "error"
+    "idle" | "researching" | "loading" | "success" | "error"
   >("idle");
   const [formError, setFormError] = useState<string | null>(null);
+  const [researchProgress, setResearchProgress] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm<CreateProtocolFormValues>({
     resolver: zodResolver(createProtocolFormSchema),
+    defaultValues: {
+      generationMode: "automatic",
+      researchSources: ["pubmed", "scielo"],
+      yearRange: 5,
+    },
   });
+
+  const watchedGenerationMode = watch("generationMode");
 
   const processSubmit: SubmitHandler<CreateProtocolFormValues> = async (
     data,
   ) => {
-    // DEBUG: Log data collected by react-hook-form
-    console.log('[CreateProtocolForm] Data from react-hook-form:', data);
-    
-    setFormStatus("loading");
+    console.log("[CreateProtocolForm] Data from react-hook-form:", data);
+
+    setFormStatus("researching");
     setFormError(null);
+    setResearchProgress("Iniciando pesquisa médica...");
+
     try {
-      const result = await onSubmit(data); // This calls handleFormSubmit in NewProtocolPage
+      // Simulate research progress
+      setTimeout(
+        () => setResearchProgress("Consultando bases de dados médicas..."),
+        1000,
+      );
+      setTimeout(
+        () => setResearchProgress("Analisando literatura científica..."),
+        2000,
+      );
+      setTimeout(
+        () => setResearchProgress("Extraindo evidências clínicas..."),
+        3000,
+      );
+
+      setFormStatus("loading");
+      setResearchProgress("Criando protocolo baseado em evidências...");
+
+      const result = await onSubmit(data);
       if (result.success) {
         setFormStatus("success");
         if (onSuccess) onSuccess(result.data);
-        reset(); 
+        reset();
       } else {
         setFormStatus("error");
         setFormError(result.error || "Ocorreu um erro desconhecido.");
@@ -78,85 +126,257 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
     }
   };
 
+  const sourceLabels = {
+    pubmed: "PubMed",
+    scielo: "SciELO",
+    cfm: "CFM",
+    mec: "MEC",
+  };
+
   return (
-    <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
-      <div>
-        <Label
-          htmlFor="title"
-          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          Título do Protocolo
-        </Label>
-        <Input
-          id="title"
-          type="text"
-          {...register("title")}
-          className={errors.title ? "border-red-500" : ""}
-          aria-invalid={errors.title ? "true" : "false"}
-        />
-        {errors.title && (
-          <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>
-        )}
-      </div>
-
-      <div>
-        <Label
-          htmlFor="condition"
-          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          Condição Médica Principal
-        </Label>
-        <Input
-          id="condition"
-          type="text"
-          {...register("condition")}
-          className={errors.condition ? "border-red-500" : ""}
-          aria-invalid={errors.condition ? "true" : "false"}
-        />
-        {errors.condition && (
-          <p className="mt-1 text-xs text-red-600">
-            {errors.condition.message}
-          </p>
-        )}
-      </div>
-
-      {formStatus === "error" && formError && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro!</AlertTitle>
-          <AlertDescription>{formError}</AlertDescription>
-        </Alert>
+    <div className="space-y-8">
+      {/* Progress indicator during research */}
+      {(formStatus === "researching" || formStatus === "loading") && (
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/30">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-3">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              <div>
+                <p className="font-medium text-blue-900 dark:text-blue-100">
+                  {formStatus === "researching"
+                    ? "Pesquisando Literatura Médica"
+                    : "Gerando Protocolo"}
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  {researchProgress}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {formStatus === "success" && (
-        <Alert
-          variant="default"
-          className="border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/30"
-        >
-          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertTitle className="text-green-700 dark:text-green-300">
-            Sucesso!
-          </AlertTitle>
-          <AlertDescription className="text-green-600 dark:text-green-400">
-            Protocolo iniciado. Você será redirecionado.
-          </AlertDescription>
-        </Alert>
-      )}
+      <form onSubmit={handleSubmit(processSubmit)} className="space-y-8">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Informações Básicas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="title" className="text-sm font-medium">
+                Título do Protocolo
+              </Label>
+              <Input
+                id="title"
+                placeholder="Ex: Protocolo de Atendimento à Bradicardia"
+                {...register("title")}
+                className={errors.title ? "border-red-500" : ""}
+              />
+              {errors.title && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.title.message}
+                </p>
+              )}
+            </div>
 
-      <Button
-        type="submit"
-        disabled={formStatus === "loading"}
-        className="w-full sm:w-auto"
-      >
-        {formStatus === "loading" ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Criando...
-          </>
-        ) : (
-          "Iniciar Criação do Protocolo"
+            <div>
+              <Label htmlFor="condition" className="text-sm font-medium">
+                Condição Médica Principal
+              </Label>
+              <Input
+                id="condition"
+                placeholder="Ex: Bradicardia sintomática"
+                {...register("condition")}
+                className={errors.condition ? "border-red-500" : ""}
+              />
+              {errors.condition && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.condition.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="targetPopulation" className="text-sm font-medium">
+                População Alvo (Opcional)
+              </Label>
+              <Input
+                id="targetPopulation"
+                placeholder="Ex: Pacientes adultos em emergência"
+                {...register("targetPopulation")}
+                className={errors.targetPopulation ? "border-red-500" : ""}
+              />
+              {errors.targetPopulation && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.targetPopulation.message}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Generation Mode */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Modo de Geração
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="automatic"
+                  value="automatic"
+                  {...register("generationMode")}
+                  className="h-4 w-4 text-blue-600"
+                />
+                <Label htmlFor="automatic" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Geração Automática com IA</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    A IA gera todas as 13 seções do protocolo baseado na
+                    pesquisa médica
+                  </div>
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="manual"
+                  value="manual"
+                  {...register("generationMode")}
+                  className="h-4 w-4 text-blue-600"
+                />
+                <Label htmlFor="manual" className="flex-1 cursor-pointer">
+                  <div className="font-medium">
+                    Criação Manual com Assistência IA
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Você edita seção por seção com sugestões da IA baseadas na
+                    pesquisa
+                  </div>
+                </Label>
+              </div>
+            </div>
+            {errors.generationMode && (
+              <p className="mt-2 text-xs text-red-600">
+                {errors.generationMode.message}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Research Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Configuração da Pesquisa Médica
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="mb-3 block text-sm font-medium">
+                Fontes de Pesquisa
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                {(["pubmed", "scielo", "cfm", "mec"] as const).map((source) => (
+                  <div key={source} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={source}
+                      value={source}
+                      {...register("researchSources")}
+                      className="h-4 w-4 text-blue-600"
+                    />
+                    <Label htmlFor={source} className="cursor-pointer">
+                      {sourceLabels[source]}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {errors.researchSources && (
+                <p className="mt-2 text-xs text-red-600">
+                  {errors.researchSources.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="yearRange" className="text-sm font-medium">
+                Período de Pesquisa (anos)
+              </Label>
+              <select
+                id="yearRange"
+                {...register("yearRange", { valueAsNumber: true })}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value={1}>Último ano</option>
+                <option value={3}>Últimos 3 anos</option>
+                <option value={5}>Últimos 5 anos</option>
+                <option value={10}>Últimos 10 anos</option>
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Error Display */}
+        {formStatus === "error" && formError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro!</AlertTitle>
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
         )}
-      </Button>
-    </form>
+
+        {/* Success Display */}
+        {formStatus === "success" && (
+          <Alert className="border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/30">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertTitle className="text-green-700 dark:text-green-300">
+              Protocolo Criado com Sucesso!
+            </AlertTitle>
+            <AlertDescription className="text-green-600 dark:text-green-400">
+              Pesquisa médica concluída. Redirecionando para o editor...
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-4">
+          <Button
+            type="submit"
+            disabled={formStatus === "loading" || formStatus === "researching"}
+            size="lg"
+          >
+            {formStatus === "researching" ? (
+              <>
+                <Search className="mr-2 h-4 w-4 animate-spin" />
+                Pesquisando...
+              </>
+            ) : formStatus === "loading" ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Criando Protocolo...
+              </>
+            ) : (
+              <>
+                <Zap className="mr-2 h-4 w-4" />
+                {watchedGenerationMode === "automatic"
+                  ? "Gerar Protocolo Completo"
+                  : "Iniciar Criação Manual"}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };

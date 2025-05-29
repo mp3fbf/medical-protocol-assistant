@@ -41,3 +41,14 @@ coverage/
 # Other common ignores
 *.log
 *.tsbuildinfo
+
+# Test files (temporary)
+test-*.js
+debug-*.js
+create-test-protocol.js
+test-manual-final.html
+test-screenshots-*/
+test-visual-confirmation-screenshots/
+playwright-simple.config.ts
+debug-simple.spec.ts
+test-simple-playwright.spec.ts
