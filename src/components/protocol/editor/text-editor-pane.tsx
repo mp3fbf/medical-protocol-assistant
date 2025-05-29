@@ -61,11 +61,8 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
     const currentSectionNumber = currentSection.sectionNumber;
     const lastSectionNumber = lastSectionNumberRef.current;
 
-    // Se mudou de seção
-    if (
-      lastSectionNumber !== null &&
-      lastSectionNumber !== currentSectionNumber
-    ) {
+    // Se mudou de seção OU é primeira carga
+    if (lastSectionNumber !== currentSectionNumber) {
       console.log(
         "[FIXED] Seção mudou de",
         lastSectionNumber,
@@ -78,14 +75,10 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
       setLocalContent(currentSection.content);
       setIsDirty(false);
       setValidationStatus(null);
-    } else if (lastSectionNumber === null) {
-      // Primeira vez carregando
-      console.log("[FIXED] Primeira carga da seção", currentSectionNumber);
-      setLocalContent(currentSection.content);
     }
 
     lastSectionNumberRef.current = currentSectionNumber;
-  }, [currentSection]);
+  }, [currentSection]); // Watch the entire section object for changes
 
   const handleSave = useCallback(async () => {
     if (!currentSection || localContent === null) {
@@ -139,7 +132,7 @@ export const TextEditorPane: React.FC<TextEditorPaneProps> = ({
       setLocalContent(generatedContent);
       setIsDirty(true);
       setValidationStatus("valid");
-    } catch (error) {
+    } catch (_error) {
       setValidationStatus("error");
     } finally {
       setIsGenerating(false);
