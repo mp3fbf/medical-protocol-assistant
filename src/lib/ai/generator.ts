@@ -24,10 +24,12 @@ import type {} from // ProtocolFullContent as _ProtocolFullContent, // Marked as
 "@/types/protocol";
 import {
   DEFAULT_CHAT_MODEL,
+  DEFAULT_LARGE_CONTEXT_MODEL,
   JSON_RESPONSE_FORMAT,
   DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
   DEFAULT_MAX_TOKENS_SECTION_GENERATION,
   DEFAULT_TEMPERATURE,
+  LARGE_DOCUMENT_THRESHOLD,
 } from "./config";
 import { OpenAIError } from "./errors";
 import {
@@ -48,9 +50,22 @@ export async function generateFullProtocolAI(
     specificInstructions,
   );
 
+  // Estimate token count (rough approximation: 1 token ≈ 4 characters)
+  const estimatedTokens = Math.ceil(
+    (PROTOCOL_GENERATION_SYSTEM_PROMPT.length + userPrompt.length) / 4,
+  );
+  const modelToUse =
+    estimatedTokens > LARGE_DOCUMENT_THRESHOLD
+      ? DEFAULT_LARGE_CONTEXT_MODEL
+      : DEFAULT_CHAT_MODEL;
+
+  console.log(
+    `[generateFullProtocolAI] Estimated tokens: ${estimatedTokens}, using model: ${modelToUse}`,
+  );
+
   try {
     const response = await createChatCompletion(
-      DEFAULT_CHAT_MODEL,
+      modelToUse,
       [
         { role: "system", content: PROTOCOL_GENERATION_SYSTEM_PROMPT },
         { role: "user", content: userPrompt },

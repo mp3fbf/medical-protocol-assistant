@@ -6,13 +6,16 @@
  */
 
 // OpenAI Model Names
-export const GPT_4_TURBO_PREVIEW = "gpt-4-turbo-preview"; // Alias for the latest GPT-4 Turbo with preview features
-export const GPT_4_OMNI = "gpt-4o"; // Alias for the latest GPT-4 Omni model
+export const GPT_4_TURBO_PREVIEW = "gpt-4-turbo-preview"; // 128k context window
+export const GPT_4_TURBO = "gpt-4-turbo"; // 128k context window
+export const GPT_4_OMNI = "gpt-4o"; // 30k token limit for free tier
+export const GPT_4_OMNI_MINI = "gpt-4o-mini"; // Lower cost alternative
 export const GPT_4 = "gpt-4";
 export const GPT_3_5_TURBO = "gpt-3.5-turbo";
 
 // Default Model Selections
 export const DEFAULT_CHAT_MODEL = GPT_4_OMNI; // Primary model for chat/generation tasks
+export const DEFAULT_LARGE_CONTEXT_MODEL = GPT_4_TURBO; // For large documents
 export const DEFAULT_RESEARCH_ASSISTANT_MODEL = GPT_4_TURBO_PREVIEW; // Model for research summarization/extraction
 
 // Default Parameters
@@ -32,5 +35,15 @@ export const DEEPRESEARCH_API_TIMEOUT_MS = 45000; // 45 seconds
 export const DEFAULT_API_RETRY_ATTEMPTS = 3;
 export const DEFAULT_API_RETRY_DELAY_MS = 1000;
 
-// Other AI-related configurations can be added here
-// e.g., context window sizes, specific prompt versioning flags, etc.
+// Token limits per model (approximate)
+export const MODEL_TOKEN_LIMITS = {
+  [GPT_4_TURBO]: 128000,
+  [GPT_4_TURBO_PREVIEW]: 128000,
+  [GPT_4_OMNI]: 30000, // Free tier limit
+  [GPT_4_OMNI_MINI]: 128000,
+  [GPT_4]: 8192,
+  [GPT_3_5_TURBO]: 16385,
+} as const;
+
+// Document size thresholds
+export const LARGE_DOCUMENT_THRESHOLD = 25000; // tokens
