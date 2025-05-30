@@ -15,7 +15,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { User, Building, Stethoscope, Plus, Trash2 } from "lucide-react";
+import { ensureHtml, isHtml } from "@/lib/utils/html-converter";
 
 interface SectionEditorProps {
   section: ProtocolSectionData;
@@ -519,21 +521,27 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   // Generic text editor for other sections
   const renderTextEditor = () => {
     // Always show formatted content, even in edit mode
-    const textContent = formatStructuredContent(localContent);
+    let textContent: string;
+
+    if (typeof localContent === "string") {
+      // If it's already a string, ensure it's in HTML format
+      textContent = ensureHtml(localContent);
+    } else {
+      // If it's structured content, format it and convert to HTML
+      textContent = ensureHtml(formatStructuredContent(localContent));
+    }
 
     return (
       <div className="space-y-4">
         <div>
           <Label htmlFor="sectionContent">Conteúdo da Seção</Label>
           {typeof localContent === "string" || !localContent ? (
-            <Textarea
-              id="sectionContent"
-              value={textContent}
-              onChange={(e) => handleContentUpdate(e.target.value)}
+            <RichTextEditor
+              content={textContent}
+              onChange={handleContentUpdate}
               disabled={!isEditing}
-              rows={12}
-              className="text-sm"
               placeholder="Digite o conteúdo desta seção..."
+              className="min-h-[300px]"
             />
           ) : (
             <div
@@ -549,15 +557,14 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       estruturado.
                     </AlertDescription>
                   </Alert>
-                  <Textarea
-                    value={textContent}
-                    onChange={(e) => {
+                  <RichTextEditor
+                    content={textContent}
+                    onChange={(content) => {
                       // For now, store as string when editing structured content
-                      handleContentUpdate(e.target.value);
+                      handleContentUpdate(content);
                     }}
-                    rows={12}
-                    className="text-sm"
                     placeholder="Digite o conteúdo formatado..."
+                    className="min-h-[300px]"
                   />
                 </div>
               ) : (
@@ -598,7 +605,17 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     let displayContent;
 
     if (typeof localContent === "string") {
-      displayContent = localContent;
+      // Check if it's HTML or plain text
+      if (isHtml(localContent)) {
+        displayContent = (
+          <div
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: localContent }}
+          />
+        );
+      } else {
+        displayContent = localContent;
+      }
     } else if (typeof localContent === "object" && localContent !== null) {
       // For structured content, show a formatted view
       if (section.sectionNumber === 1) {

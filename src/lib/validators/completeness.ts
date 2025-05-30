@@ -10,7 +10,8 @@ import type {
   ValidatorFunction,
   ValidationRuleDefinition,
 } from "@/types/validation";
-import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific"; // To get section titles
+import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
+import { isContentEmpty } from "./utils/content-processor"; // To get section titles
 
 const REQUIRED_SECTION_COUNT = 13;
 
@@ -26,19 +27,10 @@ const checkAllSectionsHaveContent: ValidatorFunction = (
   for (let i = 1; i <= REQUIRED_SECTION_COUNT; i++) {
     const sectionKey = i.toString();
     const section = protocolContent[sectionKey];
-    let isContentMissing = true;
 
-    if (section && section.content !== null && section.content !== undefined) {
-      if (typeof section.content === "string") {
-        isContentMissing = section.content.trim() === "";
-      } else if (typeof section.content === "object") {
-        // For objects or arrays, check if they are empty
-        isContentMissing = Object.keys(section.content).length === 0;
-      } else {
-        // Other types are considered as having content unless specifically handled
-        isContentMissing = false;
-      }
-    }
+    // Use content processor to handle HTML and structured content
+    const isContentMissing =
+      !section || !section.content || isContentEmpty(section.content);
 
     if (isContentMissing) {
       const sectionTitlePT =
