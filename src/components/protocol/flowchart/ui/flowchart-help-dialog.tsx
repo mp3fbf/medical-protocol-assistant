@@ -3,7 +3,7 @@
  */
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   MousePointer,
   Move,
@@ -25,12 +26,15 @@ import {
 interface FlowchartHelpDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onDontShowAgain?: (value: boolean) => void;
 }
 
 export const FlowchartHelpDialog: React.FC<FlowchartHelpDialogProps> = ({
   isOpen,
   onClose,
+  onDontShowAgain,
 }) => {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
@@ -203,8 +207,32 @@ export const FlowchartHelpDialog: React.FC<FlowchartHelpDialogProps> = ({
           </section>
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button onClick={onClose}>Entendi</Button>
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="dont-show-again"
+              checked={dontShowAgain}
+              onCheckedChange={(checked) => {
+                setDontShowAgain(checked as boolean);
+              }}
+            />
+            <label
+              htmlFor="dont-show-again"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Não mostrar novamente
+            </label>
+          </div>
+          <Button
+            onClick={() => {
+              if (dontShowAgain && onDontShowAgain) {
+                onDontShowAgain(true);
+              }
+              onClose();
+            }}
+          >
+            Entendi
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

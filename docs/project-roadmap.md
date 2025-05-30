@@ -2,13 +2,13 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 30 de maio de 2025  
-**Versão:** v1.4  
+**Data:** 30 de janeiro de 2025  
+**Versão:** v1.5  
 **Stack:** Next.js 15.3.2, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
 
-O projeto evoluiu significativamente e agora está **95% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, e visualização completa de flowcharts com ReactFlow. Faltam principalmente capacidades de edição de flowcharts e alguns refinamentos de UI/UX.
+O projeto evoluiu significativamente e agora está **98% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, visualização e edição completa de flowcharts com ReactFlow, e sistema de onboarding para primeira visita. Faltam apenas editor de texto rico e alguns refinamentos finais de UI/UX.
 
 ---
 
@@ -67,7 +67,8 @@ O projeto evoluiu significativamente e agora está **95% funcional**. Os módulo
 - Visualização completa integrada ao editor ✅
 - Modo tela cheia para flowcharts ✅
 - Controles customizados com melhor UX ✅
-- Edição manual ainda não implementada ⚠️
+- Edição manual de flowcharts ✅ **[IMPLEMENTADO]**
+- Sistema de onboarding com "Não mostrar novamente" ✅ **[NOVO]**
 
 ### ❌ **NÃO IMPLEMENTADO** (Crítico para MVP)
 
@@ -84,7 +85,6 @@ O projeto evoluiu significativamente e agora está **95% funcional**. Os módulo
 
 #### 🔧 Pendências Identificadas
 
-- **Flowchart editing capabilities** ❌ (visualização funciona, falta edição)
 - **Refinamentos visuais** ❌ (espaçamento e layout geral)
 - **Editor de texto rico** ❌ (usando plain text atualmente)
 
@@ -391,7 +391,7 @@ const handleAIGeneration = async (formData) => {
 
 ## 🎉 **CONQUISTAS RECENTES**
 
-### Semana de 29-30/05/2025
+### Semana de 29-30/01/2025
 
 **✅ Sistema de Validação Profissional Implementado**
 
@@ -433,12 +433,25 @@ const handleAIGeneration = async (formData) => {
   - Controles customizados com tooltips e melhor UX
   - Mensagens dinâmicas durante geração
 
-**🔄 Próximo Foco: Edição e Polish**
+**✅ Novos Recursos Implementados (30/01/2025)**
 
-- Capacidades de edição manual de flowcharts
+- **Edição Manual de Flowcharts** totalmente funcional:
+  - Criação de novos nós (Start, End, Decision, Action, Medication, Triage)
+  - Conexões entre nós com drag & drop
+  - Deleção de nós e conexões
+  - Edição de conteúdo dos nós com duplo clique
+  - Salvamento automático de alterações
+- **Sistema de Onboarding** para flowchart editor:
+  - Manual de ajuda abre automaticamente na primeira visita
+  - Opção "Não mostrar novamente" com persistência em localStorage
+  - Manual sempre acessível pelo botão de ajuda
+
+**🔄 Próximo Foco: Polish Final**
+
 - Editor de texto rico (TipTap ou similar)
 - Refinamentos finais de UI/UX para produção
+- Testes completos e otimizações de performance
 
 ---
 
-_Última atualização: 30/05/2025 - Claude Code_
+_Última atualização: 30/01/2025 - Claude Code_

@@ -124,17 +124,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Dynamic loading messages during protocol and flowchart generation
 - Fullscreen mode for flowchart visualization
 - Custom flowchart controls with better layout and tooltips
+- **Manual flowchart editing capabilities** with node creation, deletion, and connection management
+- **First-visit onboarding system** for flowchart editor with "Don't show again" option
 
 **🔄 Known Issues (Pending):**
 
 - Rich text editor not implemented (using plain text)
-- Flowchart editing capabilities not implemented (view-only)
 - Visual layout refinements needed for better spacing
 
 **📋 Next Priority Tasks:**
 
-- Implement flowchart manual editing capabilities
 - Implement rich text editor for better content editing
 - Add protocol version comparison feature
 - Implement advanced collaboration features
 - Add batch export functionality
+- Improve overall UI/UX polish
