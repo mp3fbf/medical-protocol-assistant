@@ -18,12 +18,14 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./node-types/node-styles.css";
+import { Info } from "lucide-react";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
 import { CustomControls } from "./ui/custom-controls";
 import { FlowchartToolbar } from "./ui/flowchart-toolbar";
 import { NodeEditDialog } from "./ui/node-edit-dialog";
+import { FlowchartHelpDialog } from "./ui/flowchart-help-dialog";
 import type {
   CustomFlowNode,
   CustomFlowNodeData,
@@ -50,6 +52,8 @@ const EditableFlowchartCanvasContent: React.FC<
   const [selectedNode, setSelectedNode] = useState<CustomFlowNode | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [showFirstTimeTip, setShowFirstTimeTip] = useState(true);
 
   // Track changes
   const handleNodesChange = useCallback(
@@ -166,7 +170,29 @@ const EditableFlowchartCanvasContent: React.FC<
           onSave={handleSave}
           hasChanges={hasChanges}
           canDelete={nodes.some((node) => node.selected)}
+          onHelp={() => setIsHelpOpen(true)}
         />
+      )}
+
+      {!isReadOnly && showFirstTimeTip && (
+        <div className="mb-4 flex items-start gap-3 rounded-lg bg-blue-50 p-4 text-sm">
+          <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+          <div className="flex-1">
+            <p className="mb-1 font-semibold text-blue-900">
+              Dica: Para conectar nós, arraste dos pontos coloridos nas bordas!
+            </p>
+            <p className="text-blue-700">
+              Não clique no centro do nó - isso abre o editor. Use os pontos de
+              conexão que ficam maiores quando você passa o mouse.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowFirstTimeTip(false)}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       <div className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
@@ -205,6 +231,11 @@ const EditableFlowchartCanvasContent: React.FC<
           onSave={handleNodeUpdate}
         />
       )}
+
+      <FlowchartHelpDialog
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
     </>
   );
 };

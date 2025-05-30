@@ -12,6 +12,7 @@ import {
   Diamond,
   Pill,
   Activity,
+  HelpCircle,
 } from "lucide-react";
 
 interface FlowchartToolbarProps {
@@ -20,6 +21,7 @@ interface FlowchartToolbarProps {
   onSave: () => void;
   hasChanges: boolean;
   canDelete: boolean;
+  onHelp?: () => void;
 }
 
 export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
@@ -28,6 +30,7 @@ export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
   onSave,
   hasChanges,
   canDelete,
+  onHelp,
 }) => {
   const nodeTypes = [
     { type: "start", icon: Circle, label: "Início", color: "text-green-600" },
@@ -73,6 +76,20 @@ export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
+        {onHelp && (
+          <>
+            <button
+              onClick={onHelp}
+              className="flex items-center gap-1 rounded px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+              title="Ajuda"
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span>Ajuda</span>
+            </button>
+            <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+          </>
+        )}
+
         <button
           onClick={onDeleteSelected}
           disabled={!canDelete}
