@@ -119,30 +119,31 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
             Fluxograma: {protocolTitle || "Protocolo"}
           </h3>
           <div className="flex items-center gap-2">
-            {canEdit && (localFlowchart || flowchartData)?.nodes.length > 0 && (
-              <button
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium transition-colors ${
-                  isEditMode
-                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                }`}
-                title={isEditMode ? "Visualizar" : "Editar"}
-              >
-                {isEditMode ? (
-                  <>
-                    <Eye className="h-4 w-4" />
-                    Visualizar
-                  </>
-                ) : (
-                  <>
-                    <Edit3 className="h-4 w-4" />
-                    Editar
-                  </>
-                )}
-              </button>
-            )}
-            {(localFlowchart || flowchartData)?.nodes.length > 0 && (
+            {canEdit &&
+              ((localFlowchart || flowchartData)?.nodes?.length ?? 0) > 0 && (
+                <button
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium transition-colors ${
+                    isEditMode
+                      ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  }`}
+                  title={isEditMode ? "Visualizar" : "Editar"}
+                >
+                  {isEditMode ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Visualizar
+                    </>
+                  ) : (
+                    <>
+                      <Edit3 className="h-4 w-4" />
+                      Editar
+                    </>
+                  )}
+                </button>
+              )}
+            {((localFlowchart || flowchartData)?.nodes?.length ?? 0) > 0 && (
               <button
                 onClick={() => setIsFullscreen(true)}
                 className="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
