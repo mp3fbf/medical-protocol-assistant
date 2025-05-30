@@ -7,7 +7,8 @@ import { ProtocolFlowchartCanvas } from "@/components/protocol/flowchart/protoco
 import { EditableFlowchartCanvas } from "@/components/protocol/flowchart/editable-flowchart-canvas";
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { Maximize2, Edit3, Eye } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { trpc } from "@/lib/api/client";
 import { toast } from "sonner";
 
@@ -31,6 +32,11 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
+
+  // Update local flowchart when prop changes
+  React.useEffect(() => {
+    setLocalFlowchart(flowchartData);
+  }, [flowchartData]);
 
   const updateFlowchartMutation = trpc.flowchart.updateManual.useMutation({
     onSuccess: () => {
@@ -77,10 +83,19 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
       );
     }
 
+    // Clean up edge types to avoid ReactFlow warnings
+    const cleanedData = {
+      ...currentData,
+      edges: currentData.edges.map((edge) => ({
+        ...edge,
+        type: edge.type === "conditional" ? "default" : edge.type || "default",
+      })),
+    };
+
     if (isEditMode) {
       return (
         <EditableFlowchartCanvas
-          flowchartData={currentData}
+          flowchartData={cleanedData}
           onSave={handleSaveFlowchart}
           isReadOnly={false}
           protocolTitle={protocolTitle}
@@ -90,8 +105,8 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
 
     return (
       <ProtocolFlowchartCanvas
-        nodes={currentData.nodes}
-        edges={currentData.edges}
+        nodes={cleanedData.nodes}
+        edges={cleanedData.edges}
       />
     );
   };
@@ -147,23 +162,36 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
       {/* Fullscreen Dialog */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
         <DialogContent className="m-0 h-screen w-screen max-w-[100vw] p-0">
+          <VisuallyHidden>
+            <DialogTitle>Fluxograma em Tela Cheia</DialogTitle>
+          </VisuallyHidden>
           <div className="flex h-full w-full flex-col">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
               <h3 className="text-xl font-medium text-gray-800 dark:text-gray-100">
                 Fluxograma: {protocolTitle || "Protocolo"}
               </h3>
               <div className="flex items-center gap-2">
-                {canEdit && !isEditMode && (
+                {canEdit && (
                   <button
-                    onClick={() => {
-                      setIsEditMode(true);
-                      setIsFullscreen(false);
-                    }}
-                    className="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                    title="Editar fluxograma"
+                    onClick={() => setIsEditMode(!isEditMode)}
+                    className={`mr-4 flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isEditMode
+                        ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    }`}
+                    title={isEditMode ? "Visualizar" : "Editar fluxograma"}
                   >
-                    <Edit3 className="h-4 w-4" />
-                    Editar
+                    {isEditMode ? (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        Visualizar
+                      </>
+                    ) : (
+                      <>
+                        <Edit3 className="h-4 w-4" />
+                        Editar
+                      </>
+                    )}
                   </button>
                 )}
               </div>
