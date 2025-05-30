@@ -25,7 +25,7 @@ import {
 import type {
   CustomFlowNode,
   CustomFlowNodeData,
-  MedicationData,
+  FlowchartMedication,
 } from "@/types/flowchart";
 
 interface NodeEditDialogProps {
@@ -101,7 +101,7 @@ export const NodeEditDialog: React.FC<NodeEditDialogProps> = ({
             <div className="space-y-4">
               <Label>Medicações</Label>
               {((nodeData as any).medications || []).map(
-                (med: MedicationData, index: number) => (
+                (med: FlowchartMedication, index: number) => (
                   <div key={index} className="space-y-2 rounded-md border p-3">
                     <Input
                       placeholder="Nome do medicamento"

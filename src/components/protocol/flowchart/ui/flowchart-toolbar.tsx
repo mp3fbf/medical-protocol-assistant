@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 
 interface FlowchartToolbarProps {
-  onAddNode: (type: string) => void;
+  onAddNode: (
+    type: "action" | "medication" | "decision" | "triage" | "start" | "end",
+  ) => void;
   onDeleteSelected: () => void;
   onSave: () => void;
   hasChanges: boolean;
@@ -32,7 +34,12 @@ export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
   canDelete,
   onHelp,
 }) => {
-  const nodeTypes = [
+  const nodeTypes: Array<{
+    type: "action" | "medication" | "decision" | "triage" | "start" | "end";
+    icon: any;
+    label: string;
+    color: string;
+  }> = [
     { type: "start", icon: Circle, label: "Início", color: "text-green-600" },
     { type: "end", icon: Circle, label: "Fim", color: "text-red-600" },
     {

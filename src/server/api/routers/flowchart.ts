@@ -401,7 +401,7 @@ export const flowchartRouter = router({
 
         // Check if user has permission to edit
         if (
-          protocol.creatorId !== ctx.session.user.id &&
+          protocol.createdById !== ctx.session.user.id &&
           ctx.session.user.role !== "ADMIN"
         ) {
           throw new TRPCError({

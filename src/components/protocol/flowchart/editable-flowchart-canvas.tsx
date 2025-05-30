@@ -28,6 +28,7 @@ import { FlowchartHelpDialog } from "./ui/flowchart-help-dialog";
 import type {
   CustomFlowNode,
   CustomFlowNodeData,
+  CustomFlowEdge,
   FlowchartDefinition,
 } from "@/types/flowchart";
 
@@ -108,7 +109,7 @@ const EditableFlowchartCanvasContent: React.FC<
 
   // Handle node click for editing
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
+    (_event: React.MouseEvent, node: Node) => {
       if (!isReadOnly) {
         setSelectedNode(node as CustomFlowNode);
         setIsEditDialogOpen(true);
@@ -119,7 +120,9 @@ const EditableFlowchartCanvasContent: React.FC<
 
   // Add new node
   const addNode = useCallback(
-    (type: string) => {
+    (
+      type: "action" | "medication" | "decision" | "triage" | "start" | "end",
+    ) => {
       const newNode: CustomFlowNode = {
         id: `node-${Date.now()}`,
         type,
@@ -160,7 +163,13 @@ const EditableFlowchartCanvasContent: React.FC<
       const viewport = reactFlowInstance.getViewport();
       const flowchart: FlowchartDefinition = {
         nodes: nodes as CustomFlowNode[],
-        edges,
+        edges: edges.map(
+          (edge) =>
+            ({
+              ...edge,
+              type: edge.type === "conditional" ? "conditional" : "default",
+            }) as CustomFlowEdge,
+        ),
         viewport: {
           x: viewport.x,
           y: viewport.y,
@@ -288,7 +297,12 @@ function getDefaultNodeData(type: string): CustomFlowNodeData {
         priority: "medium",
       };
     default:
-      return { type: "action", title: "Novo Nó", priority: "medium" };
+      return {
+        type: "action",
+        title: "Novo Nó",
+        actions: ["Ação 1"],
+        priority: "medium",
+      };
   }
 }
 
