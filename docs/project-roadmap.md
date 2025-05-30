@@ -3,12 +3,12 @@
 ## 📋 Status Atual do Projeto
 
 **Data:** 30 de maio de 2025  
-**Versão:** v1.3  
+**Versão:** v1.4  
 **Stack:** Next.js 15.3.2, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
 
-O projeto evoluiu significativamente e agora está **92% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, e sistema de export PDF/DOCX funcional. Faltam principalmente a visualização de flowcharts e refinamentos de UI/UX.
+O projeto evoluiu significativamente e agora está **95% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, e visualização completa de flowcharts com ReactFlow. Faltam principalmente capacidades de edição de flowcharts e alguns refinamentos de UI/UX.
 
 ---
 
@@ -59,12 +59,15 @@ O projeto evoluiu significativamente e agora está **92% funcional**. Os módulo
 
 #### 📊 Flowcharts & Visualização
 
-- **Status**: ✅ **PARCIALMENTE FUNCIONAL**
+- **Status**: ✅ **FUNCIONAL**
 - Smart flowchart generator com IA médica ✅
 - Detecção automática de tipo de protocolo ✅
 - Layout inteligente baseado em tipo médico ✅
-- Componentes ReactFlow com nodes customizados ✅
-- Renderização básica implementada ⚠️ (precisa conectar com editor)
+- Componentes ReactFlow com nodes customizados (incluindo Start/End) ✅
+- Visualização completa integrada ao editor ✅
+- Modo tela cheia para flowcharts ✅
+- Controles customizados com melhor UX ✅
+- Edição manual ainda não implementada ⚠️
 
 ### ❌ **NÃO IMPLEMENTADO** (Crítico para MVP)
 
@@ -81,7 +84,7 @@ O projeto evoluiu significativamente e agora está **92% funcional**. Os módulo
 
 #### 🔧 Pendências Identificadas
 
-- **Flowchart visual rendering** ❌ (geração funciona, falta visualização)
+- **Flowchart editing capabilities** ❌ (visualização funciona, falta edição)
 - **Refinamentos visuais** ❌ (espaçamento e layout geral)
 - **Editor de texto rico** ❌ (usando plain text atualmente)
 
@@ -405,6 +408,7 @@ const handleAIGeneration = async (formData) => {
 - Upload e parsing de documentos médicos
 - Research automatizado + geração end-to-end
 - Seleção automática de modelo para documentos grandes
+- Mensagens dinâmicas de progresso durante geração
 
 **✅ Editor Robusto e Estável**
 
@@ -421,10 +425,17 @@ const handleAIGeneration = async (formData) => {
 - **Dashboard Corrigido** com estatísticas reais e atividade recente clicável
 - **Lista de Protocolos Aprimorada** com busca, filtros por status e ordenação
 - **Arquivamento em Massa** de protocolos de teste (86 protocolos arquivados)
+- **Sistema de Flowcharts Completo**:
+  - Geração inteligente com IA médica
+  - Visualização integrada com ReactFlow
+  - Componentes customizados (Start, End, Decision, Action, Medication, Triage)
+  - Modo tela cheia para visualização
+  - Controles customizados com tooltips e melhor UX
+  - Mensagens dinâmicas durante geração
 
-**🔄 Próximo Foco: Visualização e Polish**
+**🔄 Próximo Foco: Edição e Polish**
 
-- Integração visual de flowcharts com ReactFlow
+- Capacidades de edição manual de flowcharts
 - Editor de texto rico (TipTap ou similar)
 - Refinamentos finais de UI/UX para produção
 

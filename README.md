@@ -2,6 +2,27 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
+## 🚀 Status do Projeto (v1.4)
+
+**95% Funcional** - Sistema completo de geração, validação, visualização e exportação de protocolos médicos.
+
+### ✅ Recursos Implementados
+
+- **Autenticação & RBAC**: Sistema completo com roles (CREATOR/REVIEWER/ADMIN)
+- **Geração por IA**: Multi-provider (OpenAI, Anthropic, Gemini) com 3 modos
+- **Upload de Documentos**: Suporte para PDF, DOCX, TXT e Markdown
+- **Editor de Protocolos**: 13 seções com salvamento otimista
+- **Validação Avançada**: 42+ validações médicas com categorização
+- **Fluxogramas Inteligentes**: Geração automática com ReactFlow
+- **Exportação**: PDF/DOCX com formatação ABNT
+- **Dashboard**: Estatísticas em tempo real e gerenciamento de status
+
+### 🔄 Melhorias Recentes
+
+- **Correção do indicador de zoom**: Atualização dinâmica da porcentagem
+- **Modo tela cheia otimizado**: Uso completo da altura da tela
+- **Interface refinada**: Remoção de botões duplicados
+
 ## Project Setup
 
 ### Prerequisites

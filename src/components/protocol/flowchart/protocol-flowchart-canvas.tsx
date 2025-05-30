@@ -19,14 +19,21 @@ import "reactflow/dist/style.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
-import { FlowControls } from "./ui/controls";
+import { CustomControls } from "./ui/custom-controls";
 import type {
   CustomFlowNode,
   CustomFlowEdge,
   CustomFlowNodeData,
 } from "@/types/flowchart";
 
-const initialNodes: CustomFlowNode[] = [
+interface ProtocolFlowchartCanvasProps {
+  nodes?: CustomFlowNode[];
+  edges?: CustomFlowEdge[];
+  onNodesChange?: (nodes: CustomFlowNode[]) => void;
+  onEdgesChange?: (edges: CustomFlowEdge[]) => void;
+}
+
+const defaultNodes: CustomFlowNode[] = [
   {
     id: "1",
     type: "triage",
@@ -70,7 +77,7 @@ const initialNodes: CustomFlowNode[] = [
   },
 ];
 
-const initialEdges: CustomFlowEdge[] = [
+const defaultEdges: CustomFlowEdge[] = [
   { id: "e1-2", source: "1", target: "2", type: "default", animated: true },
   {
     id: "e2-3",
@@ -90,10 +97,19 @@ const initialEdges: CustomFlowEdge[] = [
   },
 ];
 
-const ProtocolFlowchartCanvasContent: React.FC = () => {
+const ProtocolFlowchartCanvasContent: React.FC<
+  ProtocolFlowchartCanvasProps
+> = ({
+  nodes: propNodes,
+  edges: propEdges,
+  onNodesChange: _onNodesChangeProp,
+  onEdgesChange: _onEdgesChangeProp,
+}) => {
   const [_nodes, _setNodes, onNodesChange] = // _setNodes marked as unused
-    useNodesState<CustomFlowNodeData>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    useNodesState<CustomFlowNodeData>(propNodes || defaultNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    propEdges || defaultEdges,
+  );
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -101,7 +117,7 @@ const ProtocolFlowchartCanvasContent: React.FC = () => {
   );
 
   return (
-    <div className="h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
+    <div className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
       <ReactFlow
         nodes={_nodes} // use _nodes
         edges={edges}
@@ -114,17 +130,19 @@ const ProtocolFlowchartCanvasContent: React.FC = () => {
         className="protocol-flowchart-theme"
       >
         <Background gap={16} color="#e0e0e0" variant={BackgroundVariant.Dots} />
-        <FlowControls />
+        <CustomControls />
         <FlowMinimap />
       </ReactFlow>
     </div>
   );
 };
 
-export const ProtocolFlowchartCanvas: React.FC = () => {
+export const ProtocolFlowchartCanvas: React.FC<ProtocolFlowchartCanvasProps> = (
+  props,
+) => {
   return (
     <ReactFlowProvider>
-      <ProtocolFlowchartCanvasContent />
+      <ProtocolFlowchartCanvasContent {...props} />
     </ReactFlowProvider>
   );
 };

@@ -110,48 +110,83 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
     setResearchProgress("Iniciando pesquisa médica...");
 
     try {
-      // Different progress messages based on generation mode
+      // Dynamic progress messages based on generation mode
+      let messages: string[];
+
       if (data.generationMode === "material_based") {
-        setTimeout(
-          () => setResearchProgress("Processando documentos enviados..."),
-          500,
-        );
-        setTimeout(
-          () => setResearchProgress("Extraindo conteúdo médico..."),
-          1500,
-        );
+        messages = [
+          "📄 Processando documentos enviados...",
+          "🔍 Extraindo conteúdo médico relevante...",
+          "📊 Analisando estrutura do material...",
+          "💊 Identificando medicamentos e dosagens...",
+          "🔬 Validando informações médicas...",
+        ];
         if (data.supplementWithResearch) {
-          setTimeout(
-            () => setResearchProgress("Buscando evidências complementares..."),
-            2500,
+          messages.push(
+            "🌐 Buscando evidências complementares...",
+            "📚 Cruzando com literatura científica...",
           );
         }
+      } else if (data.generationMode === "automatic") {
+        messages = [
+          "🔍 Consultando PubMed e bases médicas...",
+          "📚 Analisando literatura científica recente...",
+          "🏥 Extraindo protocolos hospitalares similares...",
+          "💡 Identificando melhores práticas clínicas...",
+          "🧬 Correlacionando evidências encontradas...",
+          "✨ Sintetizando informações coletadas...",
+        ];
       } else {
-        // Simulate research progress for automatic mode
-        setTimeout(
-          () => setResearchProgress("Consultando bases de dados médicas..."),
-          1000,
-        );
-        setTimeout(
-          () => setResearchProgress("Analisando literatura científica..."),
-          2000,
-        );
-        setTimeout(
-          () => setResearchProgress("Extraindo evidências clínicas..."),
-          3000,
-        );
+        messages = [
+          "📝 Preparando estrutura do protocolo...",
+          "🏗️ Criando as 13 seções obrigatórias...",
+          "✅ Protocolo pronto para edição manual...",
+        ];
       }
 
+      // Cycle through messages
+      let messageIndex = 0;
+      const progressInterval = setInterval(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        setResearchProgress(messages[messageIndex]);
+      }, 2500);
+
+      // Store interval reference for cleanup
+      setTimeout(() => clearInterval(progressInterval), 30000); // Max 30 seconds
+
       setFormStatus("loading");
-      setResearchProgress(
+
+      // Continue with dynamic messages during protocol creation
+      const creationMessages =
         data.generationMode === "material_based"
-          ? "Estruturando protocolo a partir do material..."
-          : "Criando protocolo baseado em evidências...",
-      );
+          ? [
+              "🏗️ Estruturando protocolo a partir do material...",
+              "📋 Organizando as 13 seções obrigatórias...",
+              "🔧 Aplicando formatação ABNT...",
+              "✨ Finalizando protocolo médico...",
+            ]
+          : [
+              "🧠 Aplicando inteligência artificial médica...",
+              "📝 Gerando conteúdo baseado em evidências...",
+              "🏥 Adaptando para contexto hospitalar...",
+              "✅ Validando completude do protocolo...",
+            ];
+
+      let creationIndex = 0;
+      const creationInterval = setInterval(() => {
+        creationIndex = (creationIndex + 1) % creationMessages.length;
+        setResearchProgress(creationMessages[creationIndex]);
+      }, 3000);
 
       const result = await onSubmit(data);
+
+      // Clear intervals
+      clearInterval(progressInterval);
+      clearInterval(creationInterval);
+
       if (result.success) {
         setFormStatus("success");
+        setResearchProgress("✅ Protocolo criado com sucesso!");
         if (onSuccess) onSuccess(result.data);
         reset();
       } else {

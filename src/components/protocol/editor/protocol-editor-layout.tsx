@@ -23,8 +23,10 @@ import {
   ToggleRight,
   FileText,
   FileType,
+  GitBranch,
 } from "lucide-react";
 import { trpc } from "@/lib/api/client";
+import { useDynamicLoading } from "@/hooks/use-dynamic-loading";
 
 interface ProtocolEditorLayoutProps {
   protocolId: string;
@@ -75,6 +77,21 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
   isCreator = false,
 }) => {
   const exportMutation = trpc.export.exportProtocol.useMutation();
+  const flowchartMutation = trpc.flowchart.generateAndSave.useMutation();
+  const utils = trpc.useUtils();
+
+  const flowchartLoading = useDynamicLoading([
+    { message: "🧠 Analisando estrutura do protocolo...", duration: 2000 },
+    {
+      message: "🔍 Identificando pontos de decisão críticos...",
+      duration: 2500,
+    },
+    { message: "💊 Mapeando medicamentos e dosagens...", duration: 2000 },
+    { message: "🔗 Conectando fluxos de atendimento...", duration: 2500 },
+    { message: "✨ Aplicando inteligência médica...", duration: 2000 },
+    { message: "🎨 Otimizando layout visual...", duration: 1500 },
+  ]);
+
   const currentSection = protocolData
     ? {
         ...protocolData[currentSectionNumber.toString()],
@@ -252,6 +269,55 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
             >
               <FileType className="h-4 w-4" />
               DOCX
+            </button>
+          </div>
+
+          {/* Generate Flowchart Button */}
+          <div className="flex items-center gap-2 border-l border-gray-300 pl-3 dark:border-gray-600">
+            <button
+              onClick={async () => {
+                if (!protocolData) return;
+
+                flowchartLoading.start();
+                try {
+                  const sectionOneContent = protocolData["1"]?.content;
+                  const condition =
+                    typeof sectionOneContent === "string"
+                      ? sectionOneContent
+                      : protocolTitle;
+
+                  const result = await flowchartMutation.mutateAsync({
+                    protocolId,
+                    condition,
+                    content: protocolData,
+                    options: {
+                      mode: "smart",
+                      includeLayout: true,
+                      includeMedications: true,
+                    },
+                  });
+
+                  if (result) {
+                    // Invalidate the protocol query to refresh the flowchart data
+                    await utils.protocol.getById.invalidate({ protocolId });
+                    flowchartLoading.stop(
+                      true,
+                      "Fluxograma gerado com sucesso! 🎉",
+                    );
+                  }
+                } catch (error) {
+                  console.error("Flowchart generation error:", error);
+                  flowchartLoading.stop(false, "Erro ao gerar fluxograma");
+                }
+              }}
+              className="flex items-center gap-1 rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300 dark:hover:bg-purple-800"
+              disabled={
+                isLoading || !protocolData || flowchartMutation.isPending
+              }
+              title="Gerar Fluxograma Inteligente"
+            >
+              <GitBranch className="h-4 w-4" />
+              {flowchartMutation.isPending ? "Gerando..." : "Gerar Fluxograma"}
             </button>
           </div>
         </div>

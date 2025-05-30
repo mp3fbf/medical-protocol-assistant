@@ -99,6 +99,105 @@ export const flowchartRouter = router({
       }
     }),
 
+  generateAndSave: protectedProcedure
+    .input(FlowchartGenerationInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { protocolId, condition, content } = input;
+      const options = input.options || {};
+
+      try {
+        // Check if protocol exists and get latest version
+        const protocol = await ctx.db.protocol.findUnique({
+          where: { id: protocolId },
+          include: {
+            ProtocolVersion: {
+              orderBy: { versionNumber: "desc" },
+              take: 1,
+            },
+          },
+        });
+
+        if (!protocol || !protocol.ProtocolVersion[0]) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Protocolo ou versão não encontrado",
+          });
+        }
+
+        const latestVersion = protocol.ProtocolVersion[0];
+
+        console.log(
+          `[TRPC /flowchart.generateAndSave] Generating flowchart for protocol ${protocolId}`,
+        );
+
+        let result;
+
+        if (options.mode === "smart") {
+          result = await generateSmartFlowchart(
+            protocolId,
+            content as any,
+            condition,
+            {
+              includeLayout: options.includeLayout ?? true,
+              protocolType: options.protocolType,
+              maxNodes: options.maxNodes ?? 50,
+              includeMedications: options.includeMedications ?? true,
+            },
+          );
+        } else {
+          const basicResult = await generateFlowchartFromProtocolContent(
+            protocolId,
+            content as any,
+            condition,
+          );
+          result = {
+            ...basicResult,
+            metadata: {
+              mode: "basic",
+              generatedAt: new Date().toISOString(),
+            },
+          };
+        }
+
+        // Update the protocol version with new flowchart
+        await ctx.db.protocolVersion.update({
+          where: { id: latestVersion.id },
+          data: {
+            flowchart: {
+              nodes: result.nodes,
+              edges: result.edges,
+            } as any,
+          },
+        });
+
+        console.log(
+          `[TRPC /flowchart.generateAndSave] Saved flowchart to version ${latestVersion.id}`,
+        );
+
+        return {
+          success: true,
+          flowchart: {
+            nodes: result.nodes,
+            edges: result.edges,
+          },
+          metadata: result.metadata,
+        };
+      } catch (error) {
+        console.error(
+          `[TRPC /flowchart.generateAndSave] Error generating flowchart:`,
+          error,
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Falha na geração do fluxograma: ${
+            error instanceof Error ? error.message : "Erro desconhecido"
+          }`,
+          cause: error,
+        });
+      }
+    }),
+
   regenerate: protectedProcedure
     .input(
       z.object({
