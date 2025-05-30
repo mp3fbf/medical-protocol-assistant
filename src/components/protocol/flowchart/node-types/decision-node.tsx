@@ -52,23 +52,22 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="yes" // Example for conditional path
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-green-500"
-        style={{ bottom: -4, left: "30%" }}
+        className="decision-handle-yes"
+        style={{ bottom: -6, left: "30%" }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="no" // Example for conditional path
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-red-500"
-        style={{ right: -4, top: "30%" }}
+        className="decision-handle-no"
+        style={{ right: -6, top: "30%" }}
       />
       {/* Add more handles as needed, e.g., Left for "No" and Bottom for "Yes" if preferred */}
     </div>

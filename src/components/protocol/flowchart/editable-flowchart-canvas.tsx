@@ -17,6 +17,7 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import "./node-types/node-styles.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
@@ -182,6 +183,9 @@ const EditableFlowchartCanvasContent: React.FC<
           className="protocol-flowchart-theme"
           deleteKeyCode={isReadOnly ? null : "Delete"}
           multiSelectionKeyCode={isReadOnly ? null : "Control"}
+          connectionRadius={50}
+          snapToGrid={true}
+          snapGrid={[15, 15]}
         >
           <Background
             gap={16}
