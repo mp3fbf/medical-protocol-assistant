@@ -58,13 +58,27 @@ const EditableFlowchartCanvasContent: React.FC<
     }
     return false;
   });
+  const [hasShownOnboarding, setHasShownOnboarding] = useState(false);
 
-  // Show help dialog on first visit
+  // Show help dialog on first visit - only once per session
   useEffect(() => {
-    if (!isReadOnly && !hasSeenHelp) {
-      setIsHelpOpen(true);
+    if (!isReadOnly && !hasSeenHelp && !hasShownOnboarding && !isHelpOpen) {
+      // Small delay to ensure proper mounting
+      const timer = setTimeout(() => {
+        setIsHelpOpen(true);
+        setHasShownOnboarding(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
-  }, [isReadOnly, hasSeenHelp]);
+  }, [isReadOnly, hasSeenHelp, hasShownOnboarding, isHelpOpen]);
+
+  // Reset help dialog state when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsHelpOpen(false);
+    };
+  }, []);
 
   // Track changes
   const handleNodesChange = useCallback(
