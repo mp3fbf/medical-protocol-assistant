@@ -14,6 +14,8 @@ import type {
 } from "@/types/protocol";
 import type { FlowchartDefinition } from "@/types/flowchart";
 import type { ValidationIssue } from "@/types/validation"; // Corrected import
+import { ProtocolStatus, UserRole } from "@prisma/client";
+import { StatusSelector } from "../status-selector";
 import { toast } from "sonner";
 import {
   Play,
@@ -45,6 +47,9 @@ interface ProtocolEditorLayoutProps {
   ) => void;
   onSaveChanges: () => Promise<boolean>;
   isSaving?: boolean;
+  protocolStatus?: ProtocolStatus;
+  userRole?: UserRole;
+  isCreator?: boolean;
 }
 
 export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
@@ -65,6 +70,9 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
   onUpdateSectionContent,
   onSaveChanges,
   isSaving = false,
+  protocolStatus,
+  userRole = UserRole.CREATOR,
+  isCreator = false,
 }) => {
   const exportMutation = trpc.export.exportProtocol.useMutation();
   const currentSection = protocolData
@@ -78,9 +86,21 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
     <div className="protocol-editor-layout flex h-[calc(100vh-4rem)] flex-col">
       {/* Header for Protocol Title and Actions */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="truncate text-xl font-semibold text-gray-800 dark:text-gray-100">
-          {isLoading ? "Carregando Protocolo..." : protocolTitle}
-        </h2>
+        <div className="flex items-center gap-4">
+          <h2 className="truncate text-xl font-semibold text-gray-800 dark:text-gray-100">
+            {isLoading ? "Carregando Protocolo..." : protocolTitle}
+          </h2>
+
+          {/* Status Selector */}
+          {protocolStatus && !isLoading && (
+            <StatusSelector
+              protocolId={protocolId}
+              currentStatus={protocolStatus}
+              userRole={userRole}
+              isCreator={isCreator}
+            />
+          )}
+        </div>
 
         <div className="flex items-center gap-3">
           {/* Validation Controls */}

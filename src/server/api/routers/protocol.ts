@@ -2,7 +2,7 @@
  * tRPC Router for Protocol Management
  */
 import { TRPCError } from "@trpc/server";
-// import { z as _z } from "zod"; // Marked as unused
+import { z } from "zod";
 import {
   router,
   publicProcedure,
@@ -45,9 +45,12 @@ const DEFAULT_EMPTY_FLOWCHART: FlowchartData = {
 
 export const protocolRouter = router({
   getStats: publicProcedure.query(async ({ ctx }) => {
+    // Exclude ARCHIVED protocols from all counts
     const [totalProtocols, draftProtocols, reviewProtocols, approvedProtocols] =
       await Promise.all([
-        ctx.db.protocol.count(),
+        ctx.db.protocol.count({
+          where: { status: { not: ProtocolStatus.ARCHIVED } },
+        }),
         ctx.db.protocol.count({ where: { status: ProtocolStatus.DRAFT } }),
         ctx.db.protocol.count({ where: { status: ProtocolStatus.REVIEW } }),
         ctx.db.protocol.count({ where: { status: ProtocolStatus.APPROVED } }),
@@ -63,6 +66,7 @@ export const protocolRouter = router({
 
   getRecentActivity: publicProcedure.query(async ({ ctx }) => {
     const recentProtocols = await ctx.db.protocol.findMany({
+      where: { status: { not: ProtocolStatus.ARCHIVED } },
       take: 5,
       orderBy: { updatedAt: "desc" },
       include: {
@@ -419,9 +423,17 @@ export const protocolRouter = router({
       } = input;
 
       const whereClause: any = {};
-      if (status) {
+
+      // Always exclude ARCHIVED protocols unless specifically requested
+      if (status && status !== ProtocolStatus.ARCHIVED) {
         whereClause.status = status;
+      } else if (!status) {
+        whereClause.status = { not: ProtocolStatus.ARCHIVED };
+      } else if (status === ProtocolStatus.ARCHIVED) {
+        // Only show archived if explicitly requested
+        whereClause.status = ProtocolStatus.ARCHIVED;
       }
+
       if (search) {
         whereClause.OR = [
           { title: { contains: search, mode: "insensitive" } },
@@ -585,6 +597,103 @@ export const protocolRouter = router({
       });
 
       return newProtocolVersion;
+    }),
+
+  updateStatus: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+        status: z.nativeEnum(ProtocolStatus),
+        reason: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { protocolId, status, reason } = input;
+      const userId = ctx.session.user.id;
+
+      // Verificar se o protocolo existe
+      const protocol = await ctx.db.protocol.findUnique({
+        where: { id: protocolId },
+        select: {
+          id: true,
+          status: true,
+          createdById: true,
+        },
+      });
+
+      if (!protocol) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Protocolo com ID '${protocolId}' não encontrado.`,
+        });
+      }
+
+      // Verificar permissões baseadas no novo status
+      const userRole = ctx.session.user.role as UserRole;
+
+      // Regras de permissão por status:
+      // - DRAFT -> REVIEW: Criador pode enviar para revisão
+      // - REVIEW -> APPROVED: Apenas REVIEWER ou ADMIN
+      // - REVIEW -> DRAFT: REVIEWER ou ADMIN podem devolver para correções
+      // - Qualquer -> ARCHIVED: ADMIN apenas
+
+      if (status === ProtocolStatus.ARCHIVED && userRole !== UserRole.ADMIN) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Apenas administradores podem arquivar protocolos.",
+        });
+      }
+
+      if (
+        status === ProtocolStatus.APPROVED &&
+        userRole !== UserRole.REVIEWER &&
+        userRole !== UserRole.ADMIN
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Apenas revisores ou administradores podem aprovar protocolos.",
+        });
+      }
+
+      if (
+        protocol.status === ProtocolStatus.DRAFT &&
+        status === ProtocolStatus.REVIEW &&
+        protocol.createdById !== userId &&
+        userRole !== UserRole.ADMIN
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Apenas o criador ou administradores podem enviar para revisão.",
+        });
+      }
+
+      // Atualizar o status
+      const updatedProtocol = await ctx.db.protocol.update({
+        where: { id: protocolId },
+        data: {
+          status,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Criar log de auditoria
+      await ctx.db.auditLog.create({
+        data: {
+          userId,
+          action: `STATUS_CHANGE_${protocol.status}_TO_${status}`,
+          resourceType: "PROTOCOL",
+          resourceId: protocolId,
+          details: {
+            previousStatus: protocol.status,
+            newStatus: status,
+            reason: reason || null,
+          },
+        },
+      });
+
+      return updatedProtocol;
     }),
 });
 

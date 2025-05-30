@@ -44,6 +44,8 @@ interface ProtocolEditorState {
   isLoading: boolean;
   error: string | null;
   validationIssues: import("@/types/validation").ValidationIssue[];
+  protocolStatus?: import("@prisma/client").ProtocolStatus;
+  protocolCreatorId?: string;
 }
 
 // Basic CUID check (starts with 'c', typically 25 chars long)
@@ -112,6 +114,8 @@ export function useProtocolEditorState(initialProtocolId?: string) {
         currentVersionId: data.ProtocolVersion?.[0]?.id || null,
         isLoading: false,
         error: null,
+        protocolStatus: data.status,
+        protocolCreatorId: data.createdById,
       }));
     }
   }, [protocolQuery.isSuccess, protocolQuery.data]); // Dependencies

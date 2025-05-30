@@ -115,18 +115,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Material upload and document parsing
 - Smart flowchart generation with medical intelligence
 - Professional validation UI with error categorization
+- Document export functionality (PDF/DOCX) with ABNT formatting
+- Protocol status management with role-based permissions
+- Dashboard with real-time statistics (excluding archived protocols)
+- Protocol list with search, filtering by status, and sorting
+- Auto-validation with debouncing (2-second delay)
 
 **🔄 Known Issues (Pending):**
 
-- Validation shows as "valid" by default (should show empty state until first validation)
-- Auto-validation toggle not fully implemented (manual validation only)
+- Flowchart visual rendering needs connection with ReactFlow canvas
 - Visual layout refinements needed for better spacing and readability
-- Real-time validation may need debouncing optimization
+- Rich text editor not implemented (using plain text)
 
 **📋 Next Priority Tasks:**
 
+- Complete flowchart visualization with ReactFlow integration
 - Implement rich text editor for better content editing
-- Add document export functionality (PDF/DOCX)
-- Complete flowchart visualization and editing
-- Dashboard statistics and protocol management
-- Advanced collaboration features
+- Add protocol version comparison feature
+- Implement advanced collaboration features
+- Add batch export functionality

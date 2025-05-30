@@ -2,13 +2,13 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 29 de maio de 2025  
-**Versão:** v1.2  
+**Data:** 30 de maio de 2025  
+**Versão:** v1.3  
 **Stack:** Next.js 15.3.2, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
 
-O projeto evoluiu significativamente e agora está **85% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), e pipeline de IA totalmente operacional. Faltam principalmente funcionalidades de export e refinamentos de UI/UX.
+O projeto evoluiu significativamente e agora está **92% funcional**. Os módulos principais estão conectados e funcionando, com sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, e sistema de export PDF/DOCX funcional. Faltam principalmente a visualização de flowcharts e refinamentos de UI/UX.
 
 ---
 
@@ -73,15 +73,17 @@ O projeto evoluiu significativamente e agora está **85% funcional**. Os módulo
 - **Fluxo de criação assistida por IA** ✅
 - **Pesquisa médica automatizada** ✅
 - **Geração de fluxogramas automática** ✅
-- **Exportação para PDF/DOCX** ❌ **[PRÓXIMA PRIORIDADE]**
+- **Exportação para PDF/DOCX** ✅ **[IMPLEMENTADO]**
 - **Sistema de validação cross-section** ✅
+- **Gerenciamento de status com permissões** ✅
+- **Dashboard com estatísticas reais** ✅
+- **Lista de protocolos com busca e filtros** ✅
 
 #### 🔧 Pendências Identificadas
 
-- **Validação mostra "válido" por padrão** ❌ (deveria mostrar estado vazio)
-- **Toggle de auto-validação** ❌ (existe mas não funciona completamente)
-- **Refinamentos visuais** ❌ (espaçamento e layout da validação)
-- **Material-based generation** ⚠️ (requer upload de arquivo para funcionar)
+- **Flowchart visual rendering** ❌ (geração funciona, falta visualização)
+- **Refinamentos visuais** ❌ (espaçamento e layout geral)
+- **Editor de texto rico** ❌ (usando plain text atualmente)
 
 #### 🔧 Funcionalidades Avançadas
 
@@ -325,9 +327,11 @@ const handleAIGeneration = async (formData) => {
 - [x] Usuário consegue criar protocolo com IA end-to-end ✅
 - [x] Editor não perde dados entre seções ✅
 - [x] Validação mostra problemas reais ✅
-- [ ] Export PDF/DOCX funciona **[PRÓXIMA PRIORIDADE]**
+- [x] Export PDF/DOCX funciona ✅
 - [x] Flowchart inteligente gera corretamente ✅
-- [ ] Flowchart renderiza visualmente **[EM PROGRESSO]**
+- [x] Gerenciamento de status com permissões ✅
+- [x] Dashboard e listagens funcionais ✅
+- [ ] Flowchart renderiza visualmente **[PRÓXIMA PRIORIDADE]**
 
 ### Performance Targets
 
@@ -384,7 +388,7 @@ const handleAIGeneration = async (formData) => {
 
 ## 🎉 **CONQUISTAS RECENTES**
 
-### Semana de 29/05/2025
+### Semana de 29-30/05/2025
 
 **✅ Sistema de Validação Profissional Implementado**
 
@@ -392,6 +396,7 @@ const handleAIGeneration = async (formData) => {
 - 42 tipos de validação médica, estrutural e de completude
 - Sistema de sugestões e priorização de problemas
 - Integração completa com editor e controles manuais
+- Auto-validação com debouncing de 2 segundos
 
 **✅ Pipeline de IA Totalmente Funcional**
 
@@ -399,6 +404,7 @@ const handleAIGeneration = async (formData) => {
 - Multi-provider abstraction (OpenAI, Anthropic, Gemini)
 - Upload e parsing de documentos médicos
 - Research automatizado + geração end-to-end
+- Seleção automática de modelo para documentos grandes
 
 **✅ Editor Robusto e Estável**
 
@@ -406,13 +412,22 @@ const handleAIGeneration = async (formData) => {
 - Salvamento otimista com sync database
 - Correção de vazamento de conteúdo entre seções
 - Estados de loading e error handling
+- Formatação automática de campos estruturados (sem JSON visível)
 
-**🔄 Próximo Foco: Exportação e Visualização**
+**✅ Novos Recursos Implementados (30/05)**
 
-- Sistema de export PDF/DOCX (libs já implementadas)
-- Integração visual de flowcharts inteligentes
-- Refinamentos de UI/UX para produção
+- **Sistema de Export PDF/DOCX** totalmente funcional
+- **Gerenciamento de Status** com permissões por role (DRAFT → REVIEW → APPROVED → ARCHIVED)
+- **Dashboard Corrigido** com estatísticas reais e atividade recente clicável
+- **Lista de Protocolos Aprimorada** com busca, filtros por status e ordenação
+- **Arquivamento em Massa** de protocolos de teste (86 protocolos arquivados)
+
+**🔄 Próximo Foco: Visualização e Polish**
+
+- Integração visual de flowcharts com ReactFlow
+- Editor de texto rico (TipTap ou similar)
+- Refinamentos finais de UI/UX para produção
 
 ---
 
-_Última atualização: 29/05/2025 - Claude Code_
+_Última atualização: 30/05/2025 - Claude Code_

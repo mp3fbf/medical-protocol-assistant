@@ -150,9 +150,10 @@ export default function DashboardPage() {
           ) : recentActivity && recentActivity.length > 0 ? (
             <div className="space-y-4">
               {recentActivity.map((protocol) => (
-                <div
+                <Link
                   key={protocol.id}
-                  className="flex items-center justify-between border-b border-gray-200 pb-3 last:border-b-0 dark:border-gray-700"
+                  href={`/protocols/${protocol.id}`}
+                  className="-mx-2 flex items-center justify-between rounded border-b border-gray-200 px-2 pb-3 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
@@ -173,7 +174,7 @@ export default function DashboardPage() {
                       {new Date(protocol.updatedAt).toLocaleDateString("pt-BR")}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (

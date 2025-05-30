@@ -8,6 +8,7 @@ import React, { useEffect } from "react"; // Added useEffect for title update
 import { useParams } from "next/navigation";
 import { ProtocolEditorLayout } from "@/components/protocol/editor/protocol-editor-layout";
 import { useProtocolEditorState } from "@/hooks/use-protocol-editor-state";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -33,7 +34,11 @@ export default function ProtocolEditPage() {
     fetchProtocolData,
     isSaving,
     validation,
+    protocolStatus,
+    protocolCreatorId,
   } = useProtocolEditorState(protocolId);
+
+  const { userId, userRole } = useCurrentUser();
 
   useEffect(() => {
     if (protocolTitle && !isLoading) {
@@ -106,6 +111,9 @@ export default function ProtocolEditPage() {
       onUpdateSectionContent={updateSectionContent}
       onSaveChanges={saveProtocol}
       isSaving={isSaving}
+      protocolStatus={protocolStatus}
+      userRole={userRole}
+      isCreator={protocolCreatorId === userId}
     />
   );
 }
