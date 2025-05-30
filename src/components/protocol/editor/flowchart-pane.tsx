@@ -8,7 +8,7 @@ import { EditableFlowchartCanvas } from "@/components/protocol/flowchart/editabl
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { Maximize2, Edit3, Eye } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { api } from "@/lib/api/client";
+import { trpc } from "@/lib/api/client";
 import { toast } from "sonner";
 
 interface FlowchartPaneProps {
@@ -32,7 +32,7 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
 
-  const updateFlowchartMutation = api.flowchart.updateManual.useMutation({
+  const updateFlowchartMutation = trpc.flowchart.updateManual.useMutation({
     onSuccess: () => {
       toast.success("Fluxograma salvo com sucesso!");
       setIsEditMode(false);
