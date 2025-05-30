@@ -358,6 +358,97 @@ export const flowchartRouter = router({
         });
       }
     }),
+
+  updateManual: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+        versionId: z.string().cuid(),
+        flowchart: z.object({
+          nodes: z.array(z.any()), // TODO: Add proper node validation
+          edges: z.array(z.any()), // TODO: Add proper edge validation
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { protocolId, versionId, flowchart } = input;
+
+      try {
+        // Check if protocol exists and user has permission
+        const protocol = await ctx.db.protocol.findUnique({
+          where: { id: protocolId },
+          include: {
+            ProtocolVersion: {
+              where: { id: versionId },
+              take: 1,
+            },
+          },
+        });
+
+        if (!protocol) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Protocolo com ID '${protocolId}' não encontrado.`,
+          });
+        }
+
+        if (protocol.ProtocolVersion.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Versão do protocolo com ID '${versionId}' não encontrada.`,
+          });
+        }
+
+        // Check if user has permission to edit
+        if (
+          protocol.creatorId !== ctx.session.user.id &&
+          ctx.session.user.role !== "ADMIN"
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para editar este fluxograma.",
+          });
+        }
+
+        console.log(
+          `[TRPC /flowchart.updateManual] Saving manual flowchart edits for protocol ${protocolId}, version ${versionId}`,
+        );
+
+        // Update the protocol version with edited flowchart
+        await ctx.db.protocolVersion.update({
+          where: { id: versionId },
+          data: {
+            flowchart: flowchart as any,
+          },
+        });
+
+        console.log(
+          `[TRPC /flowchart.updateManual] Saved manual edits with ${flowchart.nodes.length} nodes, ${flowchart.edges.length} edges`,
+        );
+
+        return {
+          success: true,
+          flowchart,
+        };
+      } catch (error) {
+        console.error(
+          `[TRPC /flowchart.updateManual] Error saving flowchart:`,
+          error,
+        );
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Falha ao salvar alterações do fluxograma: ${
+            error instanceof Error ? error.message : "Erro desconhecido"
+          }`,
+          cause: error,
+        });
+      }
+    }),
 });
 
 /**

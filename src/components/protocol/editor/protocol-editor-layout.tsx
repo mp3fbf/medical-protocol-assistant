@@ -358,6 +358,9 @@ export const ProtocolEditorLayout: React.FC<ProtocolEditorLayoutProps> = ({
             flowchartData={flowchartData}
             isLoading={isLoading}
             protocolTitle={protocolTitle}
+            protocolId={protocolId}
+            versionId={currentVersionId}
+            canEdit={isCreator || userRole === UserRole.ADMIN}
           />
         </div>
       </div>
