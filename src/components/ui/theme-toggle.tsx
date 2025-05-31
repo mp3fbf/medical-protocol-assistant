@@ -1,0 +1,82 @@
+"use client";
+
+import React from "react";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "@/contexts/theme-context";
+import { cn } from "@/lib/utils";
+
+interface ThemeToggleProps {
+  className?: string;
+  size?: "sm" | "md" | "lg";
+  showLabel?: boolean;
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+  className,
+  size = "md",
+  showLabel = false,
+}) => {
+  const { theme, toggleTheme } = useTheme();
+
+  const sizeConfig = {
+    sm: {
+      button: "h-8 w-8",
+      icon: "h-4 w-4",
+      text: "text-xs",
+    },
+    md: {
+      button: "h-10 w-10",
+      icon: "h-5 w-5",
+      text: "text-sm",
+    },
+    lg: {
+      button: "h-12 w-12",
+      icon: "h-6 w-6",
+      text: "text-base",
+    },
+  };
+
+  const config = sizeConfig[size];
+
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <button
+        onClick={toggleTheme}
+        className={cn(
+          "relative flex items-center justify-center rounded-lg",
+          "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700",
+          "text-gray-700 dark:text-gray-300",
+          "transition-all duration-200",
+          "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+          config.button,
+        )}
+        aria-label={`Alternar para modo ${theme === "light" ? "escuro" : "claro"}`}
+        title={`Alternar para modo ${theme === "light" ? "escuro" : "claro"}`}
+      >
+        <Sun
+          className={cn(
+            config.icon,
+            "absolute transition-all duration-300",
+            theme === "light"
+              ? "rotate-0 scale-100 opacity-100"
+              : "rotate-90 scale-0 opacity-0",
+          )}
+        />
+        <Moon
+          className={cn(
+            config.icon,
+            "absolute transition-all duration-300",
+            theme === "dark"
+              ? "rotate-0 scale-100 opacity-100"
+              : "-rotate-90 scale-0 opacity-0",
+          )}
+        />
+      </button>
+      {showLabel && (
+        <span className={cn("font-medium", config.text)}>
+          {theme === "light" ? "Modo Claro" : "Modo Escuro"}
+        </span>
+      )}
+    </div>
+  );
+};

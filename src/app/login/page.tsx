@@ -21,6 +21,7 @@ import {
   KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 function LoginForm() {
   const router = useRouter();
@@ -82,7 +83,10 @@ function LoginForm() {
 
   if (_status === "loading" || _status === "authenticated") {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-indigo-50 p-4 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20">
+      <main
+        id="main-content"
+        className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-indigo-50 p-4 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20"
+      >
         <div className="relative">
           <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
           <div className="absolute inset-0 animate-pulse bg-primary-500/20 blur-xl" />
@@ -95,7 +99,10 @@ function LoginForm() {
   }
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
+    <main
+      id="main-content"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden"
+    >
       {/* Animated gradient background */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-white to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20" />
@@ -112,6 +119,11 @@ function LoginForm() {
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -right-40 -top-40 h-80 w-80 animate-[float_10s_ease-in-out_infinite] rounded-full bg-gradient-to-br from-primary-400/20 to-indigo-400/20 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 animate-[float_12s_ease-in-out_infinite_reverse] rounded-full bg-gradient-to-br from-purple-400/20 to-pink-400/20 blur-3xl" />
+      </div>
+
+      {/* Theme Toggle */}
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
       </div>
 
       <div
@@ -138,6 +150,8 @@ function LoginForm() {
 
           {error && (
             <div
+              role="alert"
+              aria-live="polite"
               className={cn(
                 "mb-6 rounded-lg border border-red-200 bg-red-50/50 p-4 dark:border-red-800 dark:bg-red-900/20",
                 "transition-all duration-500",
@@ -271,7 +285,10 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-indigo-50 p-4 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20">
+        <main
+          id="main-content"
+          className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-indigo-50 p-4 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20"
+        >
           <div className="relative">
             <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
             <div className="absolute inset-0 animate-pulse bg-primary-500/20 blur-xl" />

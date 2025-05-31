@@ -86,18 +86,32 @@ export const ValidationReportDisplayUltra: React.FC<
           {/* Issue counts */}
           <div className="flex items-center gap-2">
             {errorCount > 0 && (
-              <div className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 dark:bg-red-900/30">
-                <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
+              <div
+                className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 dark:bg-red-900/30"
+                role="status"
+                aria-label={`${errorCount} erro${errorCount > 1 ? "s" : ""}`}
+              >
+                <AlertCircle
+                  className="h-3 w-3 text-red-600 dark:text-red-400"
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium text-red-700 dark:text-red-300">
-                  {errorCount}
+                  {errorCount} erro{errorCount > 1 ? "s" : ""}
                 </span>
               </div>
             )}
             {warningCount > 0 && (
-              <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 dark:bg-amber-900/30">
-                <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+              <div
+                className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 dark:bg-amber-900/30"
+                role="status"
+                aria-label={`${warningCount} aviso${warningCount > 1 ? "s" : ""}`}
+              >
+                <AlertTriangle
+                  className="h-3 w-3 text-amber-600 dark:text-amber-400"
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                  {warningCount}
+                  {warningCount} aviso{warningCount > 1 ? "s" : ""}
                 </span>
               </div>
             )}

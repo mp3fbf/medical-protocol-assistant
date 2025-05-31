@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { UltraButton, UltraGradientButton } from "@/components/ui/ultra-button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export const HeaderUltra: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -96,6 +97,9 @@ export const HeaderUltra: React.FC = () => {
 
           {/* Right side - Actions and User */}
           <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <ThemeToggle size="sm" />
+
             {/* Quick Action Button */}
             {pathname.startsWith("/protocols") && (
               <Link href="/protocols/new" className="hidden sm:flex">

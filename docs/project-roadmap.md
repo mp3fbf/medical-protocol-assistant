@@ -2,13 +2,13 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 30 de janeiro de 2025  
-**Versão:** v1.7  
+**Data:** 31 de janeiro de 2025  
+**Versão:** v1.8  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
 
-O projeto está **100% funcional**! Todos os módulos principais estão implementados e funcionando perfeitamente: sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, visualização e edição completa de flowcharts com ReactFlow, sistema de onboarding para primeira visita, editor de texto rico com TipTap, e todas as correções de UI/UX para produção.
+O projeto está **100% funcional**! Todos os módulos principais estão implementados e funcionando perfeitamente: sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, visualização e edição completa de flowcharts com ReactFlow, sistema de onboarding para primeira visita, editor de texto rico com TipTap, **acessibilidade WCAG 2.1 AA implementada**, e todas as correções de UI/UX para produção.
 
 ## 📋 Resumo Executivo
 
@@ -21,6 +21,7 @@ O projeto está **100% funcional**! Todos os módulos principais estão implemen
 - **Interface profissional** com validação médica avançada
 - **Flowcharts interativos** com edição manual completa
 - **Editor de texto rico** com TipTap totalmente funcional
+- **Acessibilidade WCAG 2.1 AA** com skip-links, contraste aprimorado e dark mode
 
 ### 🎯 **MVP Completo**
 
@@ -610,6 +611,48 @@ const handleAIGeneration = async (formData) => {
 
 **Status**: Branch pronta para merge com main após testes finais
 
+### 🎯 **Melhorias de Acessibilidade (31/05/2025)** ✅
+
+**Implementações de Acessibilidade WCAG 2.1 AA**:
+
+1. **Skip-link para Navegação por Teclado** ✅
+
+   - Link "Pular para o conteúdo principal" implementado
+   - Visível ao focar com teclado (Tab)
+   - Permite pular navegação diretamente para o conteúdo
+
+2. **Conformidade de Contraste WCAG AA** ✅
+
+   - Botões gradientes ajustados para garantir contraste mínimo 4.5:1
+   - Textos sobre fundos coloridos verificados e corrigidos
+   - Cores de validação testadas com ferramentas de contraste
+
+3. **Indicadores de Validação Não-Visuais** ✅
+
+   - Validação agora usa texto + ícones (não apenas cor)
+   - Ícones de ✓, ⚠, ✗ para sucesso, alerta e erro
+   - Textos descritivos para leitores de tela
+
+4. **Dark Mode com Toggle Persistente** ✅
+
+   - Implementado sistema de dark mode completo
+   - Toggle no header que persiste preferência do usuário
+   - Respeita preferência do sistema (`prefers-color-scheme`)
+
+5. **Formulários Acessíveis** ✅
+
+   - Erros de formulário com `role="alert"` para anúncios automáticos
+   - Mensagens de erro associadas aos campos com `aria-describedby`
+   - Labels adequadamente conectados aos inputs com `htmlFor`
+
+6. **Melhorias Gerais de Acessibilidade** ✅
+   - Todos os inputs têm labels visíveis ou `aria-label`
+   - Estrutura de headings hierárquica (h1 → h2 → h3)
+   - Foco visível em todos os elementos interativos
+   - Suporte completo para navegação por teclado
+
+**Impacto**: Aplicação agora atende padrões WCAG 2.1 nível AA, garantindo acessibilidade para usuários com deficiências visuais, motoras e cognitivas.
+
 ---
 
-_Última atualização: 30/05/2025 - Claude Code_
+_Última atualização: 31/05/2025 - Claude Code_

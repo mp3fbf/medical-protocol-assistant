@@ -15,7 +15,9 @@ export const MainLayoutUltra: React.FC<MainLayoutUltraProps> = ({
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
       <HeaderUltra />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main id="main-content" className="flex-1 overflow-y-auto">
+        {children}
+      </main>
     </div>
   );
 };
