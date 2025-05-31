@@ -69,7 +69,7 @@ export const ProtocolCard: React.FC<ProtocolCardProps> = ({
     <Card className="flex h-full flex-col overflow-hidden shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800">
       <CardHeader className="pb-4">
         <div className="mb-2 flex items-start justify-between">
-          <FileText className="dark:text-primary-400 h-8 w-8 text-primary-500" />
+          <FileText className="h-8 w-8 text-primary-500 dark:text-primary-400" />
           <span
             className={cn(
               "rounded-full px-2.5 py-0.5 text-xs font-semibold",

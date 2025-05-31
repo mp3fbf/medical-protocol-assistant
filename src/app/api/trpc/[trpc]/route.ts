@@ -14,7 +14,8 @@ import { appRouter } from "@/server/api/root";
 /**
  * @see https://trpc.io/docs/v11/server/adapters/fetch#used-with-nextjs-app-router
  */
-const handler = async (req: NextRequest) => { // Made handler async
+const handler = async (req: NextRequest) => {
+  // Made handler async
   // Clone the request to be able to read its body for logging, as req.text() consumes it
   const clonedReq = req.clone();
 
@@ -22,9 +23,15 @@ const handler = async (req: NextRequest) => { // Made handler async
   if (req.nextUrl.pathname.includes("protocol.create")) {
     try {
       const bodyText = await clonedReq.text();
-      console.log('[TRPC Handler] Raw request body for protocol.create:', bodyText);
+      console.log(
+        "[TRPC Handler] Raw request body for protocol.create:",
+        bodyText,
+      );
     } catch (e) {
-      console.error('[TRPC Handler] Error reading raw request body for protocol.create:', e);
+      console.error(
+        "[TRPC Handler] Error reading raw request body for protocol.create:",
+        e,
+      );
     }
   }
 

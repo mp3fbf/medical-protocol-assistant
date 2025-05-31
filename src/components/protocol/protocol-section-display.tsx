@@ -56,7 +56,7 @@ export const ProtocolSectionDisplay: React.FC<ProtocolSectionDisplayProps> = ({
 }) => {
   return (
     <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <h2 className="dark:text-primary-400 mb-4 border-b pb-2 text-xl font-semibold text-primary-700">
+      <h2 className="mb-4 border-b pb-2 text-xl font-semibold text-primary-700 dark:text-primary-400">
         {section.sectionNumber}. {section.title}
       </h2>
       <div className="prose prose-sm dark:prose-invert max-w-none">

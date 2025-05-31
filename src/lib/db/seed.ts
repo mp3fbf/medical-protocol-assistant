@@ -7,12 +7,13 @@
  */
 import { PrismaClient, UserRole } from "@prisma/client";
 // import { randomUUID } from "crypto"; // Removed as Prisma now handles ID generation with @default(cuid())
-import * as bcryptjs from 'bcryptjs'; 
+import * as bcryptjs from "bcryptjs";
 
 const prisma = new PrismaClient();
-const SALT_ROUNDS = 10; 
+const SALT_ROUNDS = 10;
 
-const ADMIN_PLAIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || "adminDefaultPassword123!";
+const ADMIN_PLAIN_PASSWORD =
+  process.env.SEED_ADMIN_PASSWORD || "adminDefaultPassword123!";
 const DEV_MOCK_USER_PASSWORD_PLAIN = "password"; // Plain text password for dev mock user
 
 async function main() {
@@ -24,7 +25,10 @@ async function main() {
     where: { email: adminEmail },
   });
 
-  const adminHashedPassword = bcryptjs.hashSync(ADMIN_PLAIN_PASSWORD, SALT_ROUNDS);
+  const adminHashedPassword = bcryptjs.hashSync(
+    ADMIN_PLAIN_PASSWORD,
+    SALT_ROUNDS,
+  );
 
   if (!adminUser) {
     adminUser = await prisma.user.create({
@@ -41,40 +45,47 @@ async function main() {
     );
   } else {
     // Update if password needs hashing or is incorrect
-    if (!adminUser.hashedPassword || !bcryptjs.compareSync(ADMIN_PLAIN_PASSWORD, adminUser.hashedPassword)) {
+    if (
+      !adminUser.hashedPassword ||
+      !bcryptjs.compareSync(ADMIN_PLAIN_PASSWORD, adminUser.hashedPassword)
+    ) {
       await prisma.user.update({
         where: { email: adminEmail },
         data: { hashedPassword: adminHashedPassword },
       });
       console.log(`Updated hashed password for admin user: ${adminUser.email}`);
     } else {
-      console.log(`Admin user ${adminEmail} already exists with a valid hashed password.`);
+      console.log(
+        `Admin user ${adminEmail} already exists with a valid hashed password.`,
+      );
     }
   }
 
   // --- Seed Specific Mock User for Development/Testing ---
-  const mockUserId = "mock-user-id-dev123"; 
+  const mockUserId = "mock-user-id-dev123";
   const mockUserEmail = "dev-mock@example.com";
 
   let developmentMockUser = await prisma.user.findUnique({
-    where: { id: mockUserId }, 
+    where: { id: mockUserId },
   });
   if (!developmentMockUser) {
-     developmentMockUser = await prisma.user.findUnique({
-        where: { email: mockUserEmail },
-     });
+    developmentMockUser = await prisma.user.findUnique({
+      where: { email: mockUserEmail },
+    });
   }
 
-
-  const mockUserHashedPassword = bcryptjs.hashSync(DEV_MOCK_USER_PASSWORD_PLAIN, SALT_ROUNDS);
+  const mockUserHashedPassword = bcryptjs.hashSync(
+    DEV_MOCK_USER_PASSWORD_PLAIN,
+    SALT_ROUNDS,
+  );
 
   if (!developmentMockUser) {
     developmentMockUser = await prisma.user.create({
       data: {
-        id: mockUserId, 
+        id: mockUserId,
         email: mockUserEmail,
         name: "Usuário de Desenvolvimento",
-        role: UserRole.ADMIN, 
+        role: UserRole.ADMIN,
         hashedPassword: mockUserHashedPassword,
       },
     });
@@ -82,32 +93,51 @@ async function main() {
       `Created development mock user: ${developmentMockUser.email} with ID: ${developmentMockUser.id}. Password set (HASHED). Use '${DEV_MOCK_USER_PASSWORD_PLAIN}' to login.`,
     );
   } else {
-    let updateData: { hashedPassword?: string; role?: UserRole; name?: string } = {};
+    let updateData: {
+      hashedPassword?: string;
+      role?: UserRole;
+      name?: string;
+    } = {};
     let needsUpdate = false;
 
-    if (!developmentMockUser.hashedPassword || !bcryptjs.compareSync(DEV_MOCK_USER_PASSWORD_PLAIN, developmentMockUser.hashedPassword)) {
+    if (
+      !developmentMockUser.hashedPassword ||
+      !bcryptjs.compareSync(
+        DEV_MOCK_USER_PASSWORD_PLAIN,
+        developmentMockUser.hashedPassword,
+      )
+    ) {
       updateData.hashedPassword = mockUserHashedPassword;
-      updateData.name = developmentMockUser.name || "Usuário de Desenvolvimento (Pwd Upd)";
+      updateData.name =
+        developmentMockUser.name || "Usuário de Desenvolvimento (Pwd Upd)";
       needsUpdate = true;
-      console.log(`Development mock user ${mockUserEmail} requires password update (hashing).`);
+      console.log(
+        `Development mock user ${mockUserEmail} requires password update (hashing).`,
+      );
     }
-    if (developmentMockUser.role !== UserRole.ADMIN) { 
+    if (developmentMockUser.role !== UserRole.ADMIN) {
       updateData.role = UserRole.ADMIN;
-      updateData.name = updateData.name || "Usuário de Desenvolvimento (Role Upd)";
+      updateData.name =
+        updateData.name || "Usuário de Desenvolvimento (Role Upd)";
       needsUpdate = true;
-      console.log(`Development mock user ${mockUserEmail} requires role update to ADMIN.`);
+      console.log(
+        `Development mock user ${mockUserEmail} requires role update to ADMIN.`,
+      );
     }
-     if (developmentMockUser.email !== mockUserEmail) { 
-        console.warn(`Mock user with ID ${mockUserId} has email ${developmentMockUser.email}, expected ${mockUserEmail}. Consider manual DB check.`);
+    if (developmentMockUser.email !== mockUserEmail) {
+      console.warn(
+        `Mock user with ID ${mockUserId} has email ${developmentMockUser.email}, expected ${mockUserEmail}. Consider manual DB check.`,
+      );
     }
-
 
     if (needsUpdate) {
       await prisma.user.update({
-        where: { id: mockUserId }, 
+        where: { id: mockUserId },
         data: updateData,
       });
-      console.log(`Updated development mock user: ${developmentMockUser.email}.`);
+      console.log(
+        `Updated development mock user: ${developmentMockUser.email}.`,
+      );
     } else {
       console.log(
         `Development mock user ${developmentMockUser.email} with ID ${mockUserId} already exists with a valid hashed password and role. Use '${DEV_MOCK_USER_PASSWORD_PLAIN}' to login.`,

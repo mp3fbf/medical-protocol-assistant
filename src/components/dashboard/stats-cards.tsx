@@ -13,9 +13,9 @@ export interface StatCardItem {
   value: string | number;
   icon: LucideIcon;
   description?: string;
-  bgColorClass?: string; 
-  textColorClass?: string; 
-  iconColorClass?: string; 
+  bgColorClass?: string;
+  textColorClass?: string;
+  iconColorClass?: string;
 }
 
 interface StatsCardsProps {
@@ -48,7 +48,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
               stat.textColorClass || "text-gray-700 dark:text-gray-200",
             )}
           >
-            <CardTitle 
+            <CardTitle
               className="text-sm font-medium"
               data-testid={`stat-card-title-${stat.id}`} // Added data-testid
             >
@@ -57,7 +57,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             <stat.icon
               className={cn(
                 "h-5 w-5 text-muted-foreground",
-                stat.iconColorClass || "dark:text-primary-400 text-primary-500",
+                stat.iconColorClass || "text-primary-500 dark:text-primary-400",
               )}
             />
           </CardHeader>

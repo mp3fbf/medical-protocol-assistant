@@ -34,34 +34,36 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
         "ultra-flow-node ultra-triage-node",
         "w-56 rounded-2xl",
         selected && "selected",
-        priority === "high" && "ultra-pulse"
+        priority === "high" && "ultra-pulse",
       )}
     >
       {/* Animated gradient background */}
       <div className="ultra-gradient-bg" />
-      
+
       {/* Glassmorphism effect enhancement */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent" />
-      
+
       {/* Icon */}
       {getNodeIcon(priority)}
-      
+
       {/* Content */}
       <div className="ultra-node-content">
         <div className="ultra-node-title">{title}</div>
         {description && (
           <div className="ultra-node-subtitle">{description}</div>
         )}
-        
+
         {/* Priority indicator */}
         <div className="mt-2 flex items-center gap-1">
-          <div className={cn(
-            "h-2 w-2 rounded-full",
-            priority === "high" && "bg-red-500 animate-pulse",
-            priority === "medium" && "bg-yellow-500",
-            priority === "low" && "bg-green-500",
-            !priority && "bg-blue-500"
-          )} />
+          <div
+            className={cn(
+              "h-2 w-2 rounded-full",
+              priority === "high" && "animate-pulse bg-red-500",
+              priority === "medium" && "bg-yellow-500",
+              priority === "low" && "bg-green-500",
+              !priority && "bg-blue-500",
+            )}
+          />
           <span className="text-xs font-medium opacity-70">
             {priority === "high" && "Alta Prioridade"}
             {priority === "medium" && "Média Prioridade"}
@@ -70,7 +72,7 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
           </span>
         </div>
       </div>
-      
+
       {/* Handles with custom styling */}
       <Handle
         type="target"
@@ -87,3 +89,4 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
     </div>
   );
 };
+
