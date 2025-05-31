@@ -269,7 +269,7 @@ export default function FlowchartPage() {
       <div className="flex-1 p-6">
         <div className="relative h-full min-h-[700px]">
           {flowchartData ? (
-            <UltraCard className="h-full p-0" glass>
+            <div className="h-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
               <FlowchartPane
                 flowchartData={flowchartData as FlowchartDefinition}
                 protocolId={protocolId!}
@@ -277,7 +277,7 @@ export default function FlowchartPage() {
                 protocolTitle={protocol.title}
                 canEdit={true}
               />
-            </UltraCard>
+            </div>
           ) : (
             <div className="flex h-full items-center justify-center p-8">
               <UltraCard className="max-w-lg text-center" glass>

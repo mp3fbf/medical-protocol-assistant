@@ -32,11 +32,57 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Update local flowchart when prop changes
   React.useEffect(() => {
     setLocalFlowchart(flowchartData);
   }, [flowchartData]);
+
+  // Debug: Track container dimensions
+  React.useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const newDimensions = { width: rect.width, height: rect.height };
+        setDimensions(newDimensions);
+        console.log("[FlowchartPane] Container dimensions:", {
+          width: rect.width,
+          height: rect.height,
+          top: rect.top,
+          left: rect.left,
+          offsetHeight: containerRef.current.offsetHeight,
+          offsetWidth: containerRef.current.offsetWidth,
+          clientHeight: containerRef.current.clientHeight,
+          clientWidth: containerRef.current.clientWidth,
+          computed: window.getComputedStyle(containerRef.current).height,
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+
+    // Check dimensions after a delay to catch any layout shifts
+    const timeoutId = setTimeout(updateDimensions, 100);
+
+    return () => {
+      window.removeEventListener("resize", updateDimensions);
+      clearTimeout(timeoutId);
+    };
+  }, [isFullscreen]);
+
+  // Debug: Log flowchart data
+  React.useEffect(() => {
+    console.log("[FlowchartPane] Flowchart data:", {
+      hasData: !!flowchartData,
+      nodeCount: flowchartData?.nodes?.length || 0,
+      edgeCount: flowchartData?.edges?.length || 0,
+      localHasData: !!localFlowchart,
+      localNodeCount: localFlowchart?.nodes?.length || 0,
+    });
+  }, [flowchartData, localFlowchart]);
 
   const updateFlowchartMutation = trpc.flowchart.updateManual.useMutation({
     onSuccess: () => {
@@ -72,6 +118,13 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
 
   const FlowchartContent = () => {
     const currentData = localFlowchart || flowchartData;
+
+    console.log("[FlowchartContent] Rendering with:", {
+      hasCurrentData: !!currentData,
+      nodeCount: currentData?.nodes?.length || 0,
+      isEditMode,
+      isFullscreen,
+    });
 
     if (!currentData || currentData.nodes.length === 0) {
       return (
@@ -156,11 +209,26 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
           </div>
         </div>
         <div
-          className="relative flex-1"
+          ref={containerRef}
+          className="relative min-h-[600px] flex-1"
           style={{ height: "calc(100% - 80px)" }}
         >
           <div className="absolute inset-0 p-4">
-            <FlowchartContent />
+            {/* Debug info */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="absolute left-0 top-0 z-50 rounded bg-black/80 p-2 text-xs text-white">
+                <div>
+                  Container: {dimensions.width}x{dimensions.height}
+                </div>
+                <div>
+                  Nodes: {(localFlowchart || flowchartData)?.nodes?.length || 0}
+                </div>
+                <div>Fullscreen: {isFullscreen ? "Yes" : "No"}</div>
+              </div>
+            )}
+            <div className="h-full w-full">
+              <FlowchartContent />
+            </div>
           </div>
         </div>
       </div>
