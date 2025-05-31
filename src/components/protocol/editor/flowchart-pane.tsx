@@ -33,12 +33,6 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
 
-  console.log("[FlowchartPane] Rendering with data:", {
-    hasFlowchartData: !!flowchartData,
-    nodeCount: flowchartData?.nodes?.length || 0,
-    edgeCount: flowchartData?.edges?.length || 0,
-  });
-
   // Update local flowchart when prop changes
   React.useEffect(() => {
     setLocalFlowchart(flowchartData);
@@ -161,8 +155,13 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
             )}
           </div>
         </div>
-        <div className="flex-1 p-1" style={{ minHeight: "600px" }}>
-          <FlowchartContent />
+        <div
+          className="relative flex-1"
+          style={{ height: "calc(100% - 80px)" }}
+        >
+          <div className="absolute inset-0 p-4">
+            <FlowchartContent />
+          </div>
         </div>
       </div>
 
