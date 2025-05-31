@@ -40,49 +40,34 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
     setLocalFlowchart(flowchartData);
   }, [flowchartData]);
 
-  // Debug: Track container dimensions
+  // Track container dimensions for debug overlay
   React.useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const newDimensions = { width: rect.width, height: rect.height };
         setDimensions(newDimensions);
-        console.log("[FlowchartPane] Container dimensions:", {
-          width: rect.width,
-          height: rect.height,
-          top: rect.top,
-          left: rect.left,
-          offsetHeight: containerRef.current.offsetHeight,
-          offsetWidth: containerRef.current.offsetWidth,
-          clientHeight: containerRef.current.clientHeight,
-          clientWidth: containerRef.current.clientWidth,
-          computed: window.getComputedStyle(containerRef.current).height,
-        });
       }
     };
 
     updateDimensions();
     window.addEventListener("resize", updateDimensions);
 
-    // Check dimensions after a delay to catch any layout shifts
-    const timeoutId = setTimeout(updateDimensions, 100);
-
     return () => {
       window.removeEventListener("resize", updateDimensions);
-      clearTimeout(timeoutId);
     };
-  }, [isFullscreen]);
+  }, []);
 
-  // Debug: Log flowchart data
+  // Debug: Log only when flowchart data changes
   React.useEffect(() => {
-    console.log("[FlowchartPane] Flowchart data:", {
-      hasData: !!flowchartData,
-      nodeCount: flowchartData?.nodes?.length || 0,
-      edgeCount: flowchartData?.edges?.length || 0,
-      localHasData: !!localFlowchart,
-      localNodeCount: localFlowchart?.nodes?.length || 0,
-    });
-  }, [flowchartData, localFlowchart]);
+    if (flowchartData) {
+      console.log(
+        "[FlowchartPane] Flowchart loaded with",
+        flowchartData.nodes.length,
+        "nodes",
+      );
+    }
+  }, [flowchartData]);
 
   const updateFlowchartMutation = trpc.flowchart.updateManual.useMutation({
     onSuccess: () => {
@@ -119,13 +104,6 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const FlowchartContent = () => {
     const currentData = localFlowchart || flowchartData;
 
-    console.log("[FlowchartContent] Rendering with:", {
-      hasCurrentData: !!currentData,
-      nodeCount: currentData?.nodes?.length || 0,
-      isEditMode,
-      isFullscreen,
-    });
-
     if (!currentData || currentData.nodes.length === 0) {
       return (
         <div className="flex h-full items-center justify-center">
@@ -136,13 +114,52 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
       );
     }
 
-    // Clean up edge types to avoid ReactFlow warnings
+    // Clean up edge types and sourceHandles to avoid ReactFlow warnings
     const cleanedData = {
       ...currentData,
-      edges: currentData.edges.map((edge) => ({
-        ...edge,
-        type: edge.type === "conditional" ? "default" : edge.type || "default",
-      })),
+      edges: currentData.edges.map((edge) => {
+        const cleanedEdge = {
+          ...edge,
+          type:
+            edge.type === "conditional" ? "default" : edge.type || "default",
+        };
+
+        // Find the source node to check its type
+        const sourceNode = currentData.nodes.find((n) => n.id === edge.source);
+
+        // If source is a decision node, only allow 'yes' or 'no' handles
+        if (sourceNode?.type === "decision") {
+          if (
+            cleanedEdge.sourceHandle &&
+            !["yes", "no"].includes(cleanedEdge.sourceHandle)
+          ) {
+            // Map common variations to valid handles
+            if (
+              cleanedEdge.sourceHandle?.toLowerCase().includes("sim") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("true")
+            ) {
+              cleanedEdge.sourceHandle = "yes";
+            } else if (
+              cleanedEdge.sourceHandle?.toLowerCase().includes("não") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("nao") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("false")
+            ) {
+              cleanedEdge.sourceHandle = "no";
+            } else {
+              // Remove invalid sourceHandle
+              console.warn(
+                `[FlowchartPane] Removing invalid sourceHandle '${cleanedEdge.sourceHandle}' from edge ${edge.id}`,
+              );
+              delete cleanedEdge.sourceHandle;
+            }
+          }
+        } else if (cleanedEdge.sourceHandle) {
+          // For non-decision nodes, remove sourceHandle as they typically don't have multiple outputs
+          delete cleanedEdge.sourceHandle;
+        }
+
+        return cleanedEdge;
+      }),
     };
 
     if (isEditMode) {
@@ -214,18 +231,6 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
           style={{ height: "calc(100% - 80px)" }}
         >
           <div className="absolute inset-0 p-4">
-            {/* Debug info */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="absolute left-0 top-0 z-50 rounded bg-black/80 p-2 text-xs text-white">
-                <div>
-                  Container: {dimensions.width}x{dimensions.height}
-                </div>
-                <div>
-                  Nodes: {(localFlowchart || flowchartData)?.nodes?.length || 0}
-                </div>
-                <div>Fullscreen: {isFullscreen ? "Yes" : "No"}</div>
-              </div>
-            )}
             <div className="h-full w-full">
               <FlowchartContent />
             </div>

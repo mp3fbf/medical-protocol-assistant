@@ -113,32 +113,16 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Debug: Log mount and props
+  // Debug: Log only initial mount
   React.useEffect(() => {
-    console.log("[ProtocolFlowchartCanvas] Mounted/Updated:", {
-      propNodesCount: propNodes?.length || 0,
-      propEdgesCount: propEdges?.length || 0,
-      actualNodesCount: _nodes.length,
-      actualEdgesCount: edges.length,
-      usingDefaultNodes: !propNodes,
-      firstNode: _nodes[0],
-      containerExists: !!containerRef.current,
-    });
-  }, [propNodes, propEdges, _nodes, edges]);
-
-  // Debug: Track container dimensions
-  React.useEffect(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      console.log("[ProtocolFlowchartCanvas] Container size:", {
-        width: rect.width,
-        height: rect.height,
-        visible: rect.width > 0 && rect.height > 0,
-        parentElement:
-          containerRef.current.parentElement?.getBoundingClientRect(),
-      });
-    }
-  }, []);
+    console.log(
+      "[ProtocolFlowchartCanvas] Initialized with",
+      _nodes.length,
+      "nodes and",
+      edges.length,
+      "edges",
+    );
+  }, []); // Empty deps to run only once
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -158,23 +142,21 @@ const ProtocolFlowchartCanvasContent: React.FC<
         attributionPosition="bottom-left"
         className="protocol-flowchart-theme"
         onInit={(instance) => {
-          console.log("[ReactFlow] Initialized:", {
-            nodes: instance.getNodes().length,
-            edges: instance.getEdges().length,
-            viewport: instance.getViewport(),
-            bounds: instance.getIntersectingNodes({
-              x: 0,
-              y: 0,
-              width: 1000,
-              height: 1000,
-            }).length,
+          console.log(
+            "[ReactFlow] Initialized with",
+            instance.getNodes().length,
+            "nodes",
+          );
+          // Check for sourceHandle issues
+          const edges = instance.getEdges();
+          edges.forEach((edge) => {
+            if (edge.sourceHandle) {
+              const sourceNode = instance.getNode(edge.source);
+              console.log(
+                `[ReactFlow] Edge ${edge.id} has sourceHandle '${edge.sourceHandle}' from node type '${sourceNode?.type}'`,
+              );
+            }
           });
-        }}
-        onNodesInitialized={(nodes) => {
-          console.log("[ReactFlow] Nodes initialized:", nodes.length);
-        }}
-        onError={(error) => {
-          console.error("[ReactFlow] Error:", error);
         }}
       >
         <Background gap={16} color="#e0e0e0" variant={BackgroundVariant.Dots} />
