@@ -2,8 +2,8 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 31 de janeiro de 2025  
-**Versão:** v1.8  
+**Data:** 31 de maio de 2025  
+**Versão:** v1.9  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**

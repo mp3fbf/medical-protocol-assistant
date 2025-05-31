@@ -2,7 +2,7 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
-## 🚀 Status do Projeto (v1.8)
+## 🚀 Status do Projeto (v1.9)
 
 **100% Funcional** - Sistema completo com MVP totalmente implementado, incluindo editor de texto rico, interface ultra moderna e melhorias de acessibilidade WCAG 2.1 AA.
 
