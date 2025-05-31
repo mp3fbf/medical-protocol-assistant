@@ -1,22 +1,21 @@
 /**
- * Custom Decision Node for ReactFlow.
- * Displays a decision point with criteria.
+ * Ultra Modern Decision Node for ReactFlow.
+ * Diamond shape with glassmorphism and gradient effects.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { DecisionNodeData } from "@/types/flowchart";
-import { cn } from "@/lib/utils"; // Assuming cn utility from shadcn or similar
+import { cn } from "@/lib/utils";
+import { HelpCircle, AlertTriangle, Info } from "lucide-react";
 
-const getNodeColors = (priority?: DecisionNodeData["priority"]) => {
+const getNodeIcon = (priority?: DecisionNodeData["priority"]) => {
   switch (priority) {
     case "high":
-      return "bg-danger/20 border-danger text-danger-foreground";
+      return <AlertTriangle className="ultra-node-icon" style={{ top: '8px', right: '8px' }} />;
     case "medium":
-      return "bg-warning/20 border-warning text-warning-foreground";
-    case "low":
-      return "bg-success/20 border-success text-success-foreground";
+      return <Info className="ultra-node-icon" style={{ top: '8px', right: '8px' }} />;
     default:
-      return "bg-gray-100 border-gray-400 text-gray-800";
+      return <HelpCircle className="ultra-node-icon" style={{ top: '8px', right: '8px' }} />;
   }
 };
 
@@ -26,50 +25,85 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
   selected,
 }) => {
   const { title, criteria, priority } = data;
-  const colors = getNodeColors(priority);
 
   return (
     <div
       className={cn(
-        "flex h-32 w-48 items-center justify-center rounded-md border-2 p-2 shadow-md",
-        colors,
-        selected && "ring-2 ring-primary-500 ring-offset-2",
-        "rotate-45 transform", // Diamond shape requires rotating the outer container
+        "ultra-flow-node ultra-decision-node ultra-decision-wrapper",
+        "rounded-xl",
+        selected && "selected",
+        priority === "high" && "ultra-pulse"
       )}
-      style={{
-        // Dimensions before rotation to ensure content fits
-        width: "10rem", // Approx 160px
-        height: "10rem", // Approx 160px
-      }}
     >
-      <div className="-rotate-45 transform text-center">
-        {" "}
-        {/* Counter-rotate content */}
-        <div className="mb-1 truncate text-xs font-semibold">{title}</div>
-        <div className="text-xxs truncate">{criteria}</div>
+      {/* Animated gradient background */}
+      <div className="ultra-gradient-bg rounded-xl" />
+      
+      {/* Glassmorphism effect enhancement */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/10 to-transparent" />
+      
+      {/* Content wrapper with counter-rotation */}
+      <div className="ultra-decision-content">
+        {/* Icon - positioned absolutely to not rotate */}
+        {getNodeIcon(priority)}
+        
+        <div className="ultra-node-title text-center">{title}</div>
+        {criteria && (
+          <div className="ultra-node-subtitle text-center mt-1 text-xs">
+            {criteria}
+          </div>
+        )}
       </div>
+      
+      {/* Handles for Yes/No paths */}
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
+        className="ultra-handle ultra-handle-target"
+        style={{ top: '-6px', left: '50%', transform: 'translateX(-50%) rotate(-45deg)' }}
       />
+      
+      {/* Yes handle - bottom left */}
       <Handle
         type="source"
-        position={Position.Bottom}
-        id="yes" // Example for conditional path
+        position={Position.Left}
+        id="yes"
         isConnectable={isConnectable}
-        className="decision-handle-yes"
-        style={{ bottom: -6, left: "30%" }}
+        className="ultra-handle ultra-handle-source !border-green-500"
+        style={{ 
+          left: '-6px', 
+          bottom: '30%',
+          transform: 'rotate(-45deg)'
+        }}
       />
+      
+      {/* No handle - bottom right */}
       <Handle
         type="source"
         position={Position.Right}
-        id="no" // Example for conditional path
+        id="no"
         isConnectable={isConnectable}
-        className="decision-handle-no"
-        style={{ right: -6, top: "30%" }}
+        className="ultra-handle ultra-handle-source !border-red-500"
+        style={{ 
+          right: '-6px', 
+          bottom: '30%',
+          transform: 'rotate(-45deg)'
+        }}
       />
-      {/* Add more handles as needed, e.g., Left for "No" and Bottom for "Yes" if preferred */}
+      
+      {/* Visual indicators for Yes/No */}
+      <div 
+        className="absolute text-xs font-bold text-green-600"
+        style={{ left: '15%', bottom: '15%', transform: 'rotate(-45deg)' }}
+      >
+        SIM
+      </div>
+      <div 
+        className="absolute text-xs font-bold text-red-600"
+        style={{ right: '15%', bottom: '15%', transform: 'rotate(-45deg)' }}
+      >
+        NÃO
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./node-types/node-styles.css";
+import "./node-types/ultra-node-styles.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";

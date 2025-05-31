@@ -1,22 +1,23 @@
 /**
- * Custom Triage Node for ReactFlow.
- * Displays triage criteria or initial assessment points.
+ * Ultra Modern Triage Node for ReactFlow.
+ * Features glassmorphism, gradients, and smooth animations.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { TriageNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
+import { Activity, AlertCircle, CheckCircle, Clock } from "lucide-react";
 
-const getNodeColors = (priority?: TriageNodeData["priority"]) => {
+const getNodeIcon = (priority?: TriageNodeData["priority"]) => {
   switch (priority) {
     case "high":
-      return "bg-danger/20 border-danger text-danger-foreground"; // Red for high priority triage
+      return <AlertCircle className="ultra-node-icon" />;
     case "medium":
-      return "bg-warning/20 border-warning text-warning-foreground"; // Yellow for medium
+      return <Clock className="ultra-node-icon" />;
     case "low":
-      return "bg-success/20 border-success text-success-foreground"; // Green for low
+      return <CheckCircle className="ultra-node-icon" />;
     default:
-      return "bg-teal-100/50 border-teal-500 text-teal-800"; // Default triage color
+      return <Activity className="ultra-node-icon" />;
   }
 };
 
@@ -26,29 +27,62 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
   selected,
 }) => {
   const { title, description, priority } = data;
-  const colors = getNodeColors(priority);
 
   return (
     <div
       className={cn(
-        "w-48 rounded-lg border-2 p-3 shadow-lg", // Slightly more prominent shadow for triage
-        colors,
-        selected && "ring-2 ring-primary-500 ring-offset-2",
+        "ultra-flow-node ultra-triage-node",
+        "w-56 rounded-2xl",
+        selected && "selected",
+        priority === "high" && "ultra-pulse"
       )}
     >
+      {/* Animated gradient background */}
+      <div className="ultra-gradient-bg" />
+      
+      {/* Glassmorphism effect enhancement */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent" />
+      
+      {/* Icon */}
+      {getNodeIcon(priority)}
+      
+      {/* Content */}
+      <div className="ultra-node-content">
+        <div className="ultra-node-title">{title}</div>
+        {description && (
+          <div className="ultra-node-subtitle">{description}</div>
+        )}
+        
+        {/* Priority indicator */}
+        <div className="mt-2 flex items-center gap-1">
+          <div className={cn(
+            "h-2 w-2 rounded-full",
+            priority === "high" && "bg-red-500 animate-pulse",
+            priority === "medium" && "bg-yellow-500",
+            priority === "low" && "bg-green-500",
+            !priority && "bg-blue-500"
+          )} />
+          <span className="text-xs font-medium opacity-70">
+            {priority === "high" && "Alta Prioridade"}
+            {priority === "medium" && "Média Prioridade"}
+            {priority === "low" && "Baixa Prioridade"}
+            {!priority && "Triagem Inicial"}
+          </span>
+        </div>
+      </div>
+      
+      {/* Handles with custom styling */}
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="ultra-handle ultra-handle-target"
       />
-      <div className="mb-1 truncate text-sm font-bold">{title}</div>
-      {description && <p className="text-xs text-opacity-80">{description}</p>}
       <Handle
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="ultra-handle ultra-handle-source"
       />
     </div>
   );

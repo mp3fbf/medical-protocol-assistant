@@ -1,22 +1,21 @@
 /**
- * Custom Medication Node for ReactFlow.
- * Displays a table or list of medications.
+ * Ultra Modern Medication Node for ReactFlow.
+ * Features glassmorphism with medication details.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { MedicationNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
+import { Pill, Syringe, Heart } from "lucide-react";
 
-const getNodeColors = (priority?: MedicationNodeData["priority"]) => {
+const getNodeIcon = (priority?: MedicationNodeData["priority"]) => {
   switch (priority) {
     case "high":
-      return "bg-danger/20 border-danger text-danger-foreground";
+      return <Heart className="ultra-node-icon text-red-500 animate-pulse" />;
     case "medium":
-      return "bg-warning/20 border-warning text-warning-foreground";
-    case "low":
-      return "bg-success/20 border-success text-success-foreground";
+      return <Syringe className="ultra-node-icon text-orange-500" />;
     default:
-      return "bg-purple-100/50 border-purple-500 text-purple-800"; // Default medication color
+      return <Pill className="ultra-node-icon text-purple-500" />;
   }
 };
 
@@ -26,44 +25,95 @@ export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
   selected,
 }) => {
   const { title, medications, priority } = data;
-  const colors = getNodeColors(priority);
 
   return (
     <div
       className={cn(
-        "min-w-56 max-w-xs rounded-md border-2 p-3 shadow-md", // min-w-56, max-w-xs
-        colors,
-        selected && "ring-2 ring-primary-500 ring-offset-2",
+        "ultra-flow-node ultra-medication-node",
+        "min-w-[280px] max-w-xs rounded-2xl",
+        selected && "selected",
+        priority === "high" && "ultra-pulse"
       )}
     >
+      {/* Animated gradient background */}
+      <div className="ultra-gradient-bg" />
+      
+      {/* Glassmorphism effect enhancement */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent" />
+      
+      {/* Icon */}
+      {getNodeIcon(priority)}
+      
+      {/* Content */}
+      <div className="ultra-node-content">
+        <div className="ultra-node-title mb-3">{title}</div>
+        
+        {/* Medication list with ultra styling */}
+        {medications && medications.length > 0 ? (
+          <div className="space-y-2">
+            {medications.map((med, index) => (
+              <div 
+                key={index} 
+                className="group rounded-lg bg-white/10 backdrop-blur-sm p-2 
+                         border border-white/10 hover:bg-white/20 hover:border-white/20
+                         transition-all duration-300"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="font-medium text-sm text-purple-700 dark:text-purple-300">
+                      {med.name}
+                    </div>
+                    <div className="text-xs opacity-90 mt-0.5">
+                      <span className="font-medium">{med.dose}</span>
+                      <span className="mx-1">•</span>
+                      <span className="text-blue-600 dark:text-blue-400">{med.route}</span>
+                      <span className="mx-1">•</span>
+                      <span>{med.frequency}</span>
+                    </div>
+                    {med.duration && (
+                      <div className="text-xs opacity-70 mt-0.5">
+                        Duração: {med.duration}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-purple-400/20 to-pink-400/20 
+                                flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Pill className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs italic opacity-70">
+            Nenhum medicamento especificado.
+          </p>
+        )}
+        
+        {/* Warning for high priority medications */}
+        {priority === "high" && (
+          <div className="mt-3 flex items-center gap-2 px-2 py-1 
+                        rounded-lg bg-red-500/20 border border-red-500/30">
+            <Heart className="h-3 w-3 text-red-500 animate-pulse" />
+            <span className="text-xs font-medium text-red-600 dark:text-red-400">
+              Medicação de Alta Prioridade
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {/* Handles with custom styling */}
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="ultra-handle ultra-handle-target"
       />
-      <div className="mb-2 truncate text-sm font-semibold">{title}</div>
-      {medications && medications.length > 0 ? (
-        <div className="space-y-1 text-xs">
-          {medications.slice(0, 3).map((med, index) => (
-            <div key={index} className="truncate border-b border-dashed pb-1">
-              <span className="font-medium">{med.name}:</span> {med.dose}{" "}
-              {med.route}, {med.frequency}
-              {med.duration && `, ${med.duration}`}
-            </div>
-          ))}
-          {medications.length > 3 && (
-            <div className="text-xxs italic">...e mais medicamentos.</div>
-          )}
-        </div>
-      ) : (
-        <p className="text-xs italic">Nenhum medicamento especificado.</p>
-      )}
       <Handle
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="ultra-handle ultra-handle-source"
       />
     </div>
   );
