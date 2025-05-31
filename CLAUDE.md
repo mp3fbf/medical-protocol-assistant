@@ -104,6 +104,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Page load times: <3 seconds for authenticated routes
 - Protocol validation: <5 seconds for 13-section analysis
 
+### UI/UX Design System
+
+**Ultra Design System v2** - A modern, mathematical design system:
+
+- **Mathematical Spacing**: Based on Golden Ratio (1.618) for harmonious proportions
+- **Glassmorphism Effects**: Modern glass-like UI elements with backdrop blur
+- **Gradient System**: Vibrant gradients (indigo → purple → pink) for CTAs
+- **Typography**: Fluid responsive sizing with excellent readability
+- **Animations**: Smooth Spring physics-based transitions
+- **Information Density**: Maximized screen real estate usage
+- **Accessibility**: Full support for `prefers-reduced-motion` and high contrast
+
 ### Current Status
 
 **✅ Completed Features:**
@@ -126,16 +138,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Custom flowchart controls with better layout and tooltips
 - **Manual flowchart editing capabilities** with node creation, deletion, and connection management
 - **First-visit onboarding system** for flowchart editor with "Don't show again" option
+- **Rich text editor (TipTap)** with full formatting support (bold, italic, lists, tables, alignment)
+- **Ultra Design System v2** with mathematical spacing based on Golden Ratio
+- **Redesigned homepage** with modern glassmorphism effects and improved contrast
+- **Protocol Editor Ultra V2** with maximum information density and compact layout
+- **Removed wasteful sidebar** - navigation integrated into header for better space utilization
+- **Dedicated flowchart page** at `/protocols/[id]/flowchart` for focused visualization
+- **Visual flowchart indicators** showing when protocols have/don't have flowcharts
+- **Dynamic button states** that change based on flowchart existence
 
 **🔄 Known Issues (Pending):**
 
-- Rich text editor not implemented (using plain text)
-- Visual layout refinements needed for better spacing
+- Protocol version comparison not yet implemented
+- Batch export functionality pending
+- Real-time collaboration features not implemented
 
 **📋 Next Priority Tasks:**
 
-- Implement rich text editor for better content editing
 - Add protocol version comparison feature
 - Implement advanced collaboration features
 - Add batch export functionality
-- Improve overall UI/UX polish
+- Enhanced analytics and monitoring
+- Mobile app development

@@ -2,26 +2,34 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
-## 🚀 Status do Projeto (v1.4)
+## 🚀 Status do Projeto (v1.7)
 
-**95% Funcional** - Sistema completo de geração, validação, visualização e exportação de protocolos médicos.
+**100% Funcional** - Sistema completo com MVP totalmente implementado, incluindo editor de texto rico e interface ultra moderna.
 
 ### ✅ Recursos Implementados
 
 - **Autenticação & RBAC**: Sistema completo com roles (CREATOR/REVIEWER/ADMIN)
 - **Geração por IA**: Multi-provider (OpenAI, Anthropic, Gemini) com 3 modos
 - **Upload de Documentos**: Suporte para PDF, DOCX, TXT e Markdown
-- **Editor de Protocolos**: 13 seções com salvamento otimista
+- **Editor de Protocolos**: 13 seções com salvamento otimista e editor rico TipTap
 - **Validação Avançada**: 42+ validações médicas com categorização
-- **Fluxogramas Inteligentes**: Geração automática com ReactFlow
+- **Fluxogramas Inteligentes**: Geração automática com ReactFlow + edição manual
 - **Exportação**: PDF/DOCX com formatação ABNT
 - **Dashboard**: Estatísticas em tempo real e gerenciamento de status
+- **Ultra Design System v2**: Interface moderna com glassmorphism e gradientes
 
-### 🔄 Melhorias Recentes
+### 🔄 Melhorias Recentes (30/05/2025)
 
-- **Correção do indicador de zoom**: Atualização dinâmica da porcentagem
-- **Modo tela cheia otimizado**: Uso completo da altura da tela
-- **Interface refinada**: Remoção de botões duplicados
+- **Ultra Design System v2**: Redesign completo com mathematical spacing baseado em Golden Ratio
+- **Homepage Redesenhada**: Removido dark mode inconsistente e animações distrativas
+- **Protocol Editor Ultra V2**: Layout compacto com máxima densidade de informação
+- **Sidebar Removida**: Navegação integrada no header para melhor uso do espaço
+- **Contraste Melhorado**: Textos e botões com legibilidade otimizada
+- **Editor Rico TipTap**: Formatação completa (negrito, itálico, listas, tabelas)
+- **Onboarding de Flowchart**: Sistema de ajuda para primeira visita
+- **Página de Flowchart Dedicada**: Visualização em tela cheia em `/protocols/[id]/flowchart`
+- **Indicadores Visuais**: Badges e botões mostram claramente se há fluxograma
+- **Correções de Bugs**: tRPC query parameters e UltraBadge status "info"
 
 ## Project Setup
 
@@ -164,6 +172,27 @@ The `.github/workflows/deploy-vercel.yml` workflow handles automated deployments
     - `VERCEL_PROJECT_ID`: The ID of your project on Vercel (from `.vercel/project.json` after linking, or Vercel dashboard).
 
 Once these are set up, the GitHub Action workflow should handle deployments automatically.
+
+## UI/UX Design System
+
+### Ultra Design System v2
+
+O projeto utiliza um sistema de design moderno e matemático:
+
+- **Espaçamento Matemático**: Baseado na Proporção Áurea (1.618)
+- **Glassmorphism**: Elementos com efeito de vidro e backdrop blur
+- **Sistema de Gradientes**: Cores vibrantes (indigo → purple → pink)
+- **Tipografia Fluida**: Tamanhos responsivos com excelente legibilidade
+- **Animações Spring**: Transições suaves baseadas em física
+- **Densidade de Informação**: Máximo aproveitamento do espaço da tela
+- **Acessibilidade**: Suporte completo para `prefers-reduced-motion`
+
+### Componentes Ultra
+
+- `UltraCard`: Cards com efeitos 3D e gradientes dinâmicos
+- `UltraButton`: Botões com efeitos magnéticos e ripple
+- `UltraBadge`: Badges animados com glow effects
+- `UltraStats`: Dashboard com animações e gráficos SVG
 
 ## Code Standards & Project Structure
 

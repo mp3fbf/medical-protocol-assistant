@@ -70,3 +70,6 @@ lerna-debug.log*
 /playwright-report/
 /test-results/
 playwright/.auth/
+
+# Design References (uncomment if you don't want to version these files)
+# /docs/design-references/
