@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/app/globals.css";
+import "@/styles/ultra-design-system.css";
 import { GlobalProviders } from "@/components/providers/global-providers";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/config";
