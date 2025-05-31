@@ -8,6 +8,7 @@ import { FlowchartPane } from "@/components/protocol/editor/flowchart-pane";
 import { UltraButton } from "@/components/ui/ultra-button";
 import { ArrowLeft, Download, Maximize2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import type { FlowchartDefinition } from "@/types/flowchart";
 
 export default function FlowchartPage() {
   const params = useParams();
@@ -48,10 +49,22 @@ export default function FlowchartPage() {
       return;
     }
 
+    const protocolContent = latestVersion.content as any;
+    const sectionOneContent = protocolContent["1"]?.content;
+    const condition =
+      typeof sectionOneContent === "string"
+        ? sectionOneContent
+        : protocol?.title || "Protocolo";
+
     flowchartMutation.mutate({
       protocolId: protocolId!,
-      versionId: latestVersion.id,
-      protocolContent: latestVersion.content,
+      condition,
+      content: protocolContent,
+      options: {
+        mode: "smart",
+        includeLayout: true,
+        includeMedications: true,
+      },
     });
   };
 
@@ -114,7 +127,10 @@ export default function FlowchartPage() {
   }
 
   const latestVersion = protocol?.ProtocolVersion?.[0];
-  const flowchartData = latestVersion?.flowchart;
+  const flowchartData = latestVersion?.flowchart as
+    | FlowchartDefinition
+    | null
+    | undefined;
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
@@ -217,7 +233,7 @@ export default function FlowchartPage() {
         <div className="h-full rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           {flowchartData ? (
             <FlowchartPane
-              flowchartData={flowchartData}
+              flowchartData={flowchartData as FlowchartDefinition}
               protocolId={protocolId!}
               protocolTitle={protocol.title}
             />
