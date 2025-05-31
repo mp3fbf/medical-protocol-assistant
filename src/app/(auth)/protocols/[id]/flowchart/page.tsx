@@ -21,20 +21,25 @@ export default function FlowchartPage() {
     data: protocol,
     isLoading,
     error,
+    refetch,
   } = trpc.protocol.getById.useQuery(
     { protocolId: protocolId! },
     {
       enabled: !!protocolId,
       retry: false,
+      staleTime: 0, // Always fetch fresh data
+      cacheTime: 0, // Don't cache
     },
   );
 
   const utils = trpc.useContext();
 
   const flowchartMutation = trpc.flowchart.generateAndSave.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Fluxograma gerado com sucesso!");
       // Refetch protocol to get new flowchart
+      await refetch();
+      // Also invalidate cache
       utils.protocol.getById.invalidate({ protocolId: protocolId! });
     },
     onError: (error) => {
@@ -134,11 +139,6 @@ export default function FlowchartPage() {
     | null
     | undefined;
 
-  // Debug logging
-  console.log("[FlowchartPage] Protocol data:", protocol);
-  console.log("[FlowchartPage] Latest version:", latestVersion);
-  console.log("[FlowchartPage] Flowchart data:", flowchartData);
-
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -236,16 +236,18 @@ export default function FlowchartPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
-        <div className="h-full rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex-1 overflow-hidden p-6">
+        <div className="relative h-full min-h-[600px] rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           {flowchartData ? (
-            <FlowchartPane
-              flowchartData={flowchartData as FlowchartDefinition}
-              protocolId={protocolId!}
-              versionId={latestVersion.id}
-              protocolTitle={protocol.title}
-              canEdit={true}
-            />
+            <div className="absolute inset-0 p-0">
+              <FlowchartPane
+                flowchartData={flowchartData as FlowchartDefinition}
+                protocolId={protocolId!}
+                versionId={latestVersion.id}
+                protocolTitle={protocol.title}
+                canEdit={true}
+              />
+            </div>
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="max-w-md text-center">

@@ -94,26 +94,30 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
 
     if (isEditMode) {
       return (
-        <EditableFlowchartCanvas
-          flowchartData={cleanedData}
-          onSave={handleSaveFlowchart}
-          isReadOnly={false}
-          protocolTitle={protocolTitle}
-        />
+        <div className="h-full w-full">
+          <EditableFlowchartCanvas
+            flowchartData={cleanedData}
+            onSave={handleSaveFlowchart}
+            isReadOnly={false}
+            protocolTitle={protocolTitle}
+          />
+        </div>
       );
     }
 
     return (
-      <ProtocolFlowchartCanvas
-        nodes={cleanedData.nodes}
-        edges={cleanedData.edges}
-      />
+      <div className="h-full w-full">
+        <ProtocolFlowchartCanvas
+          nodes={cleanedData.nodes}
+          edges={cleanedData.edges}
+        />
+      </div>
     );
   };
 
   return (
     <>
-      <div className="flex h-full flex-col">
+      <div className="flex h-full w-full flex-col">
         <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
             Fluxograma: {protocolTitle || "Protocolo"}
