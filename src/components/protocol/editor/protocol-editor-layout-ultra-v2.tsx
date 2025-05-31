@@ -127,7 +127,7 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
 
       if (result.url) {
         window.open(result.url, "_blank");
-        toast.success(`${format.toUpperCase()} gerado com sucesso!`);
+        toast.success(`Export concluído!`);
       } else {
         toast.error(`Erro ao gerar ${format.toUpperCase()}`);
       }
@@ -191,7 +191,17 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="rounded-lg p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label={
+                sidebarCollapsed
+                  ? "Abrir menu de seções"
+                  : "Fechar menu de seções"
+              }
+              title={
+                sidebarCollapsed
+                  ? "Abrir menu de seções"
+                  : "Fechar menu de seções"
+              }
             >
               <Menu className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -258,13 +268,18 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
           {/* Right side - Actions */}
           <div className="flex items-center gap-3">
             {/* Quick Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Link href={`/protocols/${protocolId}/flowchart`}>
                 <UltraButton
                   variant={flowchartData ? "ghost" : "secondary"}
                   size="sm"
                   icon={<Maximize2 className="h-4 w-4" />}
                   className={cn(!flowchartData && "border-dashed")}
+                  aria-label={
+                    flowchartData
+                      ? "Ver fluxograma em tela cheia"
+                      : "Fluxograma ainda não foi gerado"
+                  }
                 >
                   {flowchartData ? "Ver Fluxograma" : "Fluxograma Não Gerado"}
                 </UltraButton>
@@ -273,23 +288,31 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
               <button
                 onClick={() => setShowValidation(!showValidation)}
                 className={cn(
-                  "flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  "group relative flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
                   showValidation && totalIssues > 0
-                    ? "bg-red-100 text-red-700"
-                    : "text-gray-600 hover:bg-gray-100",
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
                 )}
+                title="32 tipos de validação disponíveis"
+                aria-label={`${showValidation ? "Ocultar" : "Mostrar"} validação - ${totalIssues} problemas encontrados`}
               >
                 <ShieldCheck className="h-4 w-4" />
                 {totalIssues > 0 ? `${totalIssues} problemas` : "Validação"}
+                {/* Badge showing validation types count */}
+                <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary-100 text-[10px] font-bold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                  32
+                </span>
               </button>
 
-              <div className="h-6 w-px bg-gray-200" />
+              <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
               <UltraButton
                 variant="ghost"
                 size="sm"
                 icon={<Download className="h-4 w-4" />}
                 onClick={() => handleExport("pdf")}
+                aria-label="Exportar protocolo em PDF"
+                title="Exportar protocolo em PDF"
               >
                 Exportar
               </UltraButton>
@@ -321,7 +344,11 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
             </div>
 
             {/* Center: Progress Dots */}
-            <div className="flex items-center gap-1">
+            <div
+              className="flex items-center gap-1"
+              role="navigation"
+              aria-label="Progresso das seções"
+            >
               {SECTION_DEFINITIONS.map((def) => {
                 const { hasContent } = getSectionInfo(def.sectionNumber);
                 const isActive = currentSectionNumber === def.sectionNumber;
@@ -333,12 +360,14 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
                     className={cn(
                       "h-2 w-2 rounded-full transition-all duration-300",
                       isActive
-                        ? "w-6 bg-primary-600"
+                        ? "w-6 bg-primary-700 dark:bg-primary-500"
                         : hasContent
-                          ? "bg-emerald-500"
-                          : "bg-gray-300",
+                          ? "bg-emerald-600 dark:bg-emerald-500"
+                          : "bg-gray-500 dark:bg-gray-400",
                     )}
                     title={def.titlePT}
+                    aria-label={`Seção ${def.sectionNumber}: ${def.titlePT}${isActive ? " (atual)" : ""}${hasContent ? " - preenchida" : " - vazia"}`}
+                    aria-current={isActive ? "step" : undefined}
                   />
                 );
               })}
@@ -347,24 +376,24 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
               <UltraButton
-                variant="ghost"
+                variant="primary"
                 size="sm"
                 icon={<Save className="h-4 w-4" />}
                 onClick={onSaveChanges}
                 disabled={isSaving}
+                className="bg-gradient-to-r from-primary-500 to-indigo-600"
               >
                 Salvar Rascunho
               </UltraButton>
 
-              <div className="h-6 w-px bg-gray-200" />
+              <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
               {flowchartData ? (
                 <Link href={`/protocols/${protocolId}/flowchart`}>
                   <UltraButton
-                    variant="primary"
+                    variant="secondary"
                     size="sm"
                     icon={<Eye className="h-4 w-4" />}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600"
                   >
                     Ver Fluxograma
                     <ArrowRight className="ml-1 h-4 w-4" />
@@ -372,11 +401,10 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
                 </Link>
               ) : (
                 <UltraButton
-                  variant="primary"
+                  variant="secondary"
                   size="sm"
                   icon={<GitBranch className="h-4 w-4" />}
                   onClick={handleGenerateFlowchart}
-                  className="bg-gradient-to-r from-primary-500 to-indigo-600"
                 >
                   Gerar Fluxograma
                   <ArrowRight className="ml-1 h-4 w-4" />

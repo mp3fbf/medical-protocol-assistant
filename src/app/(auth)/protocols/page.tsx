@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
-import { SkeletonProtocolCard } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonProtocolCard } from "@/components/ui/skeleton";
 
 const statusOptions = [
   { value: undefined, label: "Todos os Status", color: "gray" },
@@ -54,6 +54,7 @@ const sortOptions = [
 export default function ProtocolsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ProtocolStatus | undefined>(
     undefined,
   );
@@ -65,10 +66,38 @@ export default function ProtocolsPage() {
 
   useEffect(() => {
     setIsPageLoaded(true);
-  }, []);
+
+    // Keyboard shortcut for new protocol
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Check if N is pressed without any modifier keys
+      if (e.key === "n" || e.key === "N") {
+        // Don't trigger if user is typing in an input
+        if (
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement
+        ) {
+          return;
+        }
+        e.preventDefault();
+        router.push("/protocols/new");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [router]);
 
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // Show spinner while typing and waiting for debounce
+  useEffect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchTerm, debouncedSearchTerm]);
 
   const { data, isLoading, isError, error } = trpc.protocol.list.useQuery({
     page: 1,
@@ -136,72 +165,92 @@ export default function ProtocolsPage() {
               size="lg"
               icon={<PlusCircle className="h-5 w-5" />}
               onClick={() => router.push("/protocols/new")}
+              title="Pressione N para criar novo protocolo"
             >
               Novo Protocolo
+              <kbd className="ml-2 hidden rounded bg-white/20 px-1.5 py-0.5 font-mono text-xs text-white/90 sm:inline">
+                N
+              </kbd>
             </UltraGradientButton>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div
-          className={`grid grid-cols-1 gap-4 transition-all delay-200 duration-1000 sm:grid-cols-2 lg:grid-cols-4 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
-        >
-          <UltraGlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total
-                </p>
-                <p className="mt-1 text-2xl font-bold">{stats.total}</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <UltraGlassCard key={i} className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Skeleton className="mb-2 h-4 w-16" />
+                    <Skeleton className="h-7 w-12" />
+                  </div>
+                  <Skeleton variant="circular" className="h-12 w-12" />
+                </div>
+              </UltraGlassCard>
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`grid grid-cols-1 gap-4 transition-all delay-200 duration-1000 sm:grid-cols-2 lg:grid-cols-4 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+          >
+            <UltraGlassCard className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">{stats.total}</p>
+                </div>
+                <div className="rounded-xl bg-primary-100 p-3 dark:bg-primary-900/20">
+                  <FileText className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                </div>
               </div>
-              <div className="rounded-xl bg-primary-100 p-3 dark:bg-primary-900/20">
-                <FileText className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-              </div>
-            </div>
-          </UltraGlassCard>
+            </UltraGlassCard>
 
-          <UltraGlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Rascunhos
-                </p>
-                <p className="mt-1 text-2xl font-bold">{stats.draft}</p>
+            <UltraGlassCard className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Rascunhos
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">{stats.draft}</p>
+                </div>
+                <div className="rounded-xl bg-amber-100 p-3 dark:bg-amber-900/20">
+                  <Edit className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                </div>
               </div>
-              <div className="rounded-xl bg-amber-100 p-3 dark:bg-amber-900/20">
-                <Edit className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-          </UltraGlassCard>
+            </UltraGlassCard>
 
-          <UltraGlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Em Revisão
-                </p>
-                <p className="mt-1 text-2xl font-bold">{stats.review}</p>
+            <UltraGlassCard className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Em Revisão
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">{stats.review}</p>
+                </div>
+                <div className="rounded-xl bg-blue-100 p-3 dark:bg-blue-900/20">
+                  <Eye className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
-              <div className="rounded-xl bg-blue-100 p-3 dark:bg-blue-900/20">
-                <Eye className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </UltraGlassCard>
+            </UltraGlassCard>
 
-          <UltraGlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Aprovados
-                </p>
-                <p className="mt-1 text-2xl font-bold">{stats.approved}</p>
+            <UltraGlassCard className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Aprovados
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">{stats.approved}</p>
+                </div>
+                <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/20">
+                  <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
               </div>
-              <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/20">
-                <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </div>
-          </UltraGlassCard>
-        </div>
+            </UltraGlassCard>
+          </div>
+        )}
 
         {/* Search and Filter Controls */}
         <div
@@ -219,12 +268,19 @@ export default function ProtocolsPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <>
+                    {isSearching && (
+                      <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </>
                 )}
               </div>
 

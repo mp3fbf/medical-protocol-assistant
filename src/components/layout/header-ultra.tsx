@@ -53,6 +53,7 @@ export const HeaderUltra: React.FC = () => {
             <Link
               href="/dashboard"
               className="group flex items-center space-x-3"
+              aria-label="Página inicial - Protocolos Médicos"
             >
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 opacity-50 blur-lg transition-opacity group-hover:opacity-75" />
@@ -82,6 +83,8 @@ export const HeaderUltra: React.FC = () => {
                     className={cn(
                       "rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300",
                       "flex items-center gap-2",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
+                      "focus-visible:underline",
                       active
                         ? "bg-gradient-to-r from-primary-500 to-indigo-600 text-white shadow-lg shadow-primary-500/25"
                         : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
@@ -120,10 +123,11 @@ export const HeaderUltra: React.FC = () => {
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-300",
+                    "flex min-h-[44px] items-center gap-2 rounded-lg px-3 py-2 transition-all duration-300",
                     "hover:bg-gray-100 dark:hover:bg-gray-700",
                     userMenuOpen && "bg-gray-100 dark:bg-gray-700",
                   )}
+                  aria-label="Menu do usuário"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-indigo-600 text-sm font-medium text-white">
                     {user.name?.[0]?.toUpperCase() ||
@@ -173,7 +177,8 @@ export const HeaderUltra: React.FC = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
+              className="rounded-lg p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
+              aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />

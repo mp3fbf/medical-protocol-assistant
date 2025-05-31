@@ -62,30 +62,33 @@ const EditableFlowchartCanvasContent: React.FC<
   useEffect(() => {
     if (typeof window !== "undefined") {
       const seen = localStorage.getItem("flowchart-help-seen") === "true";
+      console.log(
+        "Flowchart help localStorage value:",
+        localStorage.getItem("flowchart-help-seen"),
+        "hasSeenHelp will be:",
+        seen,
+      );
       setHasSeenHelp(seen);
       setIsInitialized(true);
     }
   }, []);
 
-  // Show help dialog on first visit - only once per session
+  // Show help dialog on first visit
   useEffect(() => {
-    if (
-      isInitialized &&
-      !isReadOnly &&
-      !hasSeenHelp &&
-      !hasShownOnboarding &&
-      !isHelpOpen
-    ) {
+    if (isInitialized && !isReadOnly && !hasSeenHelp && !hasShownOnboarding) {
       // Small delay to ensure proper mounting
       const timer = setTimeout(() => {
-        console.log("Showing onboarding help dialog");
+        console.log(
+          "Showing onboarding help dialog - hasSeenHelp:",
+          hasSeenHelp,
+        );
         setIsHelpOpen(true);
         setHasShownOnboarding(true);
       }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [isInitialized, isReadOnly, hasSeenHelp, hasShownOnboarding, isHelpOpen]);
+  }, [isInitialized, isReadOnly, hasSeenHelp, hasShownOnboarding]);
 
   // Reset help dialog state when component unmounts
   useEffect(() => {

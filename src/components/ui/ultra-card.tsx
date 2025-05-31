@@ -86,7 +86,7 @@ export const UltraCard: React.FC<UltraCardProps> = ({
         "backface-hidden transform-gpu",
         {
           "bg-gray-50 dark:bg-gray-900": !glass,
-          "border border-white/10 bg-white/5 backdrop-blur-xl": glass,
+          "border border-white/10 bg-white/5 backdrop-blur-sm": glass,
           "shadow-lg hover:shadow-2xl": !featured,
           "shadow-xl hover:shadow-[0_20px_70px_-15px_rgba(59,130,246,0.5)]":
             featured,

@@ -57,7 +57,7 @@ export default async function RootLayout({
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="absolute left-[-9999px] top-4 z-50 rounded-md bg-indigo-600 px-4 py-2 text-white outline-none ring-2 ring-indigo-500 ring-offset-2 transition-all duration-200 hover:bg-indigo-700 focus:left-4 focus:shadow-lg"
         >
           Pular para o conteúdo principal
         </a>

@@ -20,12 +20,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const sizeConfig = {
     sm: {
-      button: "h-8 w-8",
+      button: "h-11 w-11", // 44px minimum
       icon: "h-4 w-4",
       text: "text-xs",
     },
     md: {
-      button: "h-10 w-10",
+      button: "h-11 w-11", // 44px minimum
       icon: "h-5 w-5",
       text: "text-sm",
     },
@@ -50,8 +50,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
           config.button,
         )}
-        aria-label={`Alternar para modo ${theme === "light" ? "escuro" : "claro"}`}
-        title={`Alternar para modo ${theme === "light" ? "escuro" : "claro"}`}
+        aria-label="Alternar tema"
+        title="Alternar tema"
       >
         <Sun
           className={cn(

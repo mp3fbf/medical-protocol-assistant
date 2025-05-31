@@ -31,7 +31,7 @@ export const MedicationTableDisplay: React.FC<MedicationTableDisplayProps> = ({
       </h3>
       <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="dark:bg-gray-750 bg-gray-100">
+          <thead className="bg-gray-100 dark:bg-gray-700">
             <tr>
               <th
                 scope="col"
@@ -75,7 +75,7 @@ export const MedicationTableDisplay: React.FC<MedicationTableDisplayProps> = ({
             {medications.map((med, index) => (
               <tr
                 key={index}
-                className={index % 2 === 0 ? "" : "dark:bg-gray-850 bg-gray-50"}
+                className={index % 2 === 0 ? "" : "bg-gray-50 dark:bg-gray-900"}
               >
                 <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {med.name}

@@ -34,7 +34,26 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsPageLoaded(true);
-  }, []);
+
+    // Keyboard shortcut for new protocol
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Check if N is pressed without any modifier keys
+      if (e.key === "n" || e.key === "N") {
+        // Don't trigger if user is typing in an input
+        if (
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement
+        ) {
+          return;
+        }
+        e.preventDefault();
+        router.push("/protocols/new");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [router]);
 
   const {
     data: _stats,
@@ -102,8 +121,12 @@ export default function DashboardPage() {
                 size="lg"
                 icon={<PlusCircle className="h-5 w-5" />}
                 onClick={() => router.push("/protocols/new")}
+                title="Pressione N para criar novo protocolo"
               >
                 Novo Protocolo
+                <kbd className="ml-2 hidden rounded bg-white/20 px-1.5 py-0.5 font-mono text-xs text-white/90 sm:inline">
+                  N
+                </kbd>
               </UltraGradientButton>
               <UltraButton
                 variant="secondary"

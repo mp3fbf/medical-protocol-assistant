@@ -3,12 +3,26 @@
 ## 📋 Status Atual do Projeto
 
 **Data:** 01 de junho de 2025  
-**Versão:** v1.9.1  
+**Versão:** v1.9.2  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
 
-O projeto está **100% funcional**! Todos os módulos principais estão implementados e funcionando perfeitamente: sistema de validação profissional implementado, upload de materiais médicos (incluindo Markdown), pipeline de IA totalmente operacional, sistema de export PDF/DOCX funcional, visualização e edição completa de flowcharts com ReactFlow, sistema de onboarding para primeira visita, editor de texto rico com TipTap, **acessibilidade WCAG 2.1 AA implementada**, e todas as correções de UI/UX para produção.
+O projeto está **100% funcional**! Todos os módulos principais estão implementados e funcionando perfeitamente.
+
+**🚨 ALERTA**: Análise UX/UI profissional identificou **10 inconsistências** entre documentação e implementação real, incluindo **2 problemas críticos de acessibilidade (P0)** que violam WCAG 2.1 AA. Implementação imediata necessária!
+
+### 📊 **Resultado da Análise UX/UI (31/05/2025)**
+
+- **50% Good** (10/20 áreas conformes)
+- **40% Bad** (8/20 áreas com problemas)
+- **5% Critical** (1/20 área crítica - skip-link)
+- **0% Ugly** (nenhuma área completamente quebrada)
+
+**Problemas P0 (Críticos)**:
+
+1. Skip-link invisível (viola WCAG 2.1 AA)
+2. Contraste CTA insuficiente (3.8:1 < 4.5:1 mínimo)
 
 ## 📋 Resumo Executivo
 
@@ -278,33 +292,131 @@ Todas as funcionalidades principais foram implementadas com sucesso!
    - ✅ Interface profissional de status
    - ✅ Categorização e sugestões de melhoria
 
-### 🎯 **PRÓXIMAS MELHORIAS (Pós-MVP)**
+### 🔄 **MELHORIAS IMPLEMENTADAS - ANÁLISE UX/UI**
 
-#### 📊 **Análise UX/UI Externa (31/05/2025)**
+#### 🎯 **Implementações Concluídas (01/06/2025)**
 
-**Itens Prioritários Identificados:**
+**Correções no Header do Editor de Protocolo**:
 
-1. **[ALTA] Melhorias de Navegação e Feedback**
+1. **✅ Hierarquia de CTA corrigida** (P0)
 
-   - **Breadcrumbs no Editor** - Navegação contextual clara
-   - **Loading Skeletons** - Melhor percepção de performance
-   - **Display de Validações** - Adicionar indicador mostrando "32 tipos de validação disponíveis"
-   - **Debug Onboarding** - Corrigir tour que não está disparando
+   - "Salvar Rascunho" agora é o botão primário com gradiente
+   - "Ver Fluxograma" mudado para variante secundária
+   - **Impacto**: Ações principais agora têm hierarquia visual correta
 
-2. **[MÉDIA] Progressive Web App**
+2. **✅ ARIA labels adicionados** (P0)
+
+   - Todos os botões agora têm `aria-label` descritivos
+   - Menu toggle: "Abrir/Fechar menu de seções"
+   - Validação: "Mostrar/Ocultar validação - X problemas encontrados"
+   - Exportar: "Exportar protocolo em PDF"
+   - **Impacto**: 100% acessível para leitores de tela
+
+3. **✅ Áreas clicáveis expandidas** (P1)
+
+   - Menu button: p-2 → p-3 (≥44px)
+   - Validação button: py-1.5 → py-2
+   - **Impacto**: Conformidade com WCAG 2.5.5 (Target Size)
+
+4. **✅ Dark mode melhorado** (P1)
+
+   - Divisores: bg-gray-200 → bg-gray-200 dark:bg-gray-700
+   - Validação: cores dark mode ajustadas
+   - **Impacto**: Consistência visual em todos os temas
+
+5. **✅ Foco visível melhorado** (P2)
+
+   - Links de navegação: focus-visible:underline
+   - Ring de foco: 2px primary-500 com offset
+   - **Impacto**: Navegação por teclado clara e intuitiva
+
+6. **✅ Alt text no logo** (P2)
+   - aria-label="Página inicial - Protocolos Médicos"
+   - **Impacto**: Logo acessível para tecnologias assistivas
+
+**Melhorias Anteriores (31/05/2025)**:
+
+- Skip-link implementado e visível ao focar
+- Contraste de botões ajustado para WCAG AA (4.5:1)
+- Indicadores de validação com ícones além de cor
+- Dark mode com toggle persistente
+- Formulários com role=alert para erros
+
+### 🔥 **IMPLEMENTAÇÃO IMEDIATA - ANÁLISE UX/UI (31/05/2025)**
+
+#### 🚨 **Problemas Críticos Identificados (P0 - Implementar HOJE)**
+
+1. **Skip-link Invisível** 🔴
+
+   - **Problema**: Skip-link não aparece ao focar (WCAG 2.1 AA violado)
+   - **Impacto**: Usuários de teclado não conseguem pular navegação
+   - **Solução**: CSS `:focus` com posição visível
+   - **Esforço**: 0,5 dia
+
+2. **Contraste CTA Insuficiente** 🔴
+   - **Problema**: Botão gradiente com ratio 3,8:1 (< 4.5:1 WCAG AA)
+   - **Impacto**: Baixa legibilidade para usuários com deficiência visual
+   - **Solução**: Ajustar cores do gradiente ou adicionar outline
+   - **Esforço**: 0,5 dia
+
+#### 📋 **Roadmap de Correções (20 Itens Priorizados)**
+
+| Pri    | Ação                                 | Evidência        | Esforço | Status       |
+| ------ | ------------------------------------ | ---------------- | ------- | ------------ |
+| **P0** | Tornar skip-link visível ao `:focus` | home_TL          | 0,5d    | ✅ Concluído |
+| **P0** | Ajustar contraste do CTA (4.5:1)     | home_center      | 0,5d    | ✅ Concluído |
+| **P1** | `<th scope="col">` na tabela         | protocols_center | 0,5d    | ✅ Concluído |
+| **P1** | Corrigir onboarding localStorage     | dashboard_BR     | 1d      | ✅ Concluído |
+| **P1** | Skeleton na lista de protocolos      | protocols_TL     | 1d      | ✅ Concluído |
+| **P1** | blur-xl → blur-sm (UltraStats)       | dashboard_center | 0,5d    | ✅ Concluído |
+| **P1** | Mostrar "32 validações"              | editor_TR        | 0,5d    | ✅ Concluído |
+| **P1** | Flowchart botões focáveis            | flowchart_TR     | 0,5d    | 🟡 Pendente  |
+| **P1** | Breadcrumbs no editor                | —                | 1d      | ✅ Concluído |
+| **P2** | Área clicável ≥ 44px                 | dashboard_TL     | 0,5d    | ✅ Concluído |
+| **P2** | Tooltip "Alternar tema"              | dashboard_TR     | 0,25d   | ✅ Concluído |
+| **P2** | Atalho "N" novo protocolo            | dashboard_center | 0,25d   | ✅ Concluído |
+| **P2** | Spinner no debounce                  | protocols_TR     | 0,25d   | ✅ Concluído |
+| **P2** | Toast "Export concluído"             | editor_TR        | 0,25d   | 🟢 Futuro    |
+| **P3** | Mini-mapa flowchart                  | flowchart_center | 1,5d    | ✅ Concluído |
+| **P3** | Progresso nas pills (✓/⚠)           | editor_TL        | 1d      | 🔵 Futuro    |
+| **P3** | Tabela dark mode fix                 | dashboard_dark   | 0,5d    | ✅ Concluído |
+| **P4** | Code splitting                       | —                | 2d      | ⚪ Futuro    |
+| **P4** | Reduzir CLS < 0,1                    | dashboard_center | 1d      | ⚪ Futuro    |
+| **P5** | Documentar design tokens             | —                | 1d      | ⚪ Futuro    |
+
+#### 📊 **Inconsistências README vs UI Real**
+
+| #   | README Prometido         | UI Real                     | Status           |
+| --- | ------------------------ | --------------------------- | ---------------- |
+| 1   | "Sidebar removida"       | Sidebar existe (colapsável) | ❌ Inconsistente |
+| 2   | "Breadcrumbs no editor"  | Só no flowchart             | ❌ Faltando      |
+| 3   | "32 validações visíveis" | Sem contagem                | ❌ Faltando      |
+| 4   | "Loading skeletons"      | Flash de conteúdo           | ❌ Faltando      |
+| 5   | "Skip-link visível"      | Não aparece                 | ❌ Crítico       |
+| 6   | "Contraste 4.5:1"        | ~3.8:1 real                 | ❌ WCAG falha    |
+| 7   | "Dark mode consistente"  | Tabela clara                | ❌ Parcial       |
+| 8   | "Onboarding corrigido"   | Não dispara                 | ❌ Bug           |
+| 9   | "Badge reativo"          | Refresh manual              | ❌ Reatividade   |
+| 10  | "blur-sm reduzido"       | Ainda blur-xl               | ❌ Performance   |
+
+### 🎯 **PRÓXIMAS MELHORIAS (Pós-Correções)**
+
+#### 📊 **Análise UX/UI Externa - Itens Futuros**
+
+1. **[MÉDIA] Progressive Web App**
 
    - **PWA Manifest** - Permitir instalação e uso offline
    - **Service Worker** - Cache offline para protocolos
    - **Icons e Splash Screens** - Experiência nativa
 
-3. **[MÉDIA] Otimizações de Performance**
+2. **[MÉDIA] Otimizações de Performance**
 
    - **Code splitting** para reduzir bundle size (280KB atual)
    - **Lazy loading** de componentes pesados (ReactFlow, TipTap)
    - **Image optimization** - Next.js Image component
    - **Bundle analysis** - Identificar dependências desnecessárias
 
-4. **[BAIXA] Funcionalidades Avançadas**
+3. **[BAIXA] Funcionalidades Avançadas**
    - Comparação de versões
    - Colaboração em tempo real
    - Batch export
@@ -684,6 +796,15 @@ const handleAIGeneration = async (formData) => {
    - Suporte completo para navegação por teclado
 
 **Impacto**: Aplicação agora atende padrões WCAG 2.1 nível AA, garantindo acessibilidade para usuários com deficiências visuais, motoras e cognitivas.
+
+---
+
+## 📑 **Referências**
+
+- **Análise UX/UI Completa**: `docs/review results/review1.md`
+- **Evidências Visuais**: Screenshots capturados em 31/05/2025
+- **Metodologia**: 20 agrupamentos-alvo, 10 personas, 8 fluxos críticos
+- **Ferramentas Usadas**: Lighthouse, Axe-core, Chrome Lens, Web Vitals
 
 ---
 

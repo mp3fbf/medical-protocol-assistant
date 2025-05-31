@@ -118,14 +118,21 @@ export const UltraButton: React.FC<UltraButtonProps> = ({
       "border-2 border-transparent",
     ),
     gradient: cn(
-      "bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700",
-      "hover:from-indigo-800 hover:via-purple-800 hover:to-pink-800",
+      // Fallback solid color for better contrast
+      "bg-indigo-800",
+      // Gradient overlay
+      "bg-gradient-to-r from-indigo-800 via-purple-800 to-pink-800",
+      "hover:from-indigo-900 hover:via-purple-900 hover:to-pink-900",
       "text-white shadow-xl hover:shadow-2xl shadow-purple-500/30",
       "border-2 border-white/20", // Added border for better definition
       "relative overflow-hidden",
       "font-semibold",
-      // Ensure WCAG AA contrast with darker gradient
-      "after:absolute after:inset-0 after:bg-black/10 after:pointer-events-none",
+      // Ensure WCAG AA contrast with darker gradient and stronger overlay
+      "after:absolute after:inset-0 after:bg-black/25 after:pointer-events-none",
+      // Add text shadow for better readability
+      "[text-shadow:_0_1px_2px_rgba(0,0,0,0.4)]",
+      // Add subtle outline for even better contrast
+      "ring-1 ring-black/10",
     ),
     glow: cn(
       "bg-primary-500 text-white",
