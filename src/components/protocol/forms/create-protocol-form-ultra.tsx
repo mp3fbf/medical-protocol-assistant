@@ -490,7 +490,6 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
               <div
                 className="grid grid-cols-2 gap-3 md:grid-cols-4"
                 role="group"
-                aria-required="true"
               >
                 {researchSources.map((source) => {
                   const isSelected = watchedResearchSources.includes(

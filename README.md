@@ -2,7 +2,7 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
-## 🚀 Status do Projeto (v1.9)
+## 🚀 Status do Projeto (v1.9.1)
 
 **100% Funcional** - Sistema completo com MVP totalmente implementado, incluindo editor de texto rico, interface ultra moderna e melhorias de acessibilidade WCAG 2.1 AA.
 
@@ -18,7 +18,15 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Dashboard**: Estatísticas em tempo real e gerenciamento de status
 - **Ultra Design System v2**: Interface moderna com glassmorphism e gradientes
 
-### 🔄 Melhorias Recentes (31/05/2025)
+### 🔄 Melhorias Recentes (01/06/2025)
+
+#### Correções de Build e Deploy
+
+- **TypeScript corrigido**: Erros de tipo em use-flowchart-keyboard-navigation.ts resolvidos
+- **Props inválidas removidas**: aria-required, pauseWhenPageIsHidden, tabIndex, aria-live
+- **Build otimizado**: Deploy para Vercel funcionando sem erros
+
+### 🔄 Melhorias Anteriores (31/05/2025)
 
 #### Acessibilidade WCAG 2.1 AA
 

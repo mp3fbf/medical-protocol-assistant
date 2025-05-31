@@ -2,8 +2,8 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 31 de maio de 2025  
-**Versão:** v1.9  
+**Data:** 01 de junho de 2025  
+**Versão:** v1.9.1  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
@@ -230,6 +230,13 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 ---
 
 ## 🎯 **PRÓXIMOS PASSOS IMEDIATOS**
+
+### ✅ **CONCLUÍDO EM 01/06/2025**
+
+1. **✅ Correções de Build para Deploy**
+   - ✅ TypeScript errors em use-flowchart-keyboard-navigation.ts corrigidos
+   - ✅ Props inválidas removidas (aria-required, pauseWhenPageIsHidden, tabIndex, aria-live)
+   - ✅ Build passando sem erros para deploy no Vercel
 
 ### ✅ **CONCLUÍDO EM 31/05/2025**
 
@@ -680,4 +687,4 @@ const handleAIGeneration = async (formData) => {
 
 ---
 
-_Última atualização: 31/05/2025 - Claude Code_
+_Última atualização: 01/06/2025 - Claude Code_

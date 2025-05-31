@@ -3,11 +3,12 @@
 import { useCallback, useEffect } from "react";
 import { useReactFlow, useNodes, useViewport } from "reactflow";
 import type { Node } from "reactflow";
+import type { CustomFlowNodeData } from "@/types/flowchart";
 
 interface UseFlowchartKeyboardNavigationProps {
   enabled?: boolean;
-  onNodeSelect?: (node: Node) => void;
-  onNodeEdit?: (node: Node) => void;
+  onNodeSelect?: (node: Node<CustomFlowNodeData>) => void;
+  onNodeEdit?: (node: Node<CustomFlowNodeData>) => void;
   onNodeDelete?: (nodeIds: string[]) => void;
 }
 
@@ -18,11 +19,13 @@ export function useFlowchartKeyboardNavigation({
   onNodeDelete,
 }: UseFlowchartKeyboardNavigationProps = {}) {
   const reactFlowInstance = useReactFlow();
-  const nodes = useNodes();
+  const nodes = useNodes<CustomFlowNodeData>();
   const viewport = useViewport();
 
   // Get currently selected node
-  const getSelectedNode = useCallback(() => {
+  const getSelectedNode = useCallback(():
+    | Node<CustomFlowNodeData>
+    | undefined => {
     return nodes.find((node) => node.selected);
   }, [nodes]);
 
@@ -38,7 +41,9 @@ export function useFlowchartKeyboardNavigation({
       );
 
       if (focusOnNode) {
-        const node = nodes.find((n) => n.id === nodeId);
+        const node = nodes.find((n) => n.id === nodeId) as
+          | Node<CustomFlowNodeData>
+          | undefined;
         if (node) {
           // Center the node in the viewport
           reactFlowInstance.setCenter(
@@ -48,7 +53,8 @@ export function useFlowchartKeyboardNavigation({
           );
 
           // Announce to screen readers
-          const message = `Nó selecionado: ${node.data.title || node.type}`;
+          const nodeData = node.data as CustomFlowNodeData;
+          const message = `Nó selecionado: ${nodeData.title || node.type}`;
           announceToScreenReader(message);
 
           // Call callback if provided
@@ -72,38 +78,37 @@ export function useFlowchartKeyboardNavigation({
       }
 
       // Find the nearest node in the specified direction
-      let nearestNode: Node | null = null;
-      let minDistance = Infinity;
-
-      nodes.forEach((node) => {
-        if (node.id === selectedNode.id) return;
+      const candidateNodes = nodes.filter((node: Node<CustomFlowNodeData>) => {
+        if (node.id === selectedNode.id) return false;
 
         const dx = node.position.x - selectedNode.position.x;
         const dy = node.position.y - selectedNode.position.y;
 
         // Check if node is in the correct direction
-        let isInDirection = false;
         switch (direction) {
           case "up":
-            isInDirection = dy < -50;
-            break;
+            return dy < -50;
           case "down":
-            isInDirection = dy > 50;
-            break;
+            return dy > 50;
           case "left":
-            isInDirection = dx < -50;
-            break;
+            return dx < -50;
           case "right":
-            isInDirection = dx > 50;
-            break;
+            return dx > 50;
         }
+      });
 
-        if (isInDirection) {
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestNode = node;
-          }
+      // Find the closest candidate
+      let nearestNode: Node<CustomFlowNodeData> | undefined;
+      let minDistance = Infinity;
+
+      candidateNodes.forEach((node) => {
+        const dx = node.position.x - selectedNode.position.x;
+        const dy = node.position.y - selectedNode.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestNode = node;
         }
       });
 

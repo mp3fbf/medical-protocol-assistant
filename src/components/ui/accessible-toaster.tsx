@@ -4,8 +4,7 @@ import React from "react";
 import { Toaster as SonnerToaster, type ToasterProps } from "sonner";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
-interface AccessibleToasterProps
-  extends Omit<ToasterProps, "pauseWhenPageIsHidden"> {
+interface AccessibleToasterProps extends ToasterProps {
   // Additional props can be added here if needed
 }
 
@@ -15,8 +14,6 @@ export function AccessibleToaster(props: AccessibleToasterProps) {
   return (
     <SonnerToaster
       {...props}
-      // Pause when page is hidden or when user hovers/focuses
-      pauseWhenPageIsHidden
       // Expand toasts when hovered/focused for better readability
       expand={true}
       // Add ARIA live region for screen readers
@@ -54,10 +51,6 @@ export function AccessibleToaster(props: AccessibleToasterProps) {
       duration={props.duration || 6000}
       // Add keyboard support
       hotkey={["Escape"]}
-      // Ensure toasts are announced to screen readers
-      aria-live="polite"
-      // Allow toasts to be focused
-      tabIndex={0}
     />
   );
 }

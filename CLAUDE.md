@@ -89,7 +89,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Functional components only, no class components
 - Tailwind CSS for all styling (no custom CSS)
 - Pre-commit hooks run Prettier and ESLint automatically
-- Always update @README.md and @docs/project-roadmap.md before each commit
+- Always update @README.md and @docs/project-roadmap.md and run pnpm build before each commit
 
 ### Database Schema
 
