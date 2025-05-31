@@ -227,13 +227,11 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
         </div>
         <div
           ref={containerRef}
-          className="relative min-h-[600px] flex-1"
-          style={{ height: "calc(100% - 80px)" }}
+          className="relative flex-1"
+          style={{ height: "100%" }}
         >
-          <div className="absolute inset-0 p-4">
-            <div className="h-full w-full">
-              <FlowchartContent />
-            </div>
+          <div className="h-full w-full">
+            <FlowchartContent />
           </div>
         </div>
       </div>

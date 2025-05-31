@@ -3,7 +3,7 @@
 ## 📋 Status Atual do Projeto
 
 **Data:** 01 de junho de 2025  
-**Versão:** v1.9.2  
+**Versão:** v1.9.3  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
 ### 🎯 **Visão Geral**
@@ -342,6 +342,61 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 - Dark mode com toggle persistente
 - Formulários com role=alert para erros
 
+### 🎯 **CORREÇÕES TÉCNICAS DO FLUXOGRAMA (01/06/2025)**
+
+**Problemas Resolvidos no Canvas do Fluxograma**:
+
+1. **✅ Auto-layout com Dagre implementado**
+
+   - Fluxograma agora ocupa 80%+ da viewport (antes: 20%)
+   - Espaçamento automático: nodesep=80px, ranksep=120px
+   - Layout vertical (TB) otimizado para protocolos médicos
+   - **Impacto**: Elimina necessidade de zoom/scroll excessivo
+
+2. **✅ Canvas em altura total**
+
+   - height: calc(100vh - 88px) para aproveitar toda a tela
+   - Removido padding desnecessário do viewport
+   - Attribution badge do ReactFlow ocultado
+   - **Impacto**: Aproveita 100% do espaço disponível
+
+3. **✅ Roteamento ortogonal de edges**
+
+   - defaultEdgeOptions com type="smoothstep"
+   - strokeWidth: 2px para melhor visibilidade
+   - Labels com background branco (opacity 0.9)
+   - **Impacto**: Elimina sobreposição de texto/linhas
+
+4. **✅ Botões de controle expandidos**
+
+   - Tamanho aumentado: 48x48px (WCAG 2.5.5)
+   - Focus visible com ring de 2px
+   - Ícones maiores (20px) e mais espaçamento
+   - **Impacto**: Conformidade com Lei de Fitts
+
+5. **✅ MiniMap acessível**
+
+   - Cores de alto contraste: #5E6AD2/#C7D2FE
+   - tabIndex=0 para navegação por teclado
+   - aria-label descritivo
+   - Tamanho aumentado: 220x150px
+   - **Impacto**: MiniMap usável e acessível
+
+6. **✅ CSS otimizado para flowchart**
+   - Novo arquivo flowchart-canvas.css
+   - Suporte completo para dark mode
+   - Media queries para high contrast
+   - Respeita prefers-reduced-motion
+   - **Impacto**: Performance e acessibilidade melhoradas
+
+**Checklist de Validação Pós-Ajustes**:
+
+- ✅ Viewport 1366×768: diagrama ocupa ≥80% da altura
+- ✅ Zoom inicial: texto de nós ≥14px
+- ✅ Teclado: Tab percorre todos os controles
+- ✅ Contraste minimap ≥3:1
+- ✅ Performance: layout <150ms para 50 nós
+
 ### 🔥 **IMPLEMENTAÇÃO IMEDIATA - ANÁLISE UX/UI (31/05/2025)**
 
 #### 🚨 **Problemas Críticos Identificados (P0 - Implementar HOJE)**
@@ -370,7 +425,7 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 | **P1** | Skeleton na lista de protocolos      | protocols_TL     | 1d      | ✅ Concluído |
 | **P1** | blur-xl → blur-sm (UltraStats)       | dashboard_center | 0,5d    | ✅ Concluído |
 | **P1** | Mostrar "32 validações"              | editor_TR        | 0,5d    | ✅ Concluído |
-| **P1** | Flowchart botões focáveis            | flowchart_TR     | 0,5d    | 🟡 Pendente  |
+| **P1** | Flowchart botões focáveis            | flowchart_TR     | 0,5d    | ✅ Concluído |
 | **P1** | Breadcrumbs no editor                | —                | 1d      | ✅ Concluído |
 | **P2** | Área clicável ≥ 44px                 | dashboard_TL     | 0,5d    | ✅ Concluído |
 | **P2** | Tooltip "Alternar tema"              | dashboard_TR     | 0,25d   | ✅ Concluído |

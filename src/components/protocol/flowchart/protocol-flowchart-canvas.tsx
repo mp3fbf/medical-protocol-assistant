@@ -18,11 +18,13 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import "./node-types/node-styles.css";
 import "./node-types/medical-node-styles.css";
+import "./flowchart-canvas.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
 import { CustomControls } from "./ui/custom-controls";
 import { useFlowchartKeyboardNavigation } from "@/hooks/use-flowchart-keyboard-navigation";
+import { getLayoutedElements } from "@/lib/flowchart/dagre-layout";
 import type {
   CustomFlowNode,
   CustomFlowEdge,
@@ -108,11 +110,21 @@ const ProtocolFlowchartCanvasContent: React.FC<
   onNodesChange: _onNodesChangeProp,
   onEdgesChange: _onEdgesChangeProp,
 }) => {
-  const [_nodes, _setNodes, onNodesChange] = // _setNodes marked as unused
-    useNodesState<CustomFlowNodeData>(propNodes || defaultNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    propEdges || defaultEdges,
+  // Apply auto-layout to initial nodes
+  const initialLayouted = React.useMemo(() => {
+    const nodesToLayout = propNodes || defaultNodes;
+    const edgesToLayout = propEdges || defaultEdges;
+    return getLayoutedElements(nodesToLayout, edgesToLayout, {
+      rankdir: "TB",
+      nodesep: 80,
+      ranksep: 120,
+    });
+  }, [propNodes, propEdges]);
+
+  const [nodes, _setNodes, onNodesChange] = useNodesState<CustomFlowNodeData>(
+    initialLayouted.nodes,
   );
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialLayouted.edges);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Memoize node types to prevent React Flow warnings
@@ -122,7 +134,7 @@ const ProtocolFlowchartCanvasContent: React.FC<
   React.useEffect(() => {
     console.log(
       "[ProtocolFlowchartCanvas] Initialized with",
-      _nodes.length,
+      nodes.length,
       "nodes and",
       edges.length,
       "edges",
@@ -147,13 +159,13 @@ const ProtocolFlowchartCanvasContent: React.FC<
     <div
       ref={containerRef}
       className="h-full w-full"
-      style={{ minHeight: "600px" }}
+      style={{ height: "100%", width: "100%" }}
       role="application"
-      aria-label="Visualizador de fluxograma. Use as teclas de seta para navegar entre os nós."
+      aria-label="Canvas do fluxograma. Use as teclas de seta para navegar entre os nós."
       tabIndex={0}
     >
       <ReactFlow
-        nodes={_nodes} // use _nodes
+        nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -161,12 +173,22 @@ const ProtocolFlowchartCanvasContent: React.FC<
         nodeTypes={memoizedNodeTypes}
         fitView
         fitViewOptions={{
-          padding: 0.2,
+          padding: 0.15,
           includeHiddenNodes: false,
-          minZoom: 0.3,
-          maxZoom: 2,
+          minZoom: 0.5,
+          maxZoom: 1,
         }}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          animated: false,
+          style: {
+            strokeWidth: 2,
+          },
+          labelBgStyle: {
+            fill: "white",
+            fillOpacity: 0.9,
+          },
+        }}
         attributionPosition="bottom-left"
         className="protocol-flowchart-theme"
         onInit={(instance) => {
@@ -175,14 +197,14 @@ const ProtocolFlowchartCanvasContent: React.FC<
             instance.getNodes().length,
             "nodes",
           );
-          // Auto-fit on initialization
+          // Auto-fit on initialization with better settings
           setTimeout(() => {
             instance.fitView({
               padding: 0.15,
               includeHiddenNodes: false,
               duration: 800,
-              minZoom: 0.3,
-              maxZoom: 1.2,
+              minZoom: 0.5,
+              maxZoom: 1,
             });
           }, 100);
         }}

@@ -262,11 +262,11 @@ export default function FlowchartPage() {
         </div>
       </div>
 
-      {/* Main Content - clean and professional */}
-      <div className="flex-1 p-6">
-        <div className="relative h-full min-h-[700px]">
+      {/* Main Content - full height canvas */}
+      <div className="flex-1" style={{ height: "calc(100vh - 88px)" }}>
+        <div className="relative h-full">
           {flowchartData ? (
-            <div className="h-full rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="h-full">
               <FlowchartPane
                 flowchartData={flowchartData}
                 protocolId={protocolId}

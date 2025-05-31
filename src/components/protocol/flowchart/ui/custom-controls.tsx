@@ -98,37 +98,41 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
     return () => clearInterval(interval);
   }, [getZoom]);
 
-  const ControlButton = ({ onClick, children, title }: any) => (
+  const ControlButton = ({ onClick, children, title, ariaLabel }: any) => (
     <button
       onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+      className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
       title={title}
+      aria-label={ariaLabel || title}
     >
       {children}
     </button>
   );
 
   return (
-    <div className="absolute bottom-4 left-4 z-10">
-      <div className="flex flex-col gap-1 rounded-lg border border-gray-300 bg-white p-1 shadow-md dark:border-gray-600 dark:bg-gray-800">
+    <div className="absolute bottom-6 left-6 z-10">
+      <div className="flex flex-col gap-2 rounded-xl border-2 border-gray-300 bg-white p-2 shadow-lg dark:border-gray-600 dark:bg-gray-800">
         <ControlButton
           onClick={handleZoomIn}
           title="Ampliar (Ctrl/Cmd + ou Ctrl + Scroll)"
+          ariaLabel="Ampliar fluxograma"
         >
-          <ZoomIn className="h-4 w-4" />
+          <ZoomIn className="h-5 w-5" />
         </ControlButton>
         <ControlButton
           onClick={handleZoomOut}
           title="Reduzir (Ctrl/Cmd - ou Ctrl + Scroll)"
+          ariaLabel="Reduzir fluxograma"
         >
-          <ZoomOut className="h-4 w-4" />
+          <ZoomOut className="h-5 w-5" />
         </ControlButton>
         <div className="my-1 h-px bg-gray-300 dark:bg-gray-600" />
         <ControlButton
           onClick={handleFitView}
           title="Ajustar à tela (Ctrl/Cmd F)"
+          ariaLabel="Ajustar fluxograma à tela"
         >
-          <Maximize className="h-4 w-4" />
+          <Maximize className="h-5 w-5" />
         </ControlButton>
         {showInteractive && (
           <>
@@ -142,15 +146,15 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
               }
             >
               {isLocked ? (
-                <Lock className="h-4 w-4" />
+                <Lock className="h-5 w-5" />
               ) : (
-                <Unlock className="h-4 w-4" />
+                <Unlock className="h-5 w-5" />
               )}
             </ControlButton>
           </>
         )}
       </div>
-      <div className="mt-2 rounded bg-gray-800/80 px-2 py-1 text-center text-xs text-white">
+      <div className="mt-3 rounded-lg bg-gray-800/90 px-3 py-1.5 text-center text-sm font-medium text-white shadow-md dark:bg-gray-900/90">
         {currentZoom}%
       </div>
     </div>

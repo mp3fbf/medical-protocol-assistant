@@ -9,28 +9,19 @@ import { MiniMap, type MiniMapProps } from "reactflow";
 export const FlowMinimap: React.FC<Partial<MiniMapProps>> = (props) => {
   return (
     <MiniMap
-      nodeStrokeColor={(n) => {
-        if (n.type === "input") return "#0041d0";
-        if (n.type === "decision") return "#ff0072";
-        if (n.type === "action") return "#00ff00";
-        return "#eee";
-      }}
-      nodeColor={(n) => {
-        if (n.type === "medication") return "#f0f8ff"; // AliceBlue for medication nodes
-        if (n.data?.priority === "high") return "rgba(244, 67, 54, 0.2)";
-        if (n.data?.priority === "medium") return "rgba(255, 152, 0, 0.2)";
-        if (n.data?.priority === "low") return "rgba(76, 175, 80, 0.2)";
-        return "#fff";
-      }}
-      nodeBorderRadius={2}
-      maskColor="rgba(240, 240, 240, 0.6)"
-      className="rounded border border-gray-300 !bg-gray-100"
+      nodeStrokeColor="#5E6AD2"
+      nodeColor="#C7D2FE"
+      nodeBorderRadius={4}
+      maskColor="rgba(94, 106, 210, 0.15)"
+      className="rounded-lg border-2 border-gray-300 !bg-gray-50 dark:border-gray-600 dark:!bg-gray-800"
       style={{
-        height: 120,
-        width: 200,
+        height: 150,
+        width: 220,
       }}
       zoomable
       pannable
+      aria-label="Minimapa do fluxograma"
+      tabIndex={0}
       {...props}
     />
   );
