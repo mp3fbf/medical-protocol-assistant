@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 interface UltraButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -37,12 +38,13 @@ export const UltraButton: React.FC<UltraButtonProps> = ({
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [magneticOffset, setMagneticOffset] = useState({ x: 0, y: 0 });
   const [isPressed, setIsPressed] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   // Ripple effect
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled || loading) return;
 
-    if (ripple) {
+    if (ripple && !prefersReducedMotion) {
       const rect = buttonRef.current?.getBoundingClientRect();
       if (rect) {
         const rippleX = e.clientX - rect.left;
@@ -61,7 +63,7 @@ export const UltraButton: React.FC<UltraButtonProps> = ({
 
   // Magnetic effect
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!magnetic || disabled || loading) return;
+    if (!magnetic || disabled || loading || prefersReducedMotion) return;
 
     const rect = buttonRef.current?.getBoundingClientRect();
     if (rect) {
@@ -147,7 +149,9 @@ export const UltraButton: React.FC<UltraButtonProps> = ({
         // Base styles
         "relative inline-flex items-center justify-center",
         "rounded-xl font-medium",
-        "transition-all duration-300 ease-out",
+        prefersReducedMotion
+          ? "transition-none"
+          : "transition-all duration-300 ease-out",
         "transform-gpu",
         "select-none",
         "isolate", // Add isolation to prevent bleed
@@ -170,7 +174,9 @@ export const UltraButton: React.FC<UltraButtonProps> = ({
         className,
       )}
       style={{
-        transform: `translate(${magneticOffset.x}px, ${magneticOffset.y}px)`,
+        transform: prefersReducedMotion
+          ? undefined
+          : `translate(${magneticOffset.x}px, ${magneticOffset.y}px)`,
       }}
       {...props}
     >

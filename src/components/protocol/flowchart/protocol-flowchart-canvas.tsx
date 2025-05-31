@@ -22,6 +22,7 @@ import "./node-types/medical-node-styles.css";
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
 import { CustomControls } from "./ui/custom-controls";
+import { useFlowchartKeyboardNavigation } from "@/hooks/use-flowchart-keyboard-navigation";
 import type {
   CustomFlowNode,
   CustomFlowEdge,
@@ -133,11 +134,22 @@ const ProtocolFlowchartCanvasContent: React.FC<
     [setEdges],
   );
 
+  // Keyboard navigation for accessibility
+  useFlowchartKeyboardNavigation({
+    enabled: true,
+    onNodeSelect: (node) => {
+      console.log("Node selected:", node.id);
+    },
+  });
+
   return (
     <div
       ref={containerRef}
       className="h-full w-full"
       style={{ minHeight: "600px" }}
+      role="application"
+      aria-label="Visualizador de fluxograma. Use as teclas de seta para navegar entre os nós."
+      tabIndex={0}
     >
       <ReactFlow
         nodes={_nodes} // use _nodes

@@ -308,12 +308,13 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
 
           <div>
             <label htmlFor="title" className="mb-2 block text-sm font-medium">
-              Título do Protocolo
+              Título do Protocolo <span className="text-red-500">*</span>
             </label>
             <input
               id="title"
               type="text"
               placeholder="Ex: Protocolo de Atendimento à Bradicardia"
+              aria-required="true"
               {...register("title")}
               className={cn(
                 "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
@@ -336,12 +337,13 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
               htmlFor="condition"
               className="mb-2 block text-sm font-medium"
             >
-              Condição Médica Principal
+              Condição Médica Principal <span className="text-red-500">*</span>
             </label>
             <input
               id="condition"
               type="text"
               placeholder="Ex: Bradicardia sintomática"
+              aria-required="true"
               {...register("condition")}
               className={cn(
                 "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
@@ -399,7 +401,9 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
         >
           <div className="mb-4 flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary-500" />
-            <h3 className="text-lg font-semibold">Modo de Geração</h3>
+            <h3 className="text-lg font-semibold">
+              Modo de Geração <span className="text-red-500">*</span>
+            </h3>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
@@ -481,9 +485,13 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
 
             <div>
               <label className="mb-3 block text-sm font-medium">
-                Fontes de Pesquisa
+                Fontes de Pesquisa <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div
+                className="grid grid-cols-2 gap-3 md:grid-cols-4"
+                role="group"
+                aria-required="true"
+              >
                 {researchSources.map((source) => {
                   const isSelected = watchedResearchSources.includes(
                     source.id as any,

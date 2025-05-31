@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 interface UltraBadgeProps {
   status:
@@ -31,6 +32,7 @@ export const UltraBadge: React.FC<UltraBadgeProps> = ({
   className,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     setIsVisible(true);
@@ -131,10 +133,16 @@ export const UltraBadge: React.FC<UltraBadgeProps> = ({
         "relative overflow-hidden",
 
         // Animation
-        isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0",
+        prefersReducedMotion
+          ? "scale-100 opacity-100"
+          : isVisible
+            ? "scale-100 opacity-100"
+            : "scale-90 opacity-0",
 
         // Floating effect
-        floating && "animate-[float_3s_ease-in-out_infinite]",
+        floating &&
+          !prefersReducedMotion &&
+          "animate-[float_3s_ease-in-out_infinite]",
 
         // Size
         sizeStyles.padding,
@@ -150,7 +158,7 @@ export const UltraBadge: React.FC<UltraBadgeProps> = ({
       }}
     >
       {/* Animated background gradient */}
-      {animate && (
+      {animate && !prefersReducedMotion && (
         <div className="absolute inset-0 opacity-30">
           <div className="absolute inset-0 -skew-x-12 animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white to-transparent" />
         </div>
@@ -163,10 +171,10 @@ export const UltraBadge: React.FC<UltraBadgeProps> = ({
             "rounded-full",
             sizeStyles.dot,
             config.dotColor,
-            animate && "animate-pulse",
+            animate && !prefersReducedMotion && "animate-pulse",
           )}
         />
-        {animate && (
+        {animate && !prefersReducedMotion && (
           <div
             className={cn(
               "absolute animate-ping rounded-full",

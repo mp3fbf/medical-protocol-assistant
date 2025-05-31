@@ -29,7 +29,8 @@
       "Bash(kill:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(git push:*)"
     ]
   },
   "enableAllProjectMcpServers": false

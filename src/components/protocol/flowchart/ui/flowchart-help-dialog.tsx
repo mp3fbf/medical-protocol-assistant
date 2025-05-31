@@ -24,6 +24,7 @@ import {
   Maximize2,
   Info,
   X,
+  Keyboard,
 } from "lucide-react";
 
 interface FlowchartHelpDialogProps {
@@ -200,6 +201,39 @@ export const FlowchartHelpDialog: React.FC<FlowchartHelpDialogProps> = ({
                 </li>
                 <li>
                   • As conexões relacionadas são removidas automaticamente
+                </li>
+              </ul>
+            </section>
+
+            {/* Keyboard Navigation */}
+            <section>
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+                <Keyboard className="h-5 w-5 text-purple-600" />
+                Navegação por Teclado
+              </h3>
+              <p className="mb-2 text-sm text-gray-600">
+                Para acessibilidade, você pode navegar usando o teclado:
+              </p>
+              <ul className="ml-4 space-y-2 text-sm">
+                <li>
+                  • <kbd className="rounded bg-gray-200 px-2 py-1">← ↑ → ↓</kbd>{" "}
+                  Setas para navegar entre nós
+                </li>
+                <li>
+                  • <kbd className="rounded bg-gray-200 px-2 py-1">Enter</kbd>{" "}
+                  Editar nó selecionado
+                </li>
+                <li>
+                  • <kbd className="rounded bg-gray-200 px-2 py-1">Delete</kbd>{" "}
+                  Excluir nó selecionado
+                </li>
+                <li>
+                  • <kbd className="rounded bg-gray-200 px-2 py-1">Escape</kbd>{" "}
+                  Limpar seleção
+                </li>
+                <li>
+                  • <kbd className="rounded bg-gray-200 px-2 py-1">Tab</kbd>{" "}
+                  Navegar entre controles
                 </li>
               </ul>
             </section>

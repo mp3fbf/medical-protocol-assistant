@@ -11,7 +11,7 @@ import React from "react";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import { TRPCReactProvider } from "@/lib/api/client";
-import { Toaster } from "sonner";
+import { AccessibleToaster } from "@/components/ui/accessible-toaster";
 import { ThemeProvider } from "@/contexts/theme-context";
 
 interface GlobalProvidersProps {
@@ -25,12 +25,7 @@ export function GlobalProviders({ children, session }: GlobalProvidersProps) {
       <SessionProvider session={session}>
         <TRPCReactProvider>
           {children}
-          <Toaster
-            position="top-center"
-            richColors
-            closeButton
-            duration={5000}
-          />
+          <AccessibleToaster position="top-center" richColors />
         </TRPCReactProvider>
       </SessionProvider>
     </ThemeProvider>

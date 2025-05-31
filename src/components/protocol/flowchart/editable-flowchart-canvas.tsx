@@ -25,6 +25,7 @@ import { CustomControls } from "./ui/custom-controls";
 import { FlowchartToolbar } from "./ui/flowchart-toolbar";
 import { NodeEditDialog } from "./ui/node-edit-dialog";
 import { FlowchartHelpDialog } from "./ui/flowchart-help-dialog";
+import { useFlowchartKeyboardNavigation } from "@/hooks/use-flowchart-keyboard-navigation";
 import type {
   CustomFlowNode,
   CustomFlowNodeData,
@@ -195,6 +196,28 @@ const EditableFlowchartCanvasContent: React.FC<
     [setNodes],
   );
 
+  // Keyboard navigation
+  const { selectNode } = useFlowchartKeyboardNavigation({
+    enabled: !isReadOnly,
+    onNodeSelect: (node) => {
+      // Node is already selected by the hook
+    },
+    onNodeEdit: (node) => {
+      setSelectedNode(node as CustomFlowNode);
+      setIsEditDialogOpen(true);
+    },
+    onNodeDelete: (nodeIds) => {
+      setNodes((nds) => nds.filter((node) => !nodeIds.includes(node.id)));
+      setEdges((eds) =>
+        eds.filter(
+          (edge) =>
+            !nodeIds.includes(edge.source) && !nodeIds.includes(edge.target),
+        ),
+      );
+      setHasChanges(true);
+    },
+  });
+
   return (
     <>
       {!isReadOnly && (
@@ -208,7 +231,12 @@ const EditableFlowchartCanvasContent: React.FC<
         />
       )}
 
-      <div className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
+      <div
+        className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50"
+        role="application"
+        aria-label="Editor de fluxograma. Use as teclas de seta para navegar entre os nós, Enter para editar, Delete para excluir."
+        tabIndex={0}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
