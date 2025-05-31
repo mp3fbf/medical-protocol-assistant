@@ -12,7 +12,6 @@ import {
   Filter,
   ListOrdered,
   FileText,
-  Loader2,
   Search,
   ChevronDown,
   X,
@@ -37,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
+import { SkeletonProtocolCard } from "@/components/ui/skeleton";
 
 const statusOptions = [
   { value: undefined, label: "Todos os Status", color: "gray" },
@@ -334,14 +334,10 @@ export default function ProtocolsPage() {
 
         {/* Protocol Cards Grid */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="relative">
-              <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
-              <div className="absolute inset-0 animate-pulse bg-primary-500/20 blur-xl" />
-            </div>
-            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-              Carregando protocolos...
-            </p>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonProtocolCard key={i} />
+            ))}
           </div>
         ) : isError ? (
           <UltraCard className="p-12 text-center">

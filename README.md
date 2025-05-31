@@ -12,7 +12,7 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Geração por IA**: Multi-provider (OpenAI, Anthropic, Gemini) com 3 modos
 - **Upload de Documentos**: Suporte para PDF, DOCX, TXT e Markdown
 - **Editor de Protocolos**: 13 seções com salvamento otimista e editor rico TipTap
-- **Validação Avançada**: 42+ validações médicas com categorização
+- **Validação Avançada**: 32 validações médicas com categorização (6 categorias)
 - **Fluxogramas Inteligentes**: Geração automática com ReactFlow + edição manual
 - **Exportação**: PDF/DOCX com formatação ABNT
 - **Dashboard**: Estatísticas em tempo real e gerenciamento de status
@@ -27,6 +27,32 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Indicadores não-visuais**: Badges de validação agora incluem texto além de cor
 - **Dark Mode reintroduzido**: Toggle persistente com detecção de preferência do sistema
 - **Formulários acessíveis**: Labels associadas e role=alert para mensagens de erro
+
+### 📋 Análise UX/UI Externa (31/05/2025)
+
+#### Problemas Identificados e Status
+
+**✅ Já Implementados (mas não refletidos na análise):**
+
+- Skip-link para navegação por teclado
+- Contraste WCAG AA (4.5:1) em botões gradientes
+- Dark Mode com persistência localStorage
+- role=alert em erros de formulário
+- Navegação por teclado em flowcharts
+- Suporte a prefers-reduced-motion
+
+**✅ Implementações Concluídas (31/05/2025):**
+
+- **Breadcrumbs no editor** ✅ - Navegação contextual clara implementada
+- **PWA Manifest** ✅ - App instalável com ícones e configuração offline
+- **Correção de validações** ✅ - Documentação atualizada (32 validações, não 42+)
+- **Loading Skeletons** ✅ - Skeletons implementados para listas e editor
+- **Onboarding tour corrigido** ✅ - Corrigida race condition com localStorage
+
+**⚠️ Pendências Futuras:**
+
+- **Code splitting** - Reduzir bundle size inicial (280KB atual)
+- **Display de validações** - Adicionar indicador mostrando "32 tipos de validação disponíveis"
 
 #### Versão anterior (30/05/2025)
 

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { FlowchartDefinition } from "@/types/flowchart";
 
 export default function FlowchartPage() {
@@ -167,29 +168,41 @@ export default function FlowchartPage() {
                 </button>
               </Link>
 
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <div className="mb-1 flex items-center gap-2">
                   <Layers className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Fluxograma: {protocol.title}
                   </h1>
                 </div>
-
-                {flowchartData && (
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-green-500" />
-                      <span>{flowchartData.nodes.length} nós</span>
+                <div className="flex items-center gap-4">
+                  <Breadcrumb
+                    items={[
+                      { label: "Protocolos", href: "/protocols" },
+                      {
+                        label: protocol.title,
+                        href: `/protocols/${protocolId}`,
+                      },
+                      { label: "Fluxograma", current: true },
+                    ]}
+                  />
+                  {flowchartData && (
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span>•</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                        <span>{flowchartData.nodes.length} nós</span>
+                      </div>
+                      <span>•</span>
+                      <span>
+                        Atualizado{" "}
+                        {new Date(latestVersion.createdAt).toLocaleDateString(
+                          "pt-BR",
+                        )}
+                      </span>
                     </div>
-                    <span>•</span>
-                    <span>
-                      Atualizado{" "}
-                      {new Date(latestVersion.createdAt).toLocaleDateString(
-                        "pt-BR",
-                      )}
-                    </span>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 

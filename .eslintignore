@@ -42,6 +42,9 @@ coverage/
 *.log
 *.tsbuildinfo
 
+# Scripts directory
+scripts/
+
 # Test files (temporary)
 test-*.js
 debug-*.js

@@ -231,6 +231,15 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 
 ## 🎯 **PRÓXIMOS PASSOS IMEDIATOS**
 
+### ✅ **CONCLUÍDO EM 31/05/2025**
+
+1. **✅ Melhorias de UX/UI baseadas em análise externa**
+   - ✅ Breadcrumbs implementados no editor e flowchart
+   - ✅ PWA Manifest configurado para instalação offline
+   - ✅ Loading skeletons para melhor percepção de performance
+   - ✅ Correção do onboarding tour (race condition com localStorage)
+   - ✅ Documentação atualizada (32 validações, não 42+)
+
 ### ✅ **CONCLUÍDO ESTA SEMANA**
 
 1. **✅ [CRÍTICO] Editor de seções corrigido**
@@ -264,15 +273,31 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 
 ### 🎯 **PRÓXIMAS MELHORIAS (Pós-MVP)**
 
-1. **[MÉDIA] Otimizações de Performance**
+#### 📊 **Análise UX/UI Externa (31/05/2025)**
 
-   - Code splitting para reduzir bundle size
-   - Lazy loading de componentes pesados
-   - Otimização de queries do banco
-   - Cache inteligente
+**Itens Prioritários Identificados:**
 
-2. **[BAIXA] Funcionalidades Avançadas**
+1. **[ALTA] Melhorias de Navegação e Feedback**
 
+   - **Breadcrumbs no Editor** - Navegação contextual clara
+   - **Loading Skeletons** - Melhor percepção de performance
+   - **Display de Validações** - Adicionar indicador mostrando "32 tipos de validação disponíveis"
+   - **Debug Onboarding** - Corrigir tour que não está disparando
+
+2. **[MÉDIA] Progressive Web App**
+
+   - **PWA Manifest** - Permitir instalação e uso offline
+   - **Service Worker** - Cache offline para protocolos
+   - **Icons e Splash Screens** - Experiência nativa
+
+3. **[MÉDIA] Otimizações de Performance**
+
+   - **Code splitting** para reduzir bundle size (280KB atual)
+   - **Lazy loading** de componentes pesados (ReactFlow, TipTap)
+   - **Image optimization** - Next.js Image component
+   - **Bundle analysis** - Identificar dependências desnecessárias
+
+4. **[BAIXA] Funcionalidades Avançadas**
    - Comparação de versões
    - Colaboração em tempo real
    - Batch export
@@ -414,7 +439,7 @@ const handleAIGeneration = async (formData) => {
 **✅ Sistema de Validação Profissional Implementado**
 
 - Interface profissional com contagem de erros/alertas/categorias
-- 42 tipos de validação médica, estrutural e de completude
+- 32 tipos de validação médica, estrutural e de completude (6 categorias)
 - Sistema de sugestões e priorização de problemas
 - Integração completa com editor e controles manuais
 - Auto-validação com debouncing de 2 segundos

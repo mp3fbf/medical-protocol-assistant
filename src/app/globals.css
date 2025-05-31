@@ -12,6 +12,15 @@
   }
 }
 
+@keyframes shimmer-bg {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .animation-delay-2000 {
   animation-delay: 2s;
 }

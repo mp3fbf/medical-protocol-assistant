@@ -127,6 +127,7 @@ const ProtocolFlowchartCanvasContent: React.FC<
       edges.length,
       "edges",
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps to run only once
 
   const onConnect = useCallback(

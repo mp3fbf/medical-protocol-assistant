@@ -12,6 +12,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { UltraButton } from "@/components/ui/ultra-button";
 import { UltraGlassCard } from "@/components/ui/ultra-card";
 import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { SkeletonEditor } from "@/components/ui/skeleton";
 
 export default function ProtocolEditPage() {
   const params = useParams();
@@ -51,20 +52,7 @@ export default function ProtocolEditPage() {
 
   if (isLoading && !protocolData) {
     // Show loading only if data isn't there yet
-    return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 text-center dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="relative">
-          <Loader2 className="h-16 w-16 animate-spin text-primary-500" />
-          <div className="absolute inset-0 animate-pulse bg-primary-500/20 blur-xl" />
-        </div>
-        <h1 className="mt-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-2xl font-bold text-transparent dark:from-white dark:to-gray-300">
-          Carregando dados do protocolo...
-        </h1>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Preparando editor com inteligência médica
-        </p>
-      </div>
-    );
+    return <SkeletonEditor />;
   }
 
   if (error) {

@@ -23,7 +23,6 @@ import {
   Save,
   ShieldCheck,
   ChevronLeft,
-  Hash,
   Menu,
   Eye,
   Maximize2,
@@ -35,6 +34,7 @@ import { UltraButton } from "@/components/ui/ultra-button";
 import { UltraBadge } from "@/components/ui/ultra-badge";
 import { cn } from "@/lib/utils";
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 interface ProtocolEditorLayoutProps {
   protocolId: string;
@@ -233,12 +233,24 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
                     />
                   )}
                 </div>
-                {currentSectionDef && (
-                  <p className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                    <Hash className="h-3 w-3" />
-                    Seção {currentSectionNumber}: {currentSectionDef.titlePT}
-                  </p>
-                )}
+                {/* Breadcrumb Navigation */}
+                <div className="mt-1">
+                  <Breadcrumb
+                    items={[
+                      { label: "Protocolos", href: "/protocols" },
+                      {
+                        label: protocolTitle || "Carregando...",
+                        href: `/protocols/${protocolId}`,
+                      },
+                      {
+                        label: currentSectionDef
+                          ? `Seção ${currentSectionNumber}: ${currentSectionDef.titlePT}`
+                          : "Editor",
+                        current: true,
+                      },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
           </div>

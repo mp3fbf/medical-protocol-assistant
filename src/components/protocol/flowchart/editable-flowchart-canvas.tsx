@@ -54,26 +54,38 @@ const EditableFlowchartCanvasContent: React.FC<
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [hasSeenHelp, setHasSeenHelp] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("flowchart-help-seen") === "true";
-    }
-    return false;
-  });
+  const [hasSeenHelp, setHasSeenHelp] = useState(false);
   const [hasShownOnboarding, setHasShownOnboarding] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize localStorage check after component mounts
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const seen = localStorage.getItem("flowchart-help-seen") === "true";
+      setHasSeenHelp(seen);
+      setIsInitialized(true);
+    }
+  }, []);
 
   // Show help dialog on first visit - only once per session
   useEffect(() => {
-    if (!isReadOnly && !hasSeenHelp && !hasShownOnboarding && !isHelpOpen) {
+    if (
+      isInitialized &&
+      !isReadOnly &&
+      !hasSeenHelp &&
+      !hasShownOnboarding &&
+      !isHelpOpen
+    ) {
       // Small delay to ensure proper mounting
       const timer = setTimeout(() => {
+        console.log("Showing onboarding help dialog");
         setIsHelpOpen(true);
         setHasShownOnboarding(true);
-      }, 100);
+      }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [isReadOnly, hasSeenHelp, hasShownOnboarding, isHelpOpen]);
+  }, [isInitialized, isReadOnly, hasSeenHelp, hasShownOnboarding, isHelpOpen]);
 
   // Reset help dialog state when component unmounts
   useEffect(() => {
@@ -197,9 +209,9 @@ const EditableFlowchartCanvasContent: React.FC<
   );
 
   // Keyboard navigation
-  const { selectNode } = useFlowchartKeyboardNavigation({
+  useFlowchartKeyboardNavigation({
     enabled: !isReadOnly,
-    onNodeSelect: (node) => {
+    onNodeSelect: (_node) => {
       // Node is already selected by the hook
     },
     onNodeEdit: (node) => {

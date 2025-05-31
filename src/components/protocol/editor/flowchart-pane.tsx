@@ -33,7 +33,7 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Update local flowchart when prop changes
   React.useEffect(() => {
