@@ -118,7 +118,7 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
 
   return (
-    <div className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
+    <div className="h-full w-full" style={{ minHeight: "600px" }}>
       <ReactFlow
         nodes={_nodes} // use _nodes
         edges={edges}

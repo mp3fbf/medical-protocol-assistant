@@ -270,15 +270,13 @@ export default function FlowchartPage() {
         <div className="relative h-full min-h-[700px]">
           {flowchartData ? (
             <UltraCard className="h-full p-0" glass>
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <FlowchartPane
-                  flowchartData={flowchartData as FlowchartDefinition}
-                  protocolId={protocolId!}
-                  versionId={latestVersion.id}
-                  protocolTitle={protocol.title}
-                  canEdit={true}
-                />
-              </div>
+              <FlowchartPane
+                flowchartData={flowchartData as FlowchartDefinition}
+                protocolId={protocolId!}
+                versionId={latestVersion.id}
+                protocolTitle={protocol.title}
+                canEdit={true}
+              />
             </UltraCard>
           ) : (
             <div className="flex h-full items-center justify-center p-8">
