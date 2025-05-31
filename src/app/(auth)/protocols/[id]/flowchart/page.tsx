@@ -37,8 +37,8 @@ export default function FlowchartPage() {
     {
       enabled: !!protocolId,
       retry: false,
-      staleTime: 0, // Always fetch fresh data
-      cacheTime: 0, // Don't cache
+      staleTime: 0,
+      cacheTime: 0,
     },
   );
 
@@ -47,9 +47,7 @@ export default function FlowchartPage() {
   const flowchartMutation = trpc.flowchart.generateAndSave.useMutation({
     onSuccess: async () => {
       toast.success("Fluxograma gerado com sucesso!");
-      // Refetch protocol to get new flowchart
       await refetch();
-      // Also invalidate cache
       utils.protocol.getById.invalidate({ protocolId: protocolId! });
     },
     onError: (error) => {
@@ -86,7 +84,6 @@ export default function FlowchartPage() {
   };
 
   const handleExportSVG = () => {
-    // TODO: Implement SVG export
     toast.info("Exportação SVG em desenvolvimento");
   };
 
@@ -144,7 +141,7 @@ export default function FlowchartPage() {
   }
 
   const latestVersion = protocol?.ProtocolVersion?.[0];
-  const flowchartData = latestVersion?.flowchart as FlowchartDefinition | null | undefined;
+  const flowchartData = latestVersion?.flowchart as FlowchartDefinition | null;
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden">
@@ -169,7 +166,7 @@ export default function FlowchartPage() {
             <div className="flex items-center justify-between">
               {/* Left side with enhanced design */}
               <div className="flex items-center gap-6">
-                <Link href={`/protocols/${protocolId!}`}>
+                <Link href={`/protocols/${protocolId}`}>
                   <button className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2.5 backdrop-blur-md transition-all hover:from-white/20 hover:to-white/10 hover:shadow-lg hover:shadow-indigo-500/10 border border-white/10 hover:border-white/20">
                     <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 transition-opacity group-hover:opacity-10" />
                     <div className="relative flex items-center gap-2">
@@ -213,75 +210,76 @@ export default function FlowchartPage() {
                 </div>
               </div>
 
-            {/* Right side actions with ultra modern design */}
-            <div className="flex items-center gap-3">
-              {!flowchartData ? (
-                <button
-                  onClick={handleGenerateFlowchart}
-                  disabled={flowchartMutation.isPending}
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px] shadow-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:hover:scale-100"
-                >
-                  <div className="relative rounded-[11px] bg-gray-900 dark:bg-gray-950 px-6 py-3 transition-all group-hover:bg-opacity-80">
-                    <span className="absolute inset-0 rounded-[11px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity group-hover:opacity-20" />
-                    <div className="relative flex items-center gap-2">
-                      {flowchartMutation.isPending ? (
-                        <RefreshCw className="h-5 w-5 animate-spin text-white" />
-                      ) : (
-                        <Sparkles className="h-5 w-5 text-white group-hover:text-yellow-300 transition-colors" />
-                      )}
-                      <span className="font-semibold text-white">
-                        {flowchartMutation.isPending
-                          ? "Gerando com IA..."
-                          : "Gerar Fluxograma"}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-1">
+              {/* Right side actions with ultra modern design */}
+              <div className="flex items-center gap-3">
+                {!flowchartData ? (
                   <button
                     onClick={handleGenerateFlowchart}
                     disabled={flowchartMutation.isPending}
-                    className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10 disabled:opacity-50"
+                    className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-[1px] shadow-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:hover:scale-100"
                   >
-                    <div className="flex items-center gap-2">
-                      <RefreshCw
-                        className={cn(
-                          "h-4 w-4 text-indigo-400",
-                          flowchartMutation.isPending && "animate-spin",
+                    <div className="relative rounded-[11px] bg-gray-900 dark:bg-gray-950 px-6 py-3 transition-all group-hover:bg-opacity-80">
+                      <span className="absolute inset-0 rounded-[11px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity group-hover:opacity-20" />
+                      <div className="relative flex items-center gap-2">
+                        {flowchartMutation.isPending ? (
+                          <RefreshCw className="h-5 w-5 animate-spin text-white" />
+                        ) : (
+                          <Sparkles className="h-5 w-5 text-white group-hover:text-yellow-300 transition-colors" />
                         )}
-                      />
-                      <span className="text-sm font-medium">Regenerar</span>
+                        <span className="font-semibold text-white">
+                          {flowchartMutation.isPending
+                            ? "Gerando com IA..."
+                            : "Gerar Fluxograma"}
+                        </span>
+                      </div>
                     </div>
                   </button>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-1">
+                    <button
+                      onClick={handleGenerateFlowchart}
+                      disabled={flowchartMutation.isPending}
+                      className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10 disabled:opacity-50"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RefreshCw
+                          className={cn(
+                            "h-4 w-4 text-indigo-400",
+                            flowchartMutation.isPending && "animate-spin",
+                          )}
+                        />
+                        <span className="text-sm font-medium">Regenerar</span>
+                      </div>
+                    </button>
 
-                  <div className="h-6 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-white/10" />
 
-                  <button
-                    onClick={handleExportSVG}
-                    className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4 text-purple-400 transition-transform group-hover:translate-y-0.5" />
-                      <span className="text-sm font-medium">Exportar</span>
-                    </div>
-                  </button>
+                    <button
+                      onClick={handleExportSVG}
+                      className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Download className="h-4 w-4 text-purple-400 transition-transform group-hover:translate-y-0.5" />
+                        <span className="text-sm font-medium">Exportar</span>
+                      </div>
+                    </button>
 
-                  <div className="h-6 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-white/10" />
 
-                  <button
-                    onClick={toggleFullscreen}
-                    className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Maximize2 className="h-4 w-4 text-pink-400 transition-transform group-hover:scale-110" />
-                      <span className="text-sm font-medium">
-                        {isFullscreen ? "Sair" : "Tela Cheia"}
-                      </span>
-                    </div>
-                  </button>
-                </div>
-              )}
+                    <button
+                      onClick={toggleFullscreen}
+                      className="group relative rounded-xl bg-gradient-to-br from-white/10 to-white/5 px-4 py-2 backdrop-blur-sm transition-all hover:from-white/20 hover:to-white/10"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Maximize2 className="h-4 w-4 text-pink-400 transition-transform group-hover:scale-110" />
+                        <span className="text-sm font-medium">
+                          {isFullscreen ? "Sair" : "Tela Cheia"}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -293,8 +291,8 @@ export default function FlowchartPage() {
           {flowchartData ? (
             <div className="h-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
               <FlowchartPane
-                flowchartData={flowchartData as FlowchartDefinition}
-                protocolId={protocolId!}
+                flowchartData={flowchartData}
+                protocolId={protocolId}
                 versionId={latestVersion.id}
                 protocolTitle={protocol.title}
                 canEdit={true}

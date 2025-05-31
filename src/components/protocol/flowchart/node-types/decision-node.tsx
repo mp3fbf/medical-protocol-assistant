@@ -1,38 +1,12 @@
 /**
- * Ultra Modern Decision Node for ReactFlow.
- * Diamond shape with glassmorphism and gradient effects.
+ * Professional Medical Decision Node for ReactFlow.
+ * Diamond shape with clear Yes/No paths.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { DecisionNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
-import { HelpCircle, AlertTriangle, Info } from "lucide-react";
-
-const getNodeIcon = (priority?: DecisionNodeData["priority"]) => {
-  switch (priority) {
-    case "high":
-      return (
-        <AlertTriangle
-          className="ultra-node-icon"
-          style={{ top: "8px", right: "8px" }}
-        />
-      );
-    case "medium":
-      return (
-        <Info
-          className="ultra-node-icon"
-          style={{ top: "8px", right: "8px" }}
-        />
-      );
-    default:
-      return (
-        <HelpCircle
-          className="ultra-node-icon"
-          style={{ top: "8px", right: "8px" }}
-        />
-      );
-  }
-};
+import { HelpCircle } from "lucide-react";
 
 export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
   data,
@@ -44,86 +18,58 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
   return (
     <div
       className={cn(
-        "ultra-flow-node ultra-decision-node ultra-decision-wrapper",
-        "rounded-xl",
-        selected && "selected",
-        priority === "high" && "ultra-pulse",
+        "medical-flow-node medical-decision-node medical-decision-wrapper",
+        priority === "high" && "medical-priority-high",
+        selected && "selected"
       )}
     >
-      {/* Animated gradient background */}
-      <div className="ultra-gradient-bg rounded-xl" />
-
-      {/* Glassmorphism effect enhancement */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/10 to-transparent" />
-
-      {/* Content wrapper with counter-rotation */}
-      <div className="ultra-decision-content">
-        {/* Icon - positioned absolutely to not rotate */}
-        {getNodeIcon(priority)}
-
-        <div className="ultra-node-title text-center">{title}</div>
+      <div className="medical-decision-content">
+        <HelpCircle className="medical-node-icon" style={{ position: 'static', marginBottom: '4px' }} />
+        
+        <div className="medical-node-title" style={{ fontSize: '13px' }}>{title}</div>
         {criteria && (
-          <div className="ultra-node-subtitle mt-1 text-center text-xs">
+          <div className="medical-node-subtitle" style={{ fontSize: '11px', marginTop: '2px' }}>
             {criteria}
           </div>
         )}
       </div>
-
-      {/* Handles for Yes/No paths */}
+      
+      {/* Handles positioned for diamond shape */}
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="ultra-handle ultra-handle-target"
-        style={{
-          top: "-6px",
-          left: "50%",
-          transform: "translateX(-50%) rotate(-45deg)",
-        }}
+        className="medical-handle"
+        style={{ top: '-4px', left: '50%', transform: 'translateX(-50%) rotate(-45deg)' }}
       />
-
-      {/* Yes handle - bottom left */}
+      
+      {/* Yes handle - left side */}
       <Handle
         type="source"
         position={Position.Left}
         id="yes"
         isConnectable={isConnectable}
-        className="ultra-handle ultra-handle-source !border-green-500"
-        style={{
-          left: "-6px",
-          bottom: "30%",
-          transform: "rotate(-45deg)",
-        }}
+        className="medical-handle"
+        style={{ left: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-45deg)' }}
       />
-
-      {/* No handle - bottom right */}
+      
+      {/* No handle - right side */}
       <Handle
         type="source"
         position={Position.Right}
         id="no"
         isConnectable={isConnectable}
-        className="ultra-handle ultra-handle-source !border-red-500"
-        style={{
-          right: "-6px",
-          bottom: "30%",
-          transform: "rotate(-45deg)",
-        }}
+        className="medical-handle"
+        style={{ right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(-45deg)' }}
       />
-
-      {/* Visual indicators for Yes/No */}
-      <div
-        className="absolute text-xs font-bold text-green-600"
-        style={{ left: "15%", bottom: "15%", transform: "rotate(-45deg)" }}
-      >
+      
+      {/* Yes/No labels */}
+      <div className="medical-decision-yes" style={{ transform: 'rotate(-45deg)' }}>
         SIM
       </div>
-      <div
-        className="absolute text-xs font-bold text-red-600"
-        style={{ right: "15%", bottom: "15%", transform: "rotate(-45deg)" }}
-      >
+      <div className="medical-decision-no" style={{ transform: 'rotate(-45deg)' }}>
         NÃO
       </div>
     </div>
   );
 };
-

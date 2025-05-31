@@ -17,7 +17,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./node-types/node-styles.css";
-import "./node-types/ultra-node-styles.css";
+import "./node-types/medical-node-styles.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
@@ -131,7 +131,7 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
 
   return (
-    <div ref={containerRef} className="h-full w-full">
+    <div ref={containerRef} className="h-full w-full" style={{ minHeight: '600px' }}>
       <ReactFlow
         nodes={_nodes} // use _nodes
         edges={edges}
