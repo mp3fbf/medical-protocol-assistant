@@ -29,11 +29,13 @@ export default function FlowchartPage() {
     },
   );
 
+  const utils = trpc.useContext();
+
   const flowchartMutation = trpc.flowchart.generateAndSave.useMutation({
     onSuccess: () => {
       toast.success("Fluxograma gerado com sucesso!");
       // Refetch protocol to get new flowchart
-      trpc.useUtils().protocol.getById.invalidate({ protocolId: protocolId });
+      utils.protocol.getById.invalidate({ protocolId: protocolId! });
     },
     onError: (error) => {
       toast.error("Erro ao gerar fluxograma: " + error.message);
@@ -131,6 +133,11 @@ export default function FlowchartPage() {
     | FlowchartDefinition
     | null
     | undefined;
+
+  // Debug logging
+  console.log("[FlowchartPage] Protocol data:", protocol);
+  console.log("[FlowchartPage] Latest version:", latestVersion);
+  console.log("[FlowchartPage] Flowchart data:", flowchartData);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
@@ -235,7 +242,9 @@ export default function FlowchartPage() {
             <FlowchartPane
               flowchartData={flowchartData as FlowchartDefinition}
               protocolId={protocolId!}
+              versionId={latestVersion.id}
               protocolTitle={protocol.title}
+              canEdit={true}
             />
           ) : (
             <div className="flex h-full items-center justify-center">
