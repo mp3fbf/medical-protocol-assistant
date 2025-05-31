@@ -1,21 +1,27 @@
 /**
- * New Protocol Page
- * Allows users to start creating a new medical protocol using a form.
+ * New Protocol Page - ULTRA DESIGN
+ * Allows users to start creating a new medical protocol using a form with premium UI.
  */
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CreateProtocolForm,
+  CreateProtocolFormUltra as CreateProtocolForm,
   type CreateProtocolFormValues,
-} from "@/components/protocol/forms/create-protocol-form";
+} from "@/components/protocol/forms/create-protocol-form-ultra";
 import { trpc } from "@/lib/api/client";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { UltraGlassCard } from "@/components/ui/ultra-card";
+import { AlertCircle, Sparkles, ArrowLeft } from "lucide-react";
+import { UltraButton } from "@/components/ui/ultra-button";
 
 export default function NewProtocolPage() {
   const router = useRouter();
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsPageLoaded(true);
+  }, []);
   const createProtocolMutation = trpc.protocol.create.useMutation({
     // Optional: onSuccess and onError directly on useMutation can also be used
     // but we are handling it via the promise returned by mutateAsync for now.
@@ -149,39 +155,99 @@ export default function NewProtocolPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">
-          Criar Novo Protocolo Médico
-        </h1>
-        <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-          Configure a pesquisa médica e o modo de geração para criar um
-          protocolo baseado em evidências científicas
-        </p>
+    <div className="relative min-h-[calc(100vh-4rem)]">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-white to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900/20" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' x2='0' y1='0' y2='1' gradientTransform='rotate(45)'%3E%3Cstop offset='0' stop-color='%234f46e5' stop-opacity='0.02'/%3E%3Cstop offset='1' stop-color='%236366f1' stop-opacity='0.02'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpattern id='b' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='1' fill='%234f46e5' opacity='0.1'/%3E%3C/pattern%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23b)'/%3E%3C/svg%3E")`,
+            backgroundSize: "100px 100px",
+          }}
+        />
       </div>
 
-      {createProtocolMutation.isError && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro na Criação (Mutation Hook)</AlertTitle>
-          <AlertDescription>
-            {createProtocolMutation.error?.message ||
-              "Não foi possível criar o protocolo. Tente novamente."}
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="container relative z-10 mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+        {/* Back button */}
+        <div
+          className={`transition-all duration-700 ${isPageLoaded ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"}`}
+        >
+          <UltraButton
+            variant="ghost"
+            size="sm"
+            icon={<ArrowLeft className="h-4 w-4" />}
+            onClick={() => router.back()}
+          >
+            Voltar
+          </UltraButton>
+        </div>
 
-      <CreateProtocolForm
-        onSubmit={handleFormSubmit}
-        onSuccess={handleSuccess}
-      />
+        {/* Hero Section */}
+        <div
+          className={`text-center transition-all duration-1000 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+        >
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <Sparkles className="h-8 w-8 text-primary-500" />
+            <span className="bg-gradient-to-r from-primary-500 to-indigo-500 bg-clip-text text-lg font-medium text-transparent">
+              Assistente IA Médico
+            </span>
+          </div>
+          <h1 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-gray-300">
+            Criar Novo Protocolo Médico
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
+            Configure a pesquisa médica e o modo de geração para criar um
+            protocolo baseado em evidências científicas
+          </p>
+        </div>
 
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Após a configuração inicial, você será redirecionado para o editor
-          completo onde poderá desenvolver as 13 seções obrigatórias do
-          protocolo médico.
-        </p>
+        {/* Error Alert */}
+        {createProtocolMutation.isError && (
+          <div
+            className={`transition-all duration-700 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+          >
+            <UltraGlassCard className="border-red-200 bg-red-50/50 p-6 dark:border-red-800 dark:bg-red-900/20">
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/50">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-900 dark:text-red-100">
+                    Erro na Criação
+                  </h3>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                    {createProtocolMutation.error?.message ||
+                      "Não foi possível criar o protocolo. Tente novamente."}
+                  </p>
+                </div>
+              </div>
+            </UltraGlassCard>
+          </div>
+        )}
+
+        {/* Form Container */}
+        <div
+          className={`transition-all delay-200 duration-1000 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+        >
+          <UltraGlassCard className="p-8">
+            <CreateProtocolForm
+              onSubmit={handleFormSubmit}
+              onSuccess={handleSuccess}
+            />
+          </UltraGlassCard>
+        </div>
+
+        {/* Footer Info */}
+        <div
+          className={`text-center transition-all delay-300 duration-1000 ${isPageLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+        >
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Após a configuração inicial, você será redirecionado para o editor
+            completo onde poderá desenvolver as 13 seções obrigatórias do
+            protocolo médico.
+          </p>
+        </div>
       </div>
     </div>
   );

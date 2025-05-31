@@ -1,10 +1,9 @@
 /**
  * Layout for authenticated routes.
- * Wraps pages under /dashboard, /protocols, etc., with the MainLayout
- * which includes Header and Sidebar.
+ * Now using Ultra Design System layout without wasteful sidebar.
  */
 import React from "react";
-import { MainLayout } from "@/components/layout/main-layout";
+import { MainLayoutUltra } from "@/components/layout/main-layout-ultra";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
@@ -24,5 +23,5 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
 
   // The SessionProvider is now in the root layout.
   // TRPCReactProvider is also in the root layout.
-  return <MainLayout>{children}</MainLayout>;
+  return <MainLayoutUltra>{children}</MainLayoutUltra>;
 }

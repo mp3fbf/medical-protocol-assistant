@@ -23,7 +23,7 @@ export const SectionNavigationList: React.FC<SectionNavigationListProps> = ({
       <ScrollArea className="h-full pr-2">
         <div className="space-y-1">
           {SECTION_DEFINITIONS.length === 0 && (
-            <div className="p-2 text-red-500 text-sm">
+            <div className="p-2 text-sm text-red-500">
               ERROR: No section definitions loaded
             </div>
           )}

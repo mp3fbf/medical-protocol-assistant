@@ -4,7 +4,7 @@
  * This file configures the tRPC client for frontend usage.
  * It integrates with React Query for data fetching, mutations, and caching.
  */
-"use client"; 
+"use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -23,8 +23,8 @@ const getBaseUrl = () => {
     return process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
   }
   // Server-side
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; 
-  return `http://localhost:${process.env.PORT ?? 3000}`; 
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
 };
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -35,8 +35,8 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000, 
-            refetchOnWindowFocus: false, 
+            staleTime: 5 * 1000,
+            refetchOnWindowFocus: false,
           },
         },
       }),

@@ -32,10 +32,41 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [localFlowchart, setLocalFlowchart] = useState(flowchartData);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Update local flowchart when prop changes
   React.useEffect(() => {
     setLocalFlowchart(flowchartData);
+  }, [flowchartData]);
+
+  // Track container dimensions for debug overlay
+  React.useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const newDimensions = { width: rect.width, height: rect.height };
+        setDimensions(newDimensions);
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+
+    return () => {
+      window.removeEventListener("resize", updateDimensions);
+    };
+  }, []);
+
+  // Debug: Log only when flowchart data changes
+  React.useEffect(() => {
+    if (flowchartData) {
+      console.log(
+        "[FlowchartPane] Flowchart loaded with",
+        flowchartData.nodes.length,
+        "nodes",
+      );
+    }
   }, [flowchartData]);
 
   const updateFlowchartMutation = trpc.flowchart.updateManual.useMutation({
@@ -83,13 +114,52 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
       );
     }
 
-    // Clean up edge types to avoid ReactFlow warnings
+    // Clean up edge types and sourceHandles to avoid ReactFlow warnings
     const cleanedData = {
       ...currentData,
-      edges: currentData.edges.map((edge) => ({
-        ...edge,
-        type: edge.type === "conditional" ? "default" : edge.type || "default",
-      })),
+      edges: currentData.edges.map((edge) => {
+        const cleanedEdge = {
+          ...edge,
+          type:
+            edge.type === "conditional" ? "default" : edge.type || "default",
+        };
+
+        // Find the source node to check its type
+        const sourceNode = currentData.nodes.find((n) => n.id === edge.source);
+
+        // If source is a decision node, only allow 'yes' or 'no' handles
+        if (sourceNode?.type === "decision") {
+          if (
+            cleanedEdge.sourceHandle &&
+            !["yes", "no"].includes(cleanedEdge.sourceHandle)
+          ) {
+            // Map common variations to valid handles
+            if (
+              cleanedEdge.sourceHandle?.toLowerCase().includes("sim") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("true")
+            ) {
+              cleanedEdge.sourceHandle = "yes";
+            } else if (
+              cleanedEdge.sourceHandle?.toLowerCase().includes("não") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("nao") ||
+              cleanedEdge.sourceHandle?.toLowerCase().includes("false")
+            ) {
+              cleanedEdge.sourceHandle = "no";
+            } else {
+              // Remove invalid sourceHandle
+              console.warn(
+                `[FlowchartPane] Removing invalid sourceHandle '${cleanedEdge.sourceHandle}' from edge ${edge.id}`,
+              );
+              delete cleanedEdge.sourceHandle;
+            }
+          }
+        } else if (cleanedEdge.sourceHandle) {
+          // For non-decision nodes, remove sourceHandle as they typically don't have multiple outputs
+          delete cleanedEdge.sourceHandle;
+        }
+
+        return cleanedEdge;
+      }),
     };
 
     if (isEditMode) {
@@ -113,7 +183,7 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
 
   return (
     <>
-      <div className="flex h-full flex-col">
+      <div className="flex h-full w-full flex-col">
         <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">
             Fluxograma: {protocolTitle || "Protocolo"}
@@ -155,8 +225,16 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
             )}
           </div>
         </div>
-        <div className="flex-1 p-1">
-          <FlowchartContent />
+        <div
+          ref={containerRef}
+          className="relative min-h-[600px] flex-1"
+          style={{ height: "calc(100% - 80px)" }}
+        >
+          <div className="absolute inset-0 p-4">
+            <div className="h-full w-full">
+              <FlowchartContent />
+            </div>
+          </div>
         </div>
       </div>
 

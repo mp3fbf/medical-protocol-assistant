@@ -17,6 +17,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./node-types/node-styles.css";
+import "./node-types/medical-node-styles.css";
 
 import { customNodeTypes } from "./node-types";
 import { FlowMinimap } from "./ui/minimap";
@@ -111,6 +112,21 @@ const ProtocolFlowchartCanvasContent: React.FC<
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     propEdges || defaultEdges,
   );
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Memoize node types to prevent React Flow warnings
+  const memoizedNodeTypes = React.useMemo(() => customNodeTypes, []);
+
+  // Debug: Log only initial mount
+  React.useEffect(() => {
+    console.log(
+      "[ProtocolFlowchartCanvas] Initialized with",
+      _nodes.length,
+      "nodes and",
+      edges.length,
+      "edges",
+    );
+  }, []); // Empty deps to run only once
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -118,17 +134,45 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
 
   return (
-    <div className="h-full min-h-[600px] w-full rounded-md border border-gray-300 bg-gray-50">
+    <div
+      ref={containerRef}
+      className="h-full w-full"
+      style={{ minHeight: "600px" }}
+    >
       <ReactFlow
         nodes={_nodes} // use _nodes
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={customNodeTypes}
+        nodeTypes={memoizedNodeTypes}
         fitView
+        fitViewOptions={{
+          padding: 0.2,
+          includeHiddenNodes: false,
+          minZoom: 0.3,
+          maxZoom: 2,
+        }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         attributionPosition="bottom-left"
         className="protocol-flowchart-theme"
+        onInit={(instance) => {
+          console.log(
+            "[ReactFlow] Initialized with",
+            instance.getNodes().length,
+            "nodes",
+          );
+          // Auto-fit on initialization
+          setTimeout(() => {
+            instance.fitView({
+              padding: 0.15,
+              includeHiddenNodes: false,
+              duration: 800,
+              minZoom: 0.3,
+              maxZoom: 1.2,
+            });
+          }, 100);
+        }}
       >
         <Background gap={16} color="#e0e0e0" variant={BackgroundVariant.Dots} />
         <CustomControls />

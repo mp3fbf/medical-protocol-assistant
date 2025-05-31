@@ -1,24 +1,12 @@
 /**
- * Custom Triage Node for ReactFlow.
- * Displays triage criteria or initial assessment points.
+ * Professional Medical Triage Node for ReactFlow.
+ * Clean, readable design for medical protocols.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { TriageNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
-
-const getNodeColors = (priority?: TriageNodeData["priority"]) => {
-  switch (priority) {
-    case "high":
-      return "bg-danger/20 border-danger text-danger-foreground"; // Red for high priority triage
-    case "medium":
-      return "bg-warning/20 border-warning text-warning-foreground"; // Yellow for medium
-    case "low":
-      return "bg-success/20 border-success text-success-foreground"; // Green for low
-    default:
-      return "bg-teal-100/50 border-teal-500 text-teal-800"; // Default triage color
-  }
-};
+import { Activity } from "lucide-react";
 
 export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
   data,
@@ -26,29 +14,51 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
   selected,
 }) => {
   const { title, description, priority } = data;
-  const colors = getNodeColors(priority);
 
   return (
     <div
       className={cn(
-        "w-48 rounded-lg border-2 p-3 shadow-lg", // Slightly more prominent shadow for triage
-        colors,
-        selected && "ring-2 ring-primary-500 ring-offset-2",
+        "medical-flow-node medical-triage-node",
+        priority === "high" && "medical-priority-high",
+        selected && "selected"
       )}
     >
+      <Activity className="medical-node-icon" />
+      
+      <div className="medical-node-content">
+        <div className="medical-node-title">{title}</div>
+        {description && (
+          <div className="medical-node-subtitle">{description}</div>
+        )}
+        
+        {priority && (
+          <div className={cn("medical-priority-badge", priority)}>
+            <div className={cn(
+              "h-2 w-2 rounded-full",
+              priority === "high" && "bg-red-500",
+              priority === "medium" && "bg-yellow-500",
+              priority === "low" && "bg-green-500"
+            )} />
+            <span>
+              {priority === "high" && "Alta Prioridade"}
+              {priority === "medium" && "Média Prioridade"}
+              {priority === "low" && "Baixa Prioridade"}
+            </span>
+          </div>
+        )}
+      </div>
+      
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="medical-handle"
       />
-      <div className="mb-1 truncate text-sm font-bold">{title}</div>
-      {description && <p className="text-xs text-opacity-80">{description}</p>}
       <Handle
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="medical-handle"
       />
     </div>
   );

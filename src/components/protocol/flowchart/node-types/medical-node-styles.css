@@ -1,0 +1,258 @@
+/* Professional Medical Node Styles */
+
+/* Base node styling - clean and professional */
+.medical-flow-node {
+  position: relative;
+  background: #ffffff;
+  border: 2px solid;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  overflow: visible;
+  min-width: 200px;
+  min-height: 80px;
+}
+
+/* Hover effects - subtle and professional */
+.medical-flow-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Selected state */
+.medical-flow-node.selected {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Node type specific borders and accents */
+.medical-triage-node {
+  border-color: #10b981; /* Green for triage */
+}
+
+.medical-decision-node {
+  border-color: #3b82f6; /* Blue for decisions */
+}
+
+.medical-action-node {
+  border-color: #8b5cf6; /* Purple for actions */
+}
+
+.medical-medication-node {
+  border-color: #f59e0b; /* Orange for medications */
+}
+
+/* Priority indicators */
+.medical-priority-high {
+  border-width: 3px;
+  border-style: solid;
+}
+
+.medical-priority-high::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Node content styling */
+.medical-node-content {
+  padding: 12px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.medical-node-title {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.medical-node-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Icon styling */
+.medical-node-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+}
+
+/* Handle styling - professional */
+.medical-handle {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border: 2px solid #6b7280;
+  transition: all 0.2s ease;
+}
+
+.medical-handle:hover {
+  transform: scale(1.2);
+  border-color: #3b82f6;
+}
+
+/* Decision node diamond shape */
+.medical-decision-wrapper {
+  transform: rotate(45deg);
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+}
+
+.medical-decision-content {
+  transform: rotate(-45deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding: 12px;
+}
+
+/* Action list styling */
+.medical-action-list {
+  margin-top: 8px;
+}
+
+.medical-action-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.medical-action-checkbox {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.medical-action-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #4b5563;
+}
+
+/* Medication styling */
+.medical-medication-list {
+  margin-top: 8px;
+}
+
+.medical-medication-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 6px;
+}
+
+.medical-medication-name {
+  font-weight: 500;
+  font-size: 13px;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.medical-medication-details {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.medical-medication-details .dose {
+  font-weight: 500;
+  color: #f59e0b;
+}
+
+.medical-medication-details .route {
+  color: #3b82f6;
+}
+
+.medical-medication-details .separator {
+  margin: 0 4px;
+  color: #d1d5db;
+}
+
+.medical-medication-duration {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Priority badges */
+.medical-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.medical-priority-badge.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.medical-priority-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.medical-priority-badge.low {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Edge styling - clean and simple */
+.medical-edge-path {
+  stroke: #6b7280;
+  stroke-width: 2;
+  fill: none;
+}
+
+.medical-edge-path:hover {
+  stroke: #3b82f6;
+  stroke-width: 3;
+}
+
+/* Yes/No indicators for decision nodes */
+.medical-decision-yes {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.medical-decision-no {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #dc2626;
+}

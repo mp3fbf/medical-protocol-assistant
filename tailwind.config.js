@@ -25,8 +25,15 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         primary: {
           50: "#E3F2FD",
+          100: "#BBDEFB",
+          200: "#90CAF9",
+          300: "#64B5F6",
+          400: "#42A5F5",
           500: "#2196F3",
+          600: "#1E88E5",
           700: "#1976D2",
+          800: "#1565C0",
+          900: "#0D47A1",
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
@@ -91,10 +98,26 @@ module.exports = {
             height: "0",
           },
         },
+        ripple: {
+          "0%": {
+            transform: "translate(-50%, -50%) scale(1)",
+            opacity: 1,
+          },
+          "100%": {
+            transform: "translate(-50%, -50%) scale(40)",
+            opacity: 0,
+          },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        ripple: "ripple 1s ease-out",
+        shimmer: "shimmer 2s infinite",
       },
     },
   },

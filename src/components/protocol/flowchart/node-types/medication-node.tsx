@@ -1,24 +1,12 @@
 /**
- * Custom Medication Node for ReactFlow.
- * Displays a table or list of medications.
+ * Professional Medical Medication Node for ReactFlow.
+ * Clean, readable design for medical protocols.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { MedicationNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
-
-const getNodeColors = (priority?: MedicationNodeData["priority"]) => {
-  switch (priority) {
-    case "high":
-      return "bg-danger/20 border-danger text-danger-foreground";
-    case "medium":
-      return "bg-warning/20 border-warning text-warning-foreground";
-    case "low":
-      return "bg-success/20 border-success text-success-foreground";
-    default:
-      return "bg-purple-100/50 border-purple-500 text-purple-800"; // Default medication color
-  }
-};
+import { Pill } from "lucide-react";
 
 export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
   data,
@@ -26,44 +14,77 @@ export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
   selected,
 }) => {
   const { title, medications, priority } = data;
-  const colors = getNodeColors(priority);
 
   return (
     <div
       className={cn(
-        "min-w-56 max-w-xs rounded-md border-2 p-3 shadow-md", // min-w-56, max-w-xs
-        colors,
-        selected && "ring-2 ring-primary-500 ring-offset-2",
+        "medical-flow-node medical-medication-node",
+        priority === "high" && "medical-priority-high",
+        selected && "selected",
       )}
     >
+      <Pill className="medical-node-icon" />
+
+      <div className="medical-node-content">
+        <div className="medical-node-title">{title}</div>
+
+        {/* Medication list */}
+        {medications && medications.length > 0 ? (
+          <div className="medical-medication-list">
+            {medications.map((med, index) => (
+              <div key={index} className="medical-medication-item">
+                <div className="medical-medication-name">{med.name}</div>
+                <div className="medical-medication-details">
+                  <span className="dose">{med.dose}</span>
+                  <span className="separator">•</span>
+                  <span className="route">{med.route}</span>
+                  <span className="separator">•</span>
+                  <span className="frequency">{med.frequency}</span>
+                </div>
+                {med.duration && (
+                  <div className="medical-medication-duration">
+                    Duração: {med.duration}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="medical-node-subtitle">
+            Nenhum medicamento especificado.
+          </p>
+        )}
+
+        {priority && (
+          <div className={cn("medical-priority-badge", priority)}>
+            <div
+              className={cn(
+                "h-2 w-2 rounded-full",
+                priority === "high" && "bg-red-500",
+                priority === "medium" && "bg-yellow-500",
+                priority === "low" && "bg-green-500",
+              )}
+            />
+            <span>
+              {priority === "high" && "Alta Prioridade"}
+              {priority === "medium" && "Prioridade Média"}
+              {priority === "low" && "Baixa Prioridade"}
+            </span>
+          </div>
+        )}
+      </div>
+
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="medical-handle"
       />
-      <div className="mb-2 truncate text-sm font-semibold">{title}</div>
-      {medications && medications.length > 0 ? (
-        <div className="space-y-1 text-xs">
-          {medications.slice(0, 3).map((med, index) => (
-            <div key={index} className="truncate border-b border-dashed pb-1">
-              <span className="font-medium">{med.name}:</span> {med.dose}{" "}
-              {med.route}, {med.frequency}
-              {med.duration && `, ${med.duration}`}
-            </div>
-          ))}
-          {medications.length > 3 && (
-            <div className="text-xxs italic">...e mais medicamentos.</div>
-          )}
-        </div>
-      ) : (
-        <p className="text-xs italic">Nenhum medicamento especificado.</p>
-      )}
       <Handle
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="!h-2 !w-2 !bg-gray-500"
+        className="medical-handle"
       />
     </div>
   );

@@ -20,6 +20,69 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
   const [isLocked, setIsLocked] = React.useState(false);
   const [currentZoom, setCurrentZoom] = React.useState(100);
 
+  const handleZoomIn = React.useCallback(() => {
+    zoomIn({ duration: 200 });
+  }, [zoomIn]);
+
+  const handleZoomOut = React.useCallback(() => {
+    zoomOut({ duration: 200 });
+  }, [zoomOut]);
+
+  const handleFitView = React.useCallback(() => {
+    fitView({ padding: 0.2, duration: 200 });
+  }, [fitView]);
+
+  const handleLockToggle = React.useCallback(() => {
+    setIsLocked((prev) => !prev);
+    if (onInteractiveToggle) {
+      onInteractiveToggle();
+    }
+  }, [onInteractiveToggle]);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Check if user is typing in an input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      switch (e.key.toLowerCase()) {
+        case "+":
+        case "=":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            handleZoomIn();
+          }
+          break;
+        case "-":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            handleZoomOut();
+          }
+          break;
+        case "f":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            handleFitView();
+          }
+          break;
+        case "l":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            handleLockToggle();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleZoomIn, handleZoomOut, handleFitView, handleLockToggle]);
+
   // Update zoom percentage whenever the viewport changes
   React.useEffect(() => {
     const updateZoom = () => {
@@ -35,25 +98,6 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
     return () => clearInterval(interval);
   }, [getZoom]);
 
-  const handleZoomIn = () => {
-    zoomIn({ duration: 200 });
-  };
-
-  const handleZoomOut = () => {
-    zoomOut({ duration: 200 });
-  };
-
-  const handleFitView = () => {
-    fitView({ padding: 0.2, duration: 200 });
-  };
-
-  const handleLockToggle = () => {
-    setIsLocked(!isLocked);
-    if (onInteractiveToggle) {
-      onInteractiveToggle();
-    }
-  };
-
   const ControlButton = ({ onClick, children, title }: any) => (
     <button
       onClick={onClick}
@@ -67,14 +111,23 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
   return (
     <div className="absolute bottom-4 left-4 z-10">
       <div className="flex flex-col gap-1 rounded-lg border border-gray-300 bg-white p-1 shadow-md dark:border-gray-600 dark:bg-gray-800">
-        <ControlButton onClick={handleZoomIn} title="Ampliar (Ctrl + Scroll)">
+        <ControlButton
+          onClick={handleZoomIn}
+          title="Ampliar (Ctrl/Cmd + ou Ctrl + Scroll)"
+        >
           <ZoomIn className="h-4 w-4" />
         </ControlButton>
-        <ControlButton onClick={handleZoomOut} title="Reduzir (Ctrl + Scroll)">
+        <ControlButton
+          onClick={handleZoomOut}
+          title="Reduzir (Ctrl/Cmd - ou Ctrl + Scroll)"
+        >
           <ZoomOut className="h-4 w-4" />
         </ControlButton>
         <div className="my-1 h-px bg-gray-300 dark:bg-gray-600" />
-        <ControlButton onClick={handleFitView} title="Ajustar à tela">
+        <ControlButton
+          onClick={handleFitView}
+          title="Ajustar à tela (Ctrl/Cmd F)"
+        >
           <Maximize className="h-4 w-4" />
         </ControlButton>
         {showInteractive && (
@@ -82,7 +135,11 @@ export const CustomControls: React.FC<CustomControlsProps> = ({
             <div className="my-1 h-px bg-gray-300 dark:bg-gray-600" />
             <ControlButton
               onClick={handleLockToggle}
-              title={isLocked ? "Desbloquear movimento" : "Bloquear movimento"}
+              title={
+                isLocked
+                  ? "Desbloquear movimento (Ctrl/Cmd L)"
+                  : "Bloquear movimento (Ctrl/Cmd L)"
+              }
             >
               {isLocked ? (
                 <Lock className="h-4 w-4" />

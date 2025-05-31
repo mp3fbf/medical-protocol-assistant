@@ -24,7 +24,12 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(pnpm dev:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(ls:*)",
+      "Bash(kill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(file:*)"
     ]
   },
   "enableAllProjectMcpServers": false
