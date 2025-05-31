@@ -144,10 +144,7 @@ export default function FlowchartPage() {
   }
 
   const latestVersion = protocol?.ProtocolVersion?.[0];
-  const flowchartData = latestVersion?.flowchart as
-    | FlowchartDefinition
-    | null
-    | undefined;
+  const flowchartData = latestVersion?.flowchart as FlowchartDefinition | null | undefined;
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden">
