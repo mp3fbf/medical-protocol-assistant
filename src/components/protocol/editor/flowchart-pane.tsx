@@ -155,8 +155,13 @@ export const FlowchartPane: React.FC<FlowchartPaneProps> = ({
             )}
           </div>
         </div>
-        <div className="flex-1 p-1">
-          <FlowchartContent />
+        <div
+          className="flex-1 overflow-hidden p-1"
+          style={{ minHeight: "600px" }}
+        >
+          <div className="h-full w-full">
+            <FlowchartContent />
+          </div>
         </div>
       </div>
 

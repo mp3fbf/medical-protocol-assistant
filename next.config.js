@@ -14,7 +14,7 @@ const nextConfig = {
     }
     return config;
   },
-  // Experimental features that might help with CSS
+  // Next.js 15 performance optimizations
   experimental: {
     optimizeCss: false,
   },
