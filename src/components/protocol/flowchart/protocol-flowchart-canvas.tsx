@@ -114,6 +114,9 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // Memoize node types to prevent React Flow warnings
+  const memoizedNodeTypes = React.useMemo(() => customNodeTypes, []);
+
   // Debug: Log only initial mount
   React.useEffect(() => {
     console.log(
@@ -131,15 +134,26 @@ const ProtocolFlowchartCanvasContent: React.FC<
   );
 
   return (
-    <div ref={containerRef} className="h-full w-full" style={{ minHeight: '600px' }}>
+    <div
+      ref={containerRef}
+      className="h-full w-full"
+      style={{ minHeight: "600px" }}
+    >
       <ReactFlow
         nodes={_nodes} // use _nodes
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={customNodeTypes}
+        nodeTypes={memoizedNodeTypes}
         fitView
+        fitViewOptions={{
+          padding: 0.2,
+          includeHiddenNodes: false,
+          minZoom: 0.3,
+          maxZoom: 2,
+        }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         attributionPosition="bottom-left"
         className="protocol-flowchart-theme"
         onInit={(instance) => {
@@ -148,16 +162,16 @@ const ProtocolFlowchartCanvasContent: React.FC<
             instance.getNodes().length,
             "nodes",
           );
-          // Check for sourceHandle issues
-          const edges = instance.getEdges();
-          edges.forEach((edge) => {
-            if (edge.sourceHandle) {
-              const sourceNode = instance.getNode(edge.source);
-              console.log(
-                `[ReactFlow] Edge ${edge.id} has sourceHandle '${edge.sourceHandle}' from node type '${sourceNode?.type}'`,
-              );
-            }
-          });
+          // Auto-fit on initialization
+          setTimeout(() => {
+            instance.fitView({
+              padding: 0.15,
+              includeHiddenNodes: false,
+              duration: 800,
+              minZoom: 0.3,
+              maxZoom: 1.2,
+            });
+          }, 100);
         }}
       >
         <Background gap={16} color="#e0e0e0" variant={BackgroundVariant.Dots} />

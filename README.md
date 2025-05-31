@@ -189,10 +189,10 @@ O projeto utiliza um sistema de design moderno e matemático:
 
 ### Componentes Ultra
 
-- `UltraCard`: Cards com efeitos 3D e gradientes dinâmicos
-- `UltraButton`: Botões com efeitos magnéticos e ripple
-- `UltraBadge`: Badges animados com glow effects
-- `UltraStats`: Dashboard com animações e gráficos SVG
+- `UltraCard`: Cards com efeitos 3D e gradientes dinâmicos discretos
+- `UltraButton`: Botões com efeitos magnéticos e ripple discretos
+- `UltraBadge`: Badges animados com glow effects discretos
+- `UltraStats`: Dashboard com animações e gráficos SVG discretos
 
 ## Code Standards & Project Structure
 

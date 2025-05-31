@@ -1,23 +1,12 @@
 /**
- * Ultra Modern Action Node for ReactFlow.
- * Features glassmorphism with action checklist.
+ * Professional Medical Action Node for ReactFlow.
+ * Clean, readable design for medical protocols.
  */
 import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { ActionNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
-import { Zap, FileText, PlayCircle } from "lucide-react";
-
-const getNodeIcon = (priority?: ActionNodeData["priority"]) => {
-  switch (priority) {
-    case "high":
-      return <Zap className="ultra-node-icon text-red-500" />;
-    case "medium":
-      return <PlayCircle className="ultra-node-icon text-yellow-500" />;
-    default:
-      return <FileText className="ultra-node-icon text-blue-500" />;
-  }
-};
+import { FileText } from "lucide-react";
 
 export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
   data,
@@ -29,66 +18,39 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
   return (
     <div
       className={cn(
-        "ultra-flow-node ultra-action-node",
-        "w-64 rounded-2xl",
+        "medical-flow-node medical-action-node",
+        priority === "high" && "medical-priority-high",
         selected && "selected",
-        priority === "high" && "ultra-pulse",
       )}
     >
-      {/* Animated gradient background */}
-      <div className="ultra-gradient-bg" />
+      <FileText className="medical-node-icon" />
 
-      {/* Glassmorphism effect enhancement */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent" />
+      <div className="medical-node-content">
+        <div className="medical-node-title">{title}</div>
 
-      {/* Icon */}
-      {getNodeIcon(priority)}
-
-      {/* Content */}
-      <div className="ultra-node-content">
-        <div className="ultra-node-title mb-3">{title}</div>
-
-        {/* Action checklist with ultra styling */}
+        {/* Action checklist */}
         {actions && actions.length > 0 && (
-          <div className="space-y-2">
+          <div className="medical-action-list">
             {actions.map((action, index) => (
-              <div key={index} className="group flex items-start gap-2">
-                <div
-                  className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-md 
-                              border-2 border-white/30 
-                              bg-white/10 transition-all duration-300 group-hover:border-white/50 group-hover:bg-white/20"
-                >
-                  <div
-                    className="h-2 w-2 rounded-sm bg-gradient-to-br from-indigo-400 to-purple-400 
-                                opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  />
-                </div>
-                <span
-                  className="text-xs leading-tight opacity-90 transition-opacity 
-                               duration-300 group-hover:opacity-100"
-                >
-                  {action}
-                </span>
+              <div key={index} className="medical-action-item">
+                <div className="medical-action-checkbox" />
+                <span className="medical-action-text">{action}</span>
               </div>
             ))}
           </div>
         )}
 
-        {/* Priority badge */}
         {priority && (
-          <div
-            className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/20 
-                        px-2 py-0.5 backdrop-blur-sm"
-          >
+          <div className={cn("medical-priority-badge", priority)}>
             <div
               className={cn(
-                "h-1.5 w-1.5 rounded-full",
-                priority === "high" && "bg-red-400",
-                priority === "medium" && "bg-yellow-400",
-                priority === "low" && "bg-green-400",
+                "h-2 w-2 rounded-full",
+                priority === "high" && "bg-red-500",
+                priority === "medium" && "bg-yellow-500",
+                priority === "low" && "bg-green-500",
               )}
             />
-            <span className="text-xs font-medium">
+            <span>
               {priority === "high" && "Urgente"}
               {priority === "medium" && "Normal"}
               {priority === "low" && "Baixa"}
@@ -97,20 +59,18 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
         )}
       </div>
 
-      {/* Handles with custom styling */}
       <Handle
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="ultra-handle ultra-handle-target"
+        className="medical-handle"
       />
       <Handle
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="ultra-handle ultra-handle-source"
+        className="medical-handle"
       />
     </div>
   );
 };
-

@@ -48,7 +48,7 @@
 }
 
 .medical-priority-high::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -8px;
   right: -8px;
@@ -155,6 +155,10 @@
 }
 
 /* Medication styling */
+.medical-medication-list {
+  margin-top: 8px;
+}
+
 .medical-medication-item {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -173,6 +177,26 @@
 .medical-medication-details {
   font-size: 11px;
   color: #6b7280;
+}
+
+.medical-medication-details .dose {
+  font-weight: 500;
+  color: #f59e0b;
+}
+
+.medical-medication-details .route {
+  color: #3b82f6;
+}
+
+.medical-medication-details .separator {
+  margin: 0 4px;
+  color: #d1d5db;
+}
+
+.medical-medication-duration {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 2px;
 }
 
 /* Priority badges */
