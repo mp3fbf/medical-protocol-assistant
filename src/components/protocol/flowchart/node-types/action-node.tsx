@@ -13,13 +13,12 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
   isConnectable,
   selected,
 }) => {
-  const { title, actions, priority } = data;
+  const { title, actions } = data;
 
   return (
     <div
       className={cn(
         "medical-flow-node medical-action-node",
-        priority === "high" && "medical-priority-high",
         selected && "selected",
       )}
     >
@@ -34,27 +33,12 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
             {actions.map((action, index) => (
               <div key={index} className="medical-action-item">
                 <div className="medical-action-checkbox" />
-                <span className="medical-action-text">{action}</span>
+                <span
+                  className="medical-action-text"
+                  dangerouslySetInnerHTML={{ __html: action }}
+                />
               </div>
             ))}
-          </div>
-        )}
-
-        {priority && (
-          <div className={cn("medical-priority-badge", priority)}>
-            <div
-              className={cn(
-                "h-2 w-2 rounded-full",
-                priority === "high" && "bg-red-500",
-                priority === "medium" && "bg-yellow-500",
-                priority === "low" && "bg-green-500",
-              )}
-            />
-            <span>
-              {priority === "high" && "Urgente"}
-              {priority === "medium" && "Normal"}
-              {priority === "low" && "Baixa"}
-            </span>
           </div>
         )}
       </div>

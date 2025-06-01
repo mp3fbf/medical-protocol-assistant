@@ -16,7 +16,14 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   size = "md",
   showLabel = false,
 }) => {
+  const [mounted, setMounted] = React.useState(false);
+  // Always call hooks in the same order
   const { theme, toggleTheme } = useTheme();
+
+  // Ensure component is mounted before using theme
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sizeConfig = {
     sm: {
@@ -37,6 +44,20 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   };
 
   const config = sizeConfig[size];
+
+  // Return placeholder to prevent layout shift
+  if (!mounted) {
+    return (
+      <div className={cn("flex items-center gap-2", className)}>
+        <div
+          className={cn(
+            "rounded-lg bg-gray-100 dark:bg-gray-800",
+            config.button,
+          )}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex items-center gap-2", className)}>

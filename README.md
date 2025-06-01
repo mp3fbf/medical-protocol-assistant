@@ -2,7 +2,7 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
-## 🚀 Status do Projeto (v1.9.1)
+## 🚀 Status do Projeto (v1.9.3)
 
 **100% Funcional** - Sistema completo com MVP totalmente implementado, incluindo editor de texto rico, interface ultra moderna e melhorias de acessibilidade WCAG 2.1 AA.
 
@@ -18,7 +18,27 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Dashboard**: Estatísticas em tempo real e gerenciamento de status
 - **Ultra Design System v2**: Interface moderna com glassmorphism e gradientes
 
-### 🔄 Melhorias Recentes (01/06/2025)
+### 🔄 Melhorias Recentes (06/01/2025)
+
+#### Correção de Geração de Fluxogramas com Decision Nodes
+
+- **Problema corrigido**: Decision nodes não estavam conectando corretamente devido à falta de `sourceHandle` nas edges
+- **Prompt de IA aprimorado**: Instruções explícitas adicionadas para incluir `sourceHandle` em edges de decision nodes
+- **Validação atualizada**: Schema Zod agora valida `sourceHandle` e `targetHandle` nas edges
+- **Decision nodes melhorados**: Suporte completo para múltiplas saídas (outputs) com handles customizáveis
+- **Build otimizado**: Correções de TypeScript e ESLint warnings resolvidos
+
+### 🔄 Melhorias Anteriores (31/01/2025)
+
+#### Simplificação do Sistema de Flowchart
+
+- **Prioridade removida**: Removido conceito de prioridade dos nós do fluxograma para simplificar a interface
+- **UI simplificada**: Removidos indicadores visuais de prioridade e campos de edição relacionados
+- **TypeScript otimizado**: Interfaces e tipos atualizados removendo FlowNodePriority
+- **CSS limpo**: Removidas classes CSS relacionadas a prioridade (medical-priority-high, etc.)
+- **Build corrigido**: Correções de tipos TypeScript para compatibilidade com ReactFlow
+
+### 🔄 Melhorias Anteriores (01/06/2025)
 
 #### Correções de Build e Deploy
 

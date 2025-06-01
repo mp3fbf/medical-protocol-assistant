@@ -1,80 +1,67 @@
-# Flowchart Improvements Summary
+# Correção de Geração de Fluxogramas com Decision Nodes
 
-## Issues Fixed
+## Problema Identificado
 
-### 1. Node Layout and Overlap
+Decision nodes não estavam conectando corretamente devido à falta de `sourceHandle` nas edges geradas pela IA.
 
-- **Fixed**: Increased dagre layout spacing parameters (nodesep: 100, ranksep: 120, marginx/y: 40)
-- **Fixed**: Increased node dimensions (width: 220px, height: 120px) to prevent content clipping
-- **Result**: Nodes no longer overlap and have proper spacing
+## Soluções Implementadas
 
-### 2. Professional Medical Design
+### 1. **Prompt de IA Aprimorado** (`src/lib/ai/prompts/flowchart.ts`)
 
-- **Removed**: All gradient backgrounds and glassmorphism effects
-- **Replaced**: Ultra-node styles with medical-node styles
-- **Added**: Clean, professional styling with solid borders and subtle shadows
-- **Colors**: Semantic colors for different node types:
-  - Green (#10b981) for Triage
-  - Blue (#3b82f6) for Decision
-  - Purple (#8b5cf6) for Action
-  - Orange (#f59e0b) for Medication
+- Adicionado ênfase **CRITICAL** e **WARNING** sobre a necessidade de incluir `sourceHandle` em edges de decision nodes
+- Incluídos exemplos de edges corretas e incorretas para maior clareza
+- Reforçado que omitir `sourceHandle` causará falha no funcionamento do fluxograma
 
-### 3. Auto-fit on Load
+### 2. **Validação e Correção Automática** (`src/lib/flowchart/smart-generator.ts` e `generator.ts`)
 
-- **Implemented**: Auto-fit view on flowchart initialization with 800ms animation
-- **Settings**: Padding: 0.15, minZoom: 0.3, maxZoom: 1.2
+- Adicionada verificação pós-geração para detectar edges de decision nodes sem `sourceHandle`
+- Implementada correção automática que adiciona `sourceHandle: 'yes'` como fallback
+- Logs de aviso quando correções são aplicadas para facilitar debugging
 
-### 4. Keyboard Shortcuts
+### 3. **Schema de Validação** (`src/lib/validators/flowchart.ts`)
 
-- **Added**: Full keyboard support for zoom controls
-  - Ctrl/Cmd + : Zoom in
-  - Ctrl/Cmd - : Zoom out
-  - Ctrl/Cmd F : Fit to view
-  - Ctrl/Cmd L : Lock/unlock movement
-- **UI**: Updated tooltips to show keyboard shortcuts
+- O schema já estava correto, incluindo `sourceHandle` e `targetHandle` como campos opcionais
 
-### 5. Confirmation Dialogs
+## Estrutura Esperada
 
-- **Added**: Confirmation dialog when regenerating existing flowchart
-- **Message**: "Isso irá substituir o fluxograma existente. Deseja continuar?"
+### Decision Node:
 
-### 6. Header Design
+```json
+{
+  "id": "decision-1",
+  "type": "decision",
+  "data": {
+    "type": "decision",
+    "title": "Paciente estável?",
+    "criteria": "Verificar sinais vitais",
+    "outputs": [
+      { "id": "yes", "label": "Sim", "position": "bottom-left" },
+      { "id": "no", "label": "Não", "position": "bottom-right" }
+    ]
+  }
+}
+```
 
-- **Removed**: Gradient backgrounds from header
-- **Implemented**: Clean white background with subtle border
-- **Improved**: Button styling with proper contrast and professional appearance
+### Edges de Decision Node (CORRETO):
 
-## UI Components Updated
+```json
+{
+  "id": "edge-2",
+  "source": "decision-1",
+  "target": "action-1",
+  "sourceHandle": "yes", // CRÍTICO: Este campo é obrigatório
+  "label": "Sim"
+}
+```
 
-1. **Node Types**:
+## Impacto
 
-   - `triage-node.tsx`: Clean design with Activity icon
-   - `decision-node.tsx`: Diamond shape with clear Yes/No indicators
-   - `action-node.tsx`: Action checklist with checkboxes
-   - `medication-node.tsx`: Medication details with dose/route/frequency
+- Fluxogramas agora serão gerados com conexões corretas de decision nodes
+- Fallback automático garante que mesmo se a IA falhar, o fluxograma ainda funcionará
+- Logs de aviso ajudam a identificar quando a IA não está seguindo as instruções corretamente
 
-2. **Controls**:
+## Próximos Passos
 
-   - `custom-controls.tsx`: Added keyboard shortcuts and improved tooltips
-   - Zoom percentage display
-   - Lock/unlock functionality
-
-3. **Styles**:
-   - `medical-node-styles.css`: Professional medical node styling
-   - Removed `ultra-node-styles.css`
-   - Clean borders, subtle shadows, semantic colors
-
-## Remaining Improvements (Optional)
-
-1. **Navigation Tabs**: Add tabs for Editor/Validações/Fluxograma
-2. **Node Tooltips**: Add tooltips explaining node types on hover
-3. **Undo/Redo**: Implement undo/redo functionality
-4. **Manual Positioning**: Enable drag-and-drop node positioning
-5. **Smart Routing**: Implement intelligent edge routing to avoid overlaps
-
-## Code Quality
-
-- Fixed all ESLint errors
-- Removed unused imports and components
-- Proper React hooks implementation with useCallback
-- Clean, maintainable code structure
+1. Monitorar logs para verificar se a IA está gerando `sourceHandle` corretamente
+2. Se necessário, ajustar ainda mais o prompt ou considerar fine-tuning do modelo
+3. Testar com diferentes tipos de protocolos médicos para garantir robustez

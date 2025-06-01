@@ -11,10 +11,13 @@ interface LayoutOptions {
   ranksep?: number;
   marginx?: number;
   marginy?: number;
+  edgesep?: number;
+  ranker?: "network-simplex" | "tight-tree" | "longest-path";
+  acyclicer?: "greedy" | undefined;
 }
 
-const DEFAULT_NODE_WIDTH = 180;
-const DEFAULT_NODE_HEIGHT = 80;
+const DEFAULT_NODE_WIDTH = 240; // Increased from 180
+const DEFAULT_NODE_HEIGHT = 100; // Increased from 80
 
 export function getLayoutedElements(
   nodes: Node[],
@@ -23,10 +26,13 @@ export function getLayoutedElements(
 ): { nodes: Node[]; edges: Edge[] } {
   const {
     rankdir = "TB",
-    nodesep = 80, // Horizontal separation between nodes
-    ranksep = 120, // Vertical separation between ranks
-    marginx = 20,
-    marginy = 20,
+    nodesep = 200, // Doubled horizontal separation to eliminate overlaps
+    ranksep = 250, // Generous vertical separation for better clarity
+    marginx = 40, // Increased margins
+    marginy = 40, // Increased margins
+    edgesep = 150, // Drastically increased separation between parallel edges
+    ranker = "network-simplex", // Better algorithm for reducing edge crossings
+    acyclicer = "greedy", // Helps prevent cycles
   } = options;
 
   const dagreGraph = new dagre.graphlib.Graph();
@@ -37,6 +43,9 @@ export function getLayoutedElements(
     ranksep,
     marginx,
     marginy,
+    edgesep,
+    ranker,
+    acyclicer,
   });
 
   // Add nodes to dagre

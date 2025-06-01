@@ -11,7 +11,7 @@ import {
   createFlowchartGenerationUserPrompt,
 } from "@/lib/ai/prompts/flowchart";
 import {
-  DEFAULT_CHAT_MODEL,
+  O4_MINI,
   JSON_RESPONSE_FORMAT,
   DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
   DEFAULT_TEMPERATURE,
@@ -28,25 +28,21 @@ const PROTOCOL_TYPE_MAPPINGS = {
     name: "Protocolo de Emergência",
     relevantSections: ["4", "5", "6", "7", "8", "9"],
     layout: "vertical",
-    priorityNodes: ["triage", "decision", "action"],
   },
   DIAGNOSTIC: {
     name: "Protocolo Diagnóstico",
     relevantSections: ["4", "5", "6", "10", "11"],
     layout: "hierarchical",
-    priorityNodes: ["decision", "action"],
   },
   THERAPEUTIC: {
     name: "Protocolo Terapêutico",
     relevantSections: ["5", "6", "7", "8", "9"],
     layout: "vertical",
-    priorityNodes: ["medication", "action", "decision"],
   },
   MONITORING: {
     name: "Protocolo de Monitorização",
     relevantSections: ["8", "9", "10", "11"],
     layout: "circular",
-    priorityNodes: ["action", "decision"],
   },
 };
 
@@ -185,7 +181,7 @@ export async function generateSmartFlowchart(
 
   try {
     const response = await createChatCompletion(
-      DEFAULT_CHAT_MODEL,
+      O4_MINI, // Using o4-mini for flowchart generation
       [
         { role: "system", content: FLOWCHART_GENERATION_SYSTEM_PROMPT },
         { role: "user", content: enhancedPrompt },
@@ -227,6 +223,24 @@ export async function generateSmartFlowchart(
       );
     }
 
+    console.log("=== O4-MINI GENERATION DEBUG ===");
+    console.log("Raw generated nodes:", validationResult.data.nodes.length);
+    console.log("Raw generated edges:", validationResult.data.edges.length);
+
+    // Log node details
+    validationResult.data.nodes.forEach((node: any) => {
+      console.log(
+        `Generated Node ${node.id}: type=${node.type}, title="${node.data.title}"`,
+      );
+    });
+
+    // Log edge details
+    validationResult.data.edges.forEach((edge: any) => {
+      console.log(
+        `Generated Edge ${edge.id}: ${edge.source} -> ${edge.target}, label="${edge.label || ""}", sourceHandle="${edge.sourceHandle || ""}", targetHandle="${edge.targetHandle || ""}"`,
+      );
+    });
+
     let finalNodes = validationResult.data.nodes.map((node: any) => ({
       id: node.id,
       type: node.type,
@@ -234,12 +248,27 @@ export async function generateSmartFlowchart(
       data: {
         ...node.data,
         type: node.type,
-        priority:
-          node.data.priority || getPriorityForNodeType(node.type, protocolType),
       },
     })) as CustomFlowNode[];
 
     let finalEdges = validationResult.data.edges;
+
+    // Ensure decision edges have sourceHandle
+    const decisionNodeIds = new Set(
+      validationResult.data.nodes
+        .filter((node: any) => node.type === "decision")
+        .map((node: any) => node.id),
+    );
+
+    finalEdges = finalEdges.map((edge: any) => {
+      if (decisionNodeIds.has(edge.source) && !edge.sourceHandle) {
+        console.warn(
+          `[SmartFlowchart] WARNING: Edge ${edge.id} from decision node ${edge.source} is missing sourceHandle. Adding default 'yes'.`,
+        );
+        return { ...edge, sourceHandle: "yes" };
+      }
+      return edge;
+    });
 
     // Apply intelligent layout if requested
     if (includeLayout) {
@@ -262,7 +291,6 @@ export async function generateSmartFlowchart(
       edgeCount: finalEdges.length,
       layoutType: typeMapping.layout,
       generatedAt: new Date().toISOString(),
-      priorityNodeTypes: typeMapping.priorityNodes,
     };
 
     console.log(
@@ -308,9 +336,6 @@ INCLUIR MEDICAÇÕES: ${options.includeMedications ? "Sim" : "Não"}
 
 INSTRUÇÕES ESPECÍFICAS PARA ${protocolType}:
 ${typeSpecificInstructions}
-
-PRIORIDADES DE NODE (em ordem de importância):
-${typeMapping.priorityNodes.map((type, i) => `${i + 1}. ${type}`).join("\n")}
 
 Gere um fluxograma otimizado para este tipo de protocolo, focando nos elementos mais críticos.`;
 }
@@ -375,21 +400,6 @@ function ensureSmartIds(rawData: any, protocolType: string): any {
   }));
 
   return { nodes: processedNodes, edges: processedEdges };
-}
-
-/**
- * Get default priority for node types based on protocol type
- */
-function getPriorityForNodeType(
-  nodeType: string,
-  protocolType: keyof typeof PROTOCOL_TYPE_MAPPINGS,
-): "high" | "medium" | "low" {
-  const typeMapping = PROTOCOL_TYPE_MAPPINGS[protocolType];
-  const priorityIndex = typeMapping.priorityNodes.indexOf(nodeType);
-
-  if (priorityIndex === 0) return "high";
-  if (priorityIndex === 1) return "medium";
-  return "low";
 }
 
 /**

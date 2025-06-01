@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { FlowchartDefinition } from "@/types/flowchart";
+import { generateFlowchartSvg } from "@/lib/generators/svg";
 
 export default function FlowchartPage() {
   const params = useParams();
@@ -89,8 +90,31 @@ export default function FlowchartPage() {
     });
   };
 
-  const handleExportSVG = () => {
-    toast.info("Exportação SVG em desenvolvimento");
+  const handleExportSVG = async () => {
+    if (!flowchartData) {
+      toast.error("Nenhum fluxograma disponível para exportar");
+      return;
+    }
+
+    try {
+      const svgContent = await generateFlowchartSvg(flowchartData);
+
+      // Create blob and download
+      const blob = new Blob([svgContent], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `flowchart-${protocol?.title || "protocolo"}-${new Date().toISOString().split("T")[0]}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Fluxograma exportado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar SVG:", error);
+      toast.error("Erro ao exportar o fluxograma");
+    }
   };
 
   const toggleFullscreen = () => {

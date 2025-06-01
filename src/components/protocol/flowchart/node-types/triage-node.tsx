@@ -13,41 +13,24 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
   isConnectable,
   selected,
 }) => {
-  const { title, description, priority } = data;
+  const { title, description } = data;
 
   return (
     <div
       className={cn(
         "medical-flow-node medical-triage-node",
-        priority === "high" && "medical-priority-high",
-        selected && "selected"
+        selected && "selected",
       )}
     >
       <Activity className="medical-node-icon" />
-      
+
       <div className="medical-node-content">
         <div className="medical-node-title">{title}</div>
         {description && (
           <div className="medical-node-subtitle">{description}</div>
         )}
-        
-        {priority && (
-          <div className={cn("medical-priority-badge", priority)}>
-            <div className={cn(
-              "h-2 w-2 rounded-full",
-              priority === "high" && "bg-red-500",
-              priority === "medium" && "bg-yellow-500",
-              priority === "low" && "bg-green-500"
-            )} />
-            <span>
-              {priority === "high" && "Alta Prioridade"}
-              {priority === "medium" && "Média Prioridade"}
-              {priority === "low" && "Baixa Prioridade"}
-            </span>
-          </div>
-        )}
       </div>
-      
+
       <Handle
         type="target"
         position={Position.Top}

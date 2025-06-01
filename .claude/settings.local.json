@@ -30,7 +30,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(file:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:reactflow.dev)"
     ]
   },
   "enableAllProjectMcpServers": false

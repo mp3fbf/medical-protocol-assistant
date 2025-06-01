@@ -23,24 +23,11 @@ interface SvgStyle {
 }
 
 function getNodeStyle(nodeData: CustomFlowNodeData): SvgStyle {
-  const priority = nodeData.priority;
   switch (nodeData.type) {
     case "triage":
-      if (priority === "high")
-        return { fill: "#FEE2E2", stroke: "#DC2626", textColor: "#991B1B" }; // Light Red
-      if (priority === "medium")
-        return { fill: "#FEF3C7", stroke: "#D97706", textColor: "#92400E" }; // Light Yellow
-      if (priority === "low")
-        return { fill: "#D1FAE5", stroke: "#059669", textColor: "#065F46" }; // Light Green
-      return { fill: "#E0F2FE", stroke: "#0EA5E9", textColor: "#0369A1" }; // Light Blue (default Triage)
+      return { fill: "#E0F2FE", stroke: "#0EA5E9", textColor: "#0369A1" }; // Light Blue
     case "decision":
-      if (priority === "high")
-        return { fill: "#FECACA", stroke: "#B91C1C", textColor: "#7F1D1D" }; // Red
-      if (priority === "medium")
-        return { fill: "#FDE68A", stroke: "#B45309", textColor: "#78350F" }; // Yellow
-      if (priority === "low")
-        return { fill: "#BBF7D0", stroke: "#15803D", textColor: "#14532D" }; // Green
-      return { fill: "#E5E7EB", stroke: "#6B7280", textColor: "#1F2937" }; // Gray (default Decision)
+      return { fill: "#E5E7EB", stroke: "#6B7280", textColor: "#1F2937" }; // Gray
     case "action":
       return { fill: "#DBEAFE", stroke: "#3B82F6", textColor: "#1E40AF" }; // Blue
     case "medication":

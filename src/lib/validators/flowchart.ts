@@ -27,14 +27,26 @@ export const FlowchartMedicationSchema = z.object({
   notes: z.string().optional(),
 });
 
+const DecisionOutputSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  position: z.enum([
+    "bottom-left",
+    "bottom-right",
+    "bottom-center",
+    "left",
+    "right",
+  ]),
+});
+
 export const GeneratedFlowNodeDataSchema = z.object({
   title: z.string().min(1, "Título do nó é obrigatório."),
   type: z.enum(["decision", "action", "medication", "triage", "start", "end"]),
-  priority: z.enum(["high", "medium", "low"]).optional(),
   criteria: z.string().optional(),
   actions: z.array(z.string()).optional(),
   medications: z.array(FlowchartMedicationSchema).optional(),
   description: z.string().optional(),
+  outputs: z.array(DecisionOutputSchema).optional(), // For decision nodes
 });
 
 export const GeneratedFlowNodeSchema = z.object({
@@ -49,6 +61,8 @@ export const GeneratedFlowEdgeSchema = z.object({
   target: z.string().min(1, "Nó de destino (target) é obrigatório."),
   label: z.string().optional(),
   type: z.enum(["default", "conditional"]).optional(),
+  sourceHandle: z.string().optional(), // Required for decision nodes
+  targetHandle: z.string().optional(), // Optional for specific target handles
 });
 
 export const GeneratedFlowchartSchema = z.object({

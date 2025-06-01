@@ -2,6 +2,8 @@
  * Ultra Design System - Main Layout without wasteful sidebar
  * Maximum screen utilization with integrated navigation
  */
+"use client";
+
 import React from "react";
 import { HeaderUltra } from "./header-ultra";
 

@@ -6,25 +6,21 @@ import React from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
 import type { MedicationNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
-import { Pill } from "lucide-react";
 
 export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
   data,
   isConnectable,
   selected,
 }) => {
-  const { title, medications, priority } = data;
+  const { title, medications } = data;
 
   return (
     <div
       className={cn(
         "medical-flow-node medical-medication-node",
-        priority === "high" && "medical-priority-high",
         selected && "selected",
       )}
     >
-      <Pill className="medical-node-icon" />
-
       <div className="medical-node-content">
         <div className="medical-node-title">{title}</div>
 
@@ -53,24 +49,6 @@ export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
           <p className="medical-node-subtitle">
             Nenhum medicamento especificado.
           </p>
-        )}
-
-        {priority && (
-          <div className={cn("medical-priority-badge", priority)}>
-            <div
-              className={cn(
-                "h-2 w-2 rounded-full",
-                priority === "high" && "bg-red-500",
-                priority === "medium" && "bg-yellow-500",
-                priority === "low" && "bg-green-500",
-              )}
-            />
-            <span>
-              {priority === "high" && "Alta Prioridade"}
-              {priority === "medium" && "Prioridade Média"}
-              {priority === "low" && "Baixa Prioridade"}
-            </span>
-          </div>
         )}
       </div>
 

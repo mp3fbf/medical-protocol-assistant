@@ -19,6 +19,7 @@ export class OpenAIProvider implements AIProvider {
     "gpt-4-turbo",
     "gpt-4",
     "gpt-3.5-turbo",
+    "o4-mini",
   ];
 
   constructor(apiKey?: string, baseUrl?: string) {
@@ -32,16 +33,31 @@ export class OpenAIProvider implements AIProvider {
     messages: AIMessage[],
     options?: AICompletionOptions,
   ): Promise<AICompletionResponse> {
-    const response = await this.client.chat.completions.create({
-      model: options?.model || this.defaultModel,
+    const model = options?.model || this.defaultModel;
+
+    // Handle o4-mini model's specific requirements
+    const completionParams: any = {
+      model,
       messages: messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       })),
-      temperature: options?.temperature,
-      max_tokens: options?.max_tokens,
-      response_format: options?.response_format,
-    });
+    };
+
+    if (model === "o4-mini") {
+      // o4-mini specific parameters
+      completionParams.max_completion_tokens = options?.max_tokens;
+      // o4-mini only supports temperature = 1 (default), so we omit it
+      // o4-mini doesn't support response_format either
+    } else {
+      // Standard parameters for other models
+      completionParams.max_tokens = options?.max_tokens;
+      completionParams.temperature = options?.temperature;
+      completionParams.response_format = options?.response_format;
+    }
+
+    const response =
+      await this.client.chat.completions.create(completionParams);
 
     const choice = response.choices[0];
     if (!choice?.message?.content) {

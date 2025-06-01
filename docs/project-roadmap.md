@@ -2,7 +2,7 @@
 
 ## 📋 Status Atual do Projeto
 
-**Data:** 01 de junho de 2025  
+**Data:** 06 de janeiro de 2025  
 **Versão:** v1.9.3  
 **Stack:** Next.js 15.3.3, Prisma, PostgreSQL (Supabase), tRPC, Multi-Provider AI
 
@@ -244,6 +244,17 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 ---
 
 ## 🎯 **PRÓXIMOS PASSOS IMEDIATOS**
+
+### ✅ **CONCLUÍDO EM 31/01/2025**
+
+1. **✅ Simplificação do Sistema de Flowchart**
+   - ✅ Removido conceito de prioridade dos nós para simplificar interface
+   - ✅ Atualizado TypeScript removendo FlowNodePriority e campos priority de todas as interfaces
+   - ✅ Removidas classes CSS relacionadas a prioridade (medical-priority-high, medical-priority-badge, etc.)
+   - ✅ Atualizado UI removendo seletor de prioridade do NodeEditDialog
+   - ✅ Limpeza completa em todos os componentes de nós (action, decision, medication, triage)
+   - ✅ Ajustes em validadores, geradores e prompts de IA
+   - ✅ Build passando sem erros TypeScript
 
 ### ✅ **CONCLUÍDO EM 01/06/2025**
 
@@ -607,6 +618,18 @@ const handleAIGeneration = async (formData) => {
 ---
 
 ## 🎉 **CONQUISTAS RECENTES**
+
+### Semana de 06/01/2025
+
+**✅ Correção de Geração de Fluxogramas**
+
+- **Problema Resolvido**: Decision nodes não conectavam corretamente por falta de `sourceHandle` nas edges
+- **Solução Implementada**:
+  - Prompt de IA atualizado com instruções explícitas para `sourceHandle` em decision nodes
+  - Schema de validação Zod expandido para incluir `sourceHandle` e `targetHandle`
+  - Decision nodes agora suportam múltiplas outputs com handles customizáveis
+  - Build corrigido: TypeScript e ESLint warnings resolvidos
+- **Impacto**: Fluxogramas agora geram corretamente com todas as conexões funcionais
 
 ### Semana de 29-30/01/2025
 

@@ -10,6 +10,7 @@ export const GPT_4_TURBO_PREVIEW = "gpt-4-turbo-preview"; // 128k context window
 export const GPT_4_TURBO = "gpt-4-turbo"; // 128k context window
 export const GPT_4_OMNI = "gpt-4o"; // 30k token limit for free tier
 export const GPT_4_OMNI_MINI = "gpt-4o-mini"; // Lower cost alternative
+export const O4_MINI = "o4-mini"; // O4 mini model - advanced reasoning
 export const GPT_4 = "gpt-4";
 export const GPT_3_5_TURBO = "gpt-3.5-turbo";
 

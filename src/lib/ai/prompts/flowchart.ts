@@ -24,11 +24,15 @@ Nodes:
   - For "medication" nodes: "medications" (array of objects, each with "name", "dose", "route", "frequency", "duration" (optional), "notes" (optional)).
   - For "triage" nodes: "description" (string, e.g. "Paciente com dor torácica aguda").
   - For "start" and "end" nodes: a simple "title".
-- Nodes can optionally have a "priority" field ("high", "medium", "low") in their "data" if inferable from text (e.g., emergency actions are high).
 
 Edges:
 - Each edge object must have "id" (string, unique, e.g., "e1-2"), "source" (string, ID of the source node), and "target" (string, ID of the target node).
-- Edges from "decision" nodes should have a "label" (string, e.g., "Sim", "Não", "< 18 anos", "Critério A atendido").
+- **CRITICAL**: ALL edges originating from "decision" nodes MUST include:
+  - "sourceHandle" (string, REQUIRED): The ID of the output handle (e.g., "yes" or "no") that matches the decision path
+  - "label" (string, REQUIRED): The display label (e.g., "Sim", "Não", "< 18 anos", "Critério A atendido")
+- IMPORTANT: For decision nodes, the "sourceHandle" must match one of the output IDs defined in the decision node's data.outputs array
+- Example decision edge: { "id": "e2", "source": "decision-1", "target": "action-1", "sourceHandle": "yes", "label": "Sim" }
+- **WARNING**: Omitting "sourceHandle" for edges from decision nodes will cause the flowchart to render incorrectly
 - Edges can have a "type" (string, e.g., "default", "conditional").
 
 Key Considerations:
@@ -73,9 +77,17 @@ export function createFlowchartGenerationUserPrompt(
   Ensure all IDs for nodes and edges are unique strings.
   Node "type" must be one of: "start", "end", "triage", "decision", "action", "medication".
   The "data" object within each node must also contain a "type" field identical to the node's main "type".
-  Decision nodes should clearly state their criteria in "data.criteria".
+  Decision nodes should:
+  - Clearly state their criteria in "data.criteria"
+  - Have "data.outputs" array with output handles (default: [{ "id": "yes", "label": "Sim", "position": "bottom-left" }, { "id": "no", "label": "Não", "position": "bottom-right" }])
   Action nodes should list actions in "data.actions".
   Medication nodes should list medications with details in "data.medications".
+  
+  CRITICAL: For ALL edges originating from decision nodes:
+  - MUST include "sourceHandle" that matches one of the output IDs (e.g., "yes" or "no")
+  - NEVER omit sourceHandle for decision edges - the flowchart will NOT work without it
+  - Example correct edge: { "id": "e2", "source": "decision-1", "target": "action-1", "sourceHandle": "yes", "label": "Sim" }
+  - Example WRONG edge: { "id": "e2", "source": "decision-1", "target": "action-1", "label": "Sim" } // MISSING sourceHandle!
   
   Example of a "medication" node's data.medications array item:
   { "name": "Atropina", "dose": "1mg", "route": "IV", "frequency": "a cada 3-5min", "duration": "Max 3mg", "notes": "Bradicardia sintomática" }

@@ -13,17 +13,24 @@ export interface FlowchartMedication {
   notes?: string;
 }
 
-export type FlowNodePriority = "high" | "medium" | "low";
-
 export interface BaseNodeData {
   title: string;
-  priority?: FlowNodePriority;
   // Additional common fields can be added here
+}
+
+export interface DecisionOutput {
+  id: string; // Unique ID for the output handle
+  label: string; // Display label
+  position: "bottom-left" | "bottom-right" | "bottom-center" | "left" | "right";
 }
 
 export interface DecisionNodeData extends BaseNodeData {
   type: "decision";
   criteria: string; // For decisions
+  outputs?: DecisionOutput[]; // Customizable outputs
+  // Legacy support
+  yesLabel?: string; // Custom label for "yes" output (default: "Sim")
+  noLabel?: string; // Custom label for "no" output (default: "Não")
 }
 
 export interface ActionNodeData extends BaseNodeData {
@@ -68,7 +75,7 @@ export interface CustomFlowNode
 
 // Custom Edge type (can be extended if custom edge data is needed)
 export type CustomFlowEdge = Edge<any> & {
-  type?: "default" | "conditional"; // Example: For conditional styling or logic
+  type?: "default" | "conditional" | "orthogonal"; // Example: For conditional styling or logic
 };
 
 // Main data structure for storing a flowchart

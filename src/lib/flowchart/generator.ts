@@ -9,7 +9,7 @@ import {
   createFlowchartGenerationUserPrompt,
 } from "@/lib/ai/prompts/flowchart";
 import {
-  DEFAULT_CHAT_MODEL,
+  O4_MINI,
   JSON_RESPONSE_FORMAT,
   DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
   DEFAULT_TEMPERATURE,
@@ -95,7 +95,7 @@ export async function generateFlowchartFromProtocolContent(
 
   try {
     const response = await createChatCompletion(
-      DEFAULT_CHAT_MODEL,
+      O4_MINI, // Using o4-mini for flowchart generation
       [
         { role: "system", content: FLOWCHART_GENERATION_SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
@@ -153,7 +153,24 @@ export async function generateFlowchartFromProtocolContent(
     })) as FlowchartDefinition["nodes"]; // Type assertion
 
     // Edges are already validated and have IDs.
-    const finalEdges = validationResult.data.edges;
+    let finalEdges = validationResult.data.edges;
+
+    // Ensure decision edges have sourceHandle
+    const decisionNodeIds = new Set(
+      validationResult.data.nodes
+        .filter((node: any) => node.type === "decision")
+        .map((node: any) => node.id),
+    );
+
+    finalEdges = finalEdges.map((edge: any) => {
+      if (decisionNodeIds.has(edge.source) && !edge.sourceHandle) {
+        console.warn(
+          `[Flowchart] WARNING: Edge ${edge.id} from decision node ${edge.source} is missing sourceHandle. Adding default 'yes'.`,
+        );
+        return { ...edge, sourceHandle: "yes" };
+      }
+      return edge;
+    });
 
     return { nodes: finalNodes, edges: finalEdges };
   } catch (error) {
