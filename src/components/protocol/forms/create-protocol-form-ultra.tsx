@@ -21,9 +21,7 @@ import {
   Upload,
   Brain,
   Sparkles,
-  FileUp,
   Check,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/ui/file-upload";
@@ -559,41 +557,14 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
               <h3 className="text-lg font-semibold">Upload de Material</h3>
             </div>
 
-            <FileUpload onFilesSelected={handleFilesSelected} />
-
-            {uploadedFiles.length > 0 && (
-              <div className="space-y-2">
-                {uploadedFiles.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileUp className="h-5 w-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">{file.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newFiles = uploadedFiles.filter(
-                          (_, i) => i !== index,
-                        );
-                        setUploadedFiles(newFiles);
-                        setValue("materialFiles", newFiles);
-                      }}
-                      className="rounded p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-                    >
-                      <X className="h-4 w-4 text-gray-500" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <FileUpload
+              onFilesSelected={handleFilesSelected}
+              onFileRemove={(index) => {
+                const newFiles = uploadedFiles.filter((_, i) => i !== index);
+                setUploadedFiles(newFiles);
+                setValue("materialFiles", newFiles);
+              }}
+            />
 
             <div className="flex items-center gap-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
               <input
