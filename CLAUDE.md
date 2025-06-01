@@ -91,6 +91,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Pre-commit hooks run Prettier and ESLint automatically
 - Always update @README.md and @docs/project-roadmap.md and run pnpm build before each commit
 
+### Common Errors and Solutions
+
+**ThemeProvider Error (FREQUENT ISSUE)**:
+
+- **Error**: `useTheme must be used within a ThemeProvider`
+- **Cause**: ThemeToggle component used outside ThemeProvider context (usually in login page)
+- **SOLUTION**: DO NOT use ThemeToggle in the login page or any page outside the (auth) group
+- **Why**: Login page renders before GlobalProviders are ready, causing context error
+- **Note**: ThemeProvider is in GlobalProviders but login page has special rendering
+
 ### Database Schema
 
 - `User` - Authentication with hashed passwords and roles
