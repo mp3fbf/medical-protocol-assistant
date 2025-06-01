@@ -402,14 +402,14 @@ const EditableFlowchartCanvasContent: React.FC<
           nodeTypes={customNodeTypes}
           edgeTypes={customEdgeTypes}
           defaultEdgeOptions={{
-            type: "orthogonal",
+            type: "bezier",
             animated: false,
             style: {
               strokeWidth: 2,
               stroke: "#64748b",
             },
           }}
-          connectionLineType={"straight" as any}
+          connectionLineType={"bezier" as any}
           fitView
           attributionPosition="bottom-left"
           className="protocol-flowchart-theme"

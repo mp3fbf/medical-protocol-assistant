@@ -11,7 +11,7 @@ export function OrthogonalEdge({
   markerEnd,
   data,
   sourcePosition,
-  targetPosition,
+  targetPosition: _targetPosition,
 }: EdgeProps) {
   const sourceHandle = data?.sourceHandle;
   // Create a path with right angles only

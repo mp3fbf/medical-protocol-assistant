@@ -279,14 +279,14 @@ const ProtocolFlowchartCanvasContent: React.FC<
           maxZoom: 1,
         }}
         defaultEdgeOptions={{
-          type: "orthogonal",
+          type: "bezier",
           animated: false,
           style: {
             strokeWidth: 2,
             stroke: "#64748b",
           },
         }}
-        connectionLineType={"straight" as any}
+        connectionLineType={"bezier" as any}
         connectionMode={"loose" as any}
         attributionPosition="bottom-left"
         className="protocol-flowchart-theme"

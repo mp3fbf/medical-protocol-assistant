@@ -107,29 +107,6 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
             dangerouslySetInnerHTML={{ __html: criteria }}
           />
         )}
-
-        {/* Output labels preview */}
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-blue-200 pt-3 dark:border-blue-800">
-          {outputs.map((output) => (
-            <div key={output.id} className="flex items-center gap-1">
-              <div
-                className={cn(
-                  "h-2 w-2 rounded-full",
-                  output.id === "yes" ||
-                    output.label?.toLowerCase().includes("sim")
-                    ? "bg-green-500"
-                    : output.id === "no" ||
-                        output.label?.toLowerCase().includes("não")
-                      ? "bg-red-500"
-                      : "bg-gray-500",
-                )}
-              />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {output.label}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Input handle at top */}
