@@ -7,11 +7,12 @@ import {
   TrendingUp,
   TrendingDown,
   FileText,
-  Users,
   Clock,
   Activity,
   BarChart3,
+  CheckCircle,
 } from "lucide-react";
+import { trpc } from "@/lib/api/client";
 
 interface StatCardProps {
   title: string;
@@ -183,42 +184,49 @@ interface UltraStatsProps {
 export const UltraStats: React.FC<UltraStatsProps> = ({ className }) => {
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Fetch real stats from database
+  const { data: statsData } = trpc.protocol.getStats.useQuery(undefined, {
+    refetchInterval: 60000, // Refresh every minute
+  });
 
+  // Calculate real stats
   const stats = [
     {
       title: "Total de Protocolos",
-      value: 156,
-      change: 12,
+      value: statsData?.totalProtocols ?? 0,
+      change: 12, // TODO: Calculate real change
       icon: <FileText className="h-5 w-5" />,
       color: "blue" as const,
     },
     {
-      title: "Protocolos Publicados",
-      value: 89,
-      change: 8,
-      icon: <Activity className="h-5 w-5" />,
+      title: "Protocolos Aprovados",
+      value: statsData?.approvedProtocols ?? 0,
+      change: 8, // TODO: Calculate real change
+      icon: <CheckCircle className="h-5 w-5" />,
       color: "emerald" as const,
     },
     {
-      title: "Em Desenvolvimento",
-      value: 42,
-      change: -5,
+      title: "Em Revisão",
+      value: statsData?.reviewProtocols ?? 0,
+      change: -5, // TODO: Calculate real change
       icon: <Clock className="h-5 w-5" />,
       color: "amber" as const,
     },
     {
-      title: "Colaboradores Ativos",
-      value: 28,
-      change: 15,
-      icon: <Users className="h-5 w-5" />,
+      title: "Rascunhos",
+      value: statsData?.draftProtocols ?? 0,
+      change: 15, // TODO: Calculate real change
+      icon: <Activity className="h-5 w-5" />,
       color: "purple" as const,
     },
   ];
+
+  useEffect(() => {
+    // Set loading to false when data is available
+    if (statsData) {
+      setLoading(false);
+    }
+  }, [statsData]);
 
   return (
     <div
@@ -242,12 +250,29 @@ export const UltraActivityChart: React.FC<{ className?: string }> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
+  // Fetch weekly activity from database
+  const { data: weeklyData } = trpc.protocol.getWeeklyActivity.useQuery(
+    undefined,
+    {
+      refetchInterval: 300000, // Refresh every 5 minutes
+    },
+  );
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const data = [45, 52, 38, 65, 48, 72, 58];
+  const days = weeklyData?.labels ?? [
+    "Dom",
+    "Seg",
+    "Ter",
+    "Qua",
+    "Qui",
+    "Sex",
+    "Sáb",
+  ];
+  const data = weeklyData?.data ?? [0, 0, 0, 0, 0, 0, 0];
+  const counts = weeklyData?.counts ?? [0, 0, 0, 0, 0, 0, 0];
 
   return (
     <UltraGlassCard
@@ -269,16 +294,27 @@ export const UltraActivityChart: React.FC<{ className?: string }> = ({
 
       <div className="flex h-48 items-end justify-between gap-2">
         {data.map((value, index) => (
-          <div key={index} className="flex flex-1 flex-col items-center gap-2">
-            <div className="relative w-full overflow-hidden rounded-t-lg bg-gray-200 dark:bg-gray-700">
-              <div
-                className="absolute bottom-0 w-full rounded-t-lg bg-gradient-to-t from-primary-500 to-primary-400 transition-all duration-1000"
-                style={{
-                  height: isVisible ? `${value}%` : "0%",
-                  transitionDelay: `${index * 100}ms`,
-                }}
-              >
-                <div className="absolute inset-0 animate-[shimmer_3s_infinite] bg-white/20" />
+          <div
+            key={index}
+            className="group flex flex-1 flex-col items-center gap-2"
+            title={`${counts[index]} ${counts[index] === 1 ? "protocolo" : "protocolos"}`}
+          >
+            <div className="relative h-full w-full">
+              {/* Tooltip on hover */}
+              <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700">
+                {counts[index]}{" "}
+                {counts[index] === 1 ? "protocolo" : "protocolos"}
+              </div>
+              <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-gray-200 dark:bg-gray-700">
+                <div
+                  className="absolute bottom-0 w-full rounded-t-lg bg-gradient-to-t from-primary-500 to-primary-400 transition-all duration-1000"
+                  style={{
+                    height: isVisible ? `${value}%` : "0%",
+                    transitionDelay: `${index * 100}ms`,
+                  }}
+                >
+                  <div className="absolute inset-0 animate-[shimmer_3s_infinite] bg-white/20" />
+                </div>
               </div>
             </div>
             <span className="text-xs text-gray-600 dark:text-gray-400">
@@ -295,70 +331,102 @@ export const UltraActivityChart: React.FC<{ className?: string }> = ({
 export const UltraRecentActivity: React.FC<{ className?: string }> = ({
   className,
 }) => {
-  const activities = [
+  // Fetch recent activity from database
+  const { data: recentProtocols } = trpc.protocol.getRecentActivity.useQuery(
+    undefined,
     {
+      refetchInterval: 30000, // Refresh every 30 seconds
+    },
+  );
+
+  // Helper function to format relative time
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+
+    if (diffInMinutes < 1) return "Agora mesmo";
+    if (diffInMinutes < 60) return `Há ${diffInMinutes} min`;
+    if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `Há ${hours} ${hours === 1 ? "hora" : "horas"}`;
+    }
+    const days = Math.floor(diffInMinutes / 1440);
+    return `Há ${days} ${days === 1 ? "dia" : "dias"}`;
+  };
+
+  // Map protocol data to activity format
+  const activities =
+    recentProtocols?.slice(0, 3).map((protocol) => ({
       icon: <FileText className="h-4 w-4" />,
-      title: "Novo protocolo criado",
-      description: "Protocolo de Atendimento COVID-19",
-      time: "Há 2 min",
-      color: "blue",
-    },
-    {
-      icon: <Users className="h-4 w-4" />,
-      title: "Colaborador adicionado",
-      description: "Dr. João Silva entrou na equipe",
-      time: "Há 15 min",
-      color: "purple",
-    },
-    {
-      icon: <Activity className="h-4 w-4" />,
-      title: "Protocolo publicado",
-      description: "TVP Mini agora está disponível",
-      time: "Há 1 hora",
-      color: "emerald",
-    },
-  ];
+      title: "Protocolo atualizado",
+      description: protocol.title,
+      time: getRelativeTime(new Date(protocol.updatedAt)),
+      color:
+        protocol.status === "APPROVED"
+          ? "emerald"
+          : protocol.status === "REVIEW"
+            ? "amber"
+            : "blue",
+    })) ?? [];
 
   return (
     <UltraGlassCard className={cn("p-6", className)}>
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-semibold">Atividade Recente</h3>
-        <button className="text-sm font-medium text-primary-600 hover:text-primary-700">
+        <a
+          href="/protocols"
+          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+        >
           Ver todas
-        </button>
+        </a>
       </div>
 
       <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div
-            key={index}
-            className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            <div
-              className={cn(
-                "rounded-lg p-2",
-                activity.color === "blue" && "bg-blue-500/10 text-blue-600",
-                activity.color === "purple" &&
-                  "bg-purple-500/10 text-purple-600",
-                activity.color === "emerald" &&
-                  "bg-emerald-500/10 text-emerald-600",
-              )}
+        {activities.length === 0 ? (
+          <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            Nenhuma atividade recente
+          </p>
+        ) : (
+          recentProtocols?.slice(0, 3).map((protocol) => (
+            <a
+              key={protocol.id}
+              href={`/protocols/${protocol.id}`}
+              className="block flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
             >
-              {activity.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {activity.title}
-              </p>
-              <p className="truncate text-sm text-gray-600 dark:text-gray-400">
-                {activity.description}
-              </p>
-            </div>
-            <span className="whitespace-nowrap text-xs text-gray-500">
-              {activity.time}
-            </span>
-          </div>
-        ))}
+              <div
+                className={cn(
+                  "rounded-lg p-2",
+                  protocol.status === "APPROVED" &&
+                    "bg-emerald-500/10 text-emerald-600",
+                  protocol.status === "REVIEW" &&
+                    "bg-amber-500/10 text-amber-600",
+                  protocol.status === "DRAFT" && "bg-blue-500/10 text-blue-600",
+                  protocol.status === "ARCHIVED" &&
+                    "bg-gray-500/10 text-gray-600",
+                )}
+              >
+                <FileText className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {protocol.status === "DRAFT"
+                    ? "Rascunho atualizado"
+                    : protocol.status === "REVIEW"
+                      ? "Em revisão"
+                      : protocol.status === "APPROVED"
+                        ? "Protocolo aprovado"
+                        : "Protocolo arquivado"}
+                </p>
+                <p className="truncate text-sm text-gray-600 dark:text-gray-400">
+                  {protocol.title}
+                </p>
+              </div>
+              <span className="whitespace-nowrap text-xs text-gray-500">
+                {getRelativeTime(new Date(protocol.updatedAt))}
+              </span>
+            </a>
+          ))
+        )}
       </div>
     </UltraGlassCard>
   );

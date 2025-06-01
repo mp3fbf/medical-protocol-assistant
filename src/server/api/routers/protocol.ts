@@ -83,6 +83,53 @@ export const protocolRouter = router({
 
     return recentProtocols;
   }),
+
+  getWeeklyActivity: publicProcedure.query(async ({ ctx }) => {
+    // Get activity for the last 7 days
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 6); // 6 days ago + today = 7 days
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    // Query protocols updated in the last 7 days
+    const weeklyProtocols = await ctx.db.protocol.findMany({
+      where: {
+        updatedAt: {
+          gte: sevenDaysAgo,
+        },
+        status: { not: ProtocolStatus.ARCHIVED },
+      },
+      select: {
+        updatedAt: true,
+      },
+    });
+
+    // Initialize array with zeros for each day
+    const activityByDay = Array(7).fill(0);
+    const dayLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+    // Process the results to count by day of week
+    for (const protocol of weeklyProtocols) {
+      const dayOfWeek = protocol.updatedAt.getDay(); // 0 = Sunday, 6 = Saturday
+      activityByDay[dayOfWeek]++;
+    }
+
+    // Calculate max value for percentage calculations
+    const maxActivity = Math.max(...activityByDay, 1); // Avoid division by zero
+
+    // Convert to percentages (0-100)
+    const percentages = activityByDay.map((count) =>
+      Math.round((count / maxActivity) * 100),
+    );
+
+    return {
+      data: percentages,
+      counts: activityByDay,
+      labels: dayLabels,
+      maxCount: maxActivity,
+    };
+  }),
+
   create: protectedProcedure
     .input(CreateProtocolInputSchema)
     .mutation(async ({ ctx, input }) => {

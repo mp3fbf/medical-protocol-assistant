@@ -4,9 +4,9 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 
 ## 🚀 Status do Projeto (v1.9.3)
 
-**100% Funcional** - Sistema completo com MVP totalmente implementado, incluindo editor de texto rico, interface ultra moderna e melhorias de acessibilidade WCAG 2.1 AA.
+**~70% Funcional** - Sistema core implementado mas com **30% de dados mock** no dashboard, homepage e pesquisa médica. MVP parcialmente completo.
 
-### ✅ Recursos Implementados
+### ✅ Recursos Implementados (REAIS)
 
 - **Autenticação & RBAC**: Sistema completo com roles (CREATOR/REVIEWER/ADMIN)
 - **Geração por IA**: Multi-provider (OpenAI, Anthropic, Gemini) com 3 modos
@@ -15,8 +15,15 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Validação Avançada**: 32 validações médicas com categorização (6 categorias)
 - **Fluxogramas Inteligentes**: Geração automática com ReactFlow + edição manual
 - **Exportação**: PDF/DOCX com formatação ABNT
-- **Dashboard**: Estatísticas em tempo real e gerenciamento de status
 - **Ultra Design System v2**: Interface moderna com glassmorphism e gradientes
+
+### ❌ Recursos com Dados MOCK ou Problemas Críticos
+
+- **Dashboard**: Mostra sempre 156 protocolos (dados falsos)
+- **Homepage**: Estatísticas inventadas (500+ protocolos, 98% satisfação)
+- **Pesquisa Médica**: Retorna sempre os mesmos 3 artigos fake
+- **Loading States**: Simulações com setTimeout, não carregam dados reais
+- **Ficha Técnica**: IA inventa nomes de médicos (Dr. João da Silva, etc.) impossibilitando validação
 
 ### 🔄 Melhorias Recentes (06/01/2025)
 

@@ -24,6 +24,7 @@ export const PROTOCOL_GENERATION_SYSTEM_PROMPT = `
   7.  **No Patient Data**: Do not include any placeholder or example patient data.
   8.  **Conciseness and Clarity**: Be clear and to the point.
   9.  **References**: If specific references are used for a section, indicate them appropriately, especially for Section 13 (Referências Bibliográficas).
+  10. **CRITICAL - Section 2 (Ficha Técnica)**: NEVER invent names of people. Always use generic placeholders like "[Nome do autor principal]", "[Nome do revisor]", etc. The user will fill in real names later.
   
   You will be provided with research findings and a medical condition. Your task is to synthesize this information into a complete 13-section protocol draft or a specific section as requested.
   `;

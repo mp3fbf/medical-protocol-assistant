@@ -28,13 +28,15 @@ export const SECTION_DEFINITIONS: StandardSectionDefinition[] = [
     sectionNumber: 2,
     titlePT: "Ficha Técnica e Responsabilidades",
     description:
-      "Lista de autores, revisores (com especialidade) e aprovadores (com cargo) do protocolo.",
+      "Lista de autores, revisores (com especialidade) e aprovadores (com cargo) do protocolo. IMPORTANTE: Use apenas placeholders genéricos, NÃO invente nomes de pessoas.",
     contentSchemaDescription:
-      "Objeto JSON com campos: 'autores' (array de strings com nomes completos), 'revisores' (array de objetos com 'nome' (string) e 'especialidade' (string)), 'aprovadores' (array de objetos com 'nome' (string) e 'cargo' (string)).",
+      "Objeto JSON com campos: 'autores' (array de strings com placeholders), 'revisores' (array de objetos com 'nome' (placeholder) e 'especialidade' (pode ser específica)), 'aprovadores' (array de objetos com 'nome' (placeholder) e 'cargo' (pode ser específico)).",
     example: {
-      autores: ["Dr. João da Silva", "Dra. Maria Oliveira"],
-      revisores: [{ nome: "Dr. Carlos Pereira", especialidade: "Cardiologia" }],
-      aprovadores: [{ nome: "Dr. Ana Souza", cargo: "Diretora de Qualidade" }],
+      autores: ["[Nome do autor principal]", "[Nome do co-autor]"],
+      revisores: [{ nome: "[Nome do revisor]", especialidade: "Cardiologia" }],
+      aprovadores: [
+        { nome: "[Nome do aprovador]", cargo: "Diretor(a) de Qualidade" },
+      ],
     },
   },
   {

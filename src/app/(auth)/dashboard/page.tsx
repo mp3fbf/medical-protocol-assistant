@@ -199,28 +199,54 @@ export default function DashboardPage() {
                 <div>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">
-                      Taxa de Conclusão
+                      Taxa de Aprovação
                     </span>
-                    <span className="font-medium">78%</span>
+                    <span className="font-medium">
+                      {_stats && _stats.totalProtocols > 0
+                        ? Math.round(
+                            (_stats.approvedProtocols / _stats.totalProtocols) *
+                              100,
+                          )
+                        : 0}
+                      %
+                    </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-1000"
-                      style={{ width: isPageLoaded ? "78%" : "0%" }}
+                      style={{
+                        width:
+                          isPageLoaded && _stats && _stats.totalProtocols > 0
+                            ? `${Math.round((_stats.approvedProtocols / _stats.totalProtocols) * 100)}%`
+                            : "0%",
+                      }}
                     />
                   </div>
                 </div>
                 <div>
                   <div className="mb-1 flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">
-                      Protocolos Validados
+                      Em Revisão
                     </span>
-                    <span className="font-medium">92%</span>
+                    <span className="font-medium">
+                      {_stats && _stats.totalProtocols > 0
+                        ? Math.round(
+                            (_stats.reviewProtocols / _stats.totalProtocols) *
+                              100,
+                          )
+                        : 0}
+                      %
+                    </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all delay-200 duration-1000"
-                      style={{ width: isPageLoaded ? "92%" : "0%" }}
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-600 transition-all delay-200 duration-1000"
+                      style={{
+                        width:
+                          isPageLoaded && _stats && _stats.totalProtocols > 0
+                            ? `${Math.round((_stats.reviewProtocols / _stats.totalProtocols) * 100)}%`
+                            : "0%",
+                      }}
                     />
                   </div>
                 </div>

@@ -8,7 +8,7 @@
 
 ### 🎯 **Visão Geral**
 
-O projeto está **100% funcional**! Todos os módulos principais estão implementados e funcionando perfeitamente.
+O projeto está **~70% funcional** com funcionalidades core implementadas, mas ainda contém **dados mock críticos** no dashboard, homepage e sistema de pesquisa.
 
 **🚨 ALERTA**: Análise UX/UI profissional identificou **10 inconsistências** entre documentação e implementação real, incluindo **2 problemas críticos de acessibilidade (P0)** que violam WCAG 2.1 AA. Implementação imediata necessária!
 
@@ -28,24 +28,30 @@ O projeto está **100% funcional**! Todos os módulos principais estão implemen
 
 ### 🎆 **Conquistas do Projeto**
 
-- **100% de funcionalidade** implementada e em produção
-- **Sistema completo** de geração de protocolos médicos com IA
+- **~70% de funcionalidade** real implementada (30% ainda em mock)
+- **Sistema de geração de protocolos** com IA funcional
 - **Deploy automático** funcionando no Vercel com CI/CD
-- **Performance otimizada** com todas as métricas de MVP atingidas
 - **Interface profissional** com validação médica avançada
 - **Flowcharts interativos** com edição manual completa
 - **Editor de texto rico** com TipTap totalmente funcional
 - **Acessibilidade WCAG 2.1 AA** com skip-links, contraste aprimorado e dark mode
 
-### 🎯 **MVP Completo**
+### ⚠️ **MVP Parcialmente Completo**
 
-Todas as funcionalidades principais foram implementadas com sucesso!
+Funcionalidades core implementadas, mas com dados mock em áreas críticas:
 
-### 🚀 **Próximos Passos (Pós-MVP)**
+- ❌ Dashboard mostra dados falsos (sempre 156 protocolos)
+- ❌ Homepage com estatísticas inventadas
+- ❌ Sistema de pesquisa médica retorna artigos fake
+- ❌ Loading animations são simuladas
 
-1. Otimizações de performance (code splitting)
-2. Funcionalidades avançadas (comparação de versões, colaboração em tempo real)
-3. Analytics e monitoramento avançado
+### 🚀 **Próximos Passos URGENTES**
+
+1. **CRÍTICO**: Remover dados mock do dashboard e homepage
+2. **ALTA**: Implementar sistema de pesquisa médica real
+3. **ALTA**: Conectar estatísticas com banco de dados real
+4. Otimizações de performance (code splitting)
+5. Funcionalidades avançadas (comparação de versões, colaboração em tempo real)
 
 ---
 
@@ -118,7 +124,7 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 - **Exportação para PDF/DOCX** ✅ **[IMPLEMENTADO]**
 - **Sistema de validação cross-section** ✅
 - **Gerenciamento de status com permissões** ✅
-- **Dashboard com estatísticas reais** ✅
+- **Dashboard com estatísticas reais** ❌ **[MOCK - mostra sempre 156 protocolos]**
 - **Lista de protocolos com busca e filtros** ✅
 
 #### 🔧 Funcionalidades Avançadas (Pós-MVP)
@@ -133,9 +139,9 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 
 ## 📋 **ROADMAP DE IMPLEMENTAÇÃO**
 
-### 🚀 **FASE 1: MVP Funcional** ✅ **CONCLUÍDA**
+### 🚀 **FASE 1: MVP Funcional** ⚠️ **PARCIALMENTE CONCLUÍDA**
 
-**Objetivo**: ✅ Tornar o app funcional end-to-end
+**Objetivo**: ⚠️ App funcional mas com 30% de dados mock
 
 #### Sprint 1: Core AI Pipeline ✅ **COMPLETO**
 
@@ -194,11 +200,11 @@ Todas as funcionalidades principais foram implementadas com sucesso!
 
 #### Sprint 3: Polish & Testing (0.5 semana)
 
-7. **Dashboard funcional**
+7. **Dashboard funcional** ❌ **[AINDA COM DADOS MOCK]**
 
-   - Estatísticas reais de protocolos
-   - Lista com filtros funcionais
-   - Search implementado
+   - Estatísticas reais de protocolos ❌ (hardcoded: 156 protocolos)
+   - Lista com filtros funcionais ✅
+   - Search implementado ✅
 
 8. **Error handling & UX**
    - Error boundaries
@@ -662,7 +668,7 @@ const handleAIGeneration = async (formData) => {
 
 - **Sistema de Export PDF/DOCX** totalmente funcional
 - **Gerenciamento de Status** com permissões por role (DRAFT → REVIEW → APPROVED → ARCHIVED)
-- **Dashboard Corrigido** com estatísticas reais e atividade recente clicável
+- **Dashboard** ❌ com estatísticas MOCK (sempre 156 protocolos) e atividades falsas
 - **Lista de Protocolos Aprimorada** com busca, filtros por status e ordenação
 - **Arquivamento em Massa** de protocolos de teste (86 protocolos arquivados)
 - **Sistema de Flowcharts Completo**:
@@ -725,12 +731,12 @@ const handleAIGeneration = async (formData) => {
 - **Validação atualizada** para processar conteúdo HTML
 - **Integração completa** com o editor de protocolos
 
-**🎉 Projeto 100% Funcional**
+**⚠️ Projeto ~70% Funcional**
 
-- Todas as funcionalidades do MVP foram implementadas com sucesso
-- Sistema em produção no Vercel com deploy automático
-- Performance otimizada e estabilidade garantida
-- Pronto para uso em ambiente de produção
+- Funcionalidades core do MVP implementadas
+- Sistema em produção no Vercel mas com dados mock
+- Performance otimizada mas com loading fake
+- **NÃO está pronto para produção real** devido aos mocks
 
 ---
 
@@ -886,4 +892,198 @@ const handleAIGeneration = async (formData) => {
 
 ---
 
-_Última atualização: 01/06/2025 - Claude Code_
+## 🎭 **DADOS MOCK E FALLBACKS** (Seção Crítica)
+
+### 📊 **Inventário Completo de Mocks**
+
+#### 1. **Dashboard - UltraStats** (`src/components/dashboard/ultra-stats.tsx`)
+
+❌ **100% MOCK - Dados completamente hardcoded:**
+
+```javascript
+// Estatísticas falsas que SEMPRE mostram os mesmos valores:
+- Total de Protocolos: 156 (hardcoded)
+- Protocolos Publicados: 89 (hardcoded)
+- Em Desenvolvimento: 42 (hardcoded)
+- Colaboradores Ativos: 28 (hardcoded)
+
+// Gráfico de atividade semanal - dados inventados:
+const data = [45, 52, 38, 65, 48, 72, 58];
+
+// Atividades recentes - completamente falsas:
+- "Novo protocolo criado - Protocolo de Atendimento COVID-19"
+- "Colaborador adicionado - Dr. João Silva entrou na equipe"
+- "Protocolo publicado - TVP Mini agora está disponível"
+
+// Loading fake - não está carregando nada real:
+setTimeout(() => setLoading(false), 1500);
+```
+
+#### 2. **Sistema de Pesquisa Médica** (`src/lib/ai/research.ts`)
+
+❌ **API COMPLETAMENTE MOCK - DeepResearch fake:**
+
+```javascript
+// Sempre retorna os mesmos 3 artigos inventados:
+- PubMed article (ID: "pubmed-123") - NÃO EXISTE
+- SciELO article (ID: "scielo-456") - NÃO EXISTE
+- CFM article (ID: "cfm-789") - NÃO EXISTE
+
+// Delay aleatório para fingir chamada de API:
+setTimeout(resolve, Math.random() * 500 + 200);
+```
+
+#### 3. **Homepage** (`src/app/page.tsx`)
+
+❌ **Estatísticas e depoimentos 100% falsos:**
+
+```javascript
+// Números inventados:
+- "500+ Protocolos Criados" (mentira)
+- "50+ Instituições" (mentira)
+- "98% Satisfação" (inventado)
+- "10x Mais Rápido" (sem base real)
+
+// Depoimentos de médicos que NÃO EXISTEM:
+- Dr. Marina Santos - Hospital São Lucas (fake)
+- Dr. Roberto Lima - Hospital Central (fake)
+- Dra. Ana Costa - Pronto Socorro Municipal (fake)
+```
+
+#### 4. **PDF Generator Básico** (`src/lib/generators/pdf-basic.ts`)
+
+❌ **PDF completamente falso:**
+
+- Retorna string que parece PDF mas NÃO É
+- Não usa nenhuma biblioteca real de PDF
+- Estrutura mínima inválida
+
+#### 5. **Database Seed** (`src/lib/db/seed.ts`)
+
+⚠️ **Usuários de desenvolvimento mock:**
+
+```javascript
+- dev-mock@example.com (password: "password")
+- admin@example.com (usuário padrão)
+```
+
+#### 6. **Sistema de Avaliação** (`src/lib/ai/evaluation.ts`)
+
+⚠️ **Funções placeholder não implementadas:**
+
+```javascript
+evaluateProtocol(); // TODO: Not implemented
+validateProtocolQuality(); // TODO: Not implemented
+```
+
+#### 7. **Geração de Ficha Técnica pela IA** (`src/lib/ai/prompts/section-specific/index.ts`)
+
+❌ **IA INVENTA nomes de médicos na ficha técnica:**
+
+```javascript
+// A IA está gerando nomes fictícios como:
+- Autores: "Dr. João da Silva", "Dra. Maria Oliveira"
+- Revisores: "Dr. Carlos Pereira" (Cardiologia)
+- Aprovadores: "Dra. Ana Souza" (Diretora de Qualidade)
+
+// PROBLEMA: Esses médicos NÃO EXISTEM!
+// A validação falha porque exige nomes reais
+```
+
+### 🚨 **Impacto dos Mocks**
+
+1. **Dashboard Mentiroso**:
+
+   - Sempre mostra 156 protocolos, independente do banco
+   - Gráfico não reflete atividade real
+   - Atividades recentes são inventadas
+
+2. **Pesquisa Médica Fake**:
+
+   - Sempre retorna os mesmos 3 artigos
+   - IDs de artigos não correspondem a publicações reais
+   - Nenhuma integração real com PubMed/SciELO
+
+3. **Homepage Enganosa**:
+
+   - Métricas de sucesso inventadas
+   - Depoimentos de médicos fictícios
+   - Pode configurar falsa expectativa
+
+4. **Simulações de Loading**:
+
+   - Vários `setTimeout` fingindo carregamento
+   - Nenhum fetch real de dados
+   - UX enganosa
+
+5. **Ficha Técnica Inválida**:
+   - IA inventa nomes de médicos que não existem
+   - Validação sempre falha por falta de responsáveis reais
+   - Impossível aprovar protocolo com dados fictícios
+
+### ✅ **O que é REAL (funcionando com dados verdadeiros)**
+
+- Sistema de autenticação (NextAuth)
+- CRUD de protocolos (Prisma + PostgreSQL)
+- Geração por IA (OpenAI/Anthropic/Gemini)
+- Sistema de validação médica
+- Geração e edição de fluxogramas
+- Export DOCX/PDF (exceto pdf-basic.ts)
+- Upload e parsing de documentos
+- Sistema de permissões RBAC
+
+### 🎯 **Plano de Ação para Remover Mocks**
+
+#### **Prioridade 1 (Crítico)**
+
+1. **Dashboard com dados reais**:
+
+   - Conectar UltraStats com tRPC procedures
+   - Buscar estatísticas reais do banco de dados
+   - Implementar gráfico de atividade real
+
+2. **Homepage com métricas reais**:
+   - Criar endpoint para estatísticas públicas
+   - Remover ou marcar depoimentos como exemplos
+   - Adicionar disclaimer se mantiver números aproximados
+
+#### **Prioridade 2 (Alta)**
+
+3. **Sistema de pesquisa real**:
+
+   - Integrar API real do PubMed
+   - Implementar busca no SciELO
+   - Cache de resultados reais
+
+4. **Remover simulações de loading**:
+   - Substituir setTimeout por fetching real
+   - Implementar loading states adequados
+
+#### **Prioridade 3 (Média)**
+
+5. **Remover PDF generator básico**:
+
+   - Já existem geradores reais funcionando
+   - Deletar arquivo mock
+
+6. **Implementar sistema de avaliação**:
+   - Completar funções placeholder
+   - Adicionar lógica de scoring real
+
+#### **Prioridade 0 (URGENTÍSSIMO)**
+
+7. **Corrigir geração de Ficha Técnica**:
+   - Modificar prompt para usar placeholders genéricos
+   - NÃO permitir que IA invente nomes de médicos
+   - Campos devem ficar como "[Nome do elaborador]"
+   - Usuário deve preencher manualmente após geração
+
+### 📝 **Notas Importantes**
+
+- **Para desenvolvimento**: Considerar flag `NEXT_PUBLIC_DEMO_MODE` para dados de exemplo
+- **Para produção**: TODOS os mocks devem ser removidos ou claramente marcados
+- **Documentação**: Atualizar README quando remover cada mock
+
+---
+
+_Última atualização: 06/01/2025 - Claude Code_
