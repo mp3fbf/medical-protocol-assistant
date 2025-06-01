@@ -44,6 +44,7 @@ const DEFAULT_ACCEPT = {
     ".docx",
   ],
   "text/plain": [".txt"],
+  "text/markdown": [".md", ".markdown"],
 };
 
 export function FileUpload({
@@ -117,6 +118,9 @@ export function FileUpload({
         return <FileText className="h-4 w-4 text-blue-500" />;
       case "txt":
         return <FileText className="h-4 w-4 text-gray-500" />;
+      case "md":
+      case "markdown":
+        return <FileText className="h-4 w-4 text-purple-500" />;
       default:
         return <File className="h-4 w-4 text-gray-500" />;
     }
@@ -156,7 +160,8 @@ export function FileUpload({
                   : "Arraste arquivos ou clique para selecionar"}
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Suporta PDF, DOCX e TXT (máx. {formatFileSize(maxSize)})
+                Suporta PDF, DOCX, TXT e Markdown (máx.{" "}
+                {formatFileSize(maxSize)})
               </p>
             </>
           )}

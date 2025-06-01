@@ -10,37 +10,84 @@ export function OrthogonalEdge({
   style = {},
   markerEnd,
   data,
+  sourcePosition,
+  targetPosition,
 }: EdgeProps) {
   const sourceHandle = data?.sourceHandle;
   // Create a path with right angles only
   let path: string;
 
-  // All edges now use vertical routing since all handles are at bottom
-  // Go down first, then horizontal, then to target
-  const verticalOffset = 40; // Distance to go down before turning
-  const midY = Math.max(
-    sourceY + verticalOffset,
-    sourceY + (targetY - sourceY) / 2,
-  );
+  // Determine if source is from side (decision node) or bottom (other nodes)
+  const isSourceSide = sourcePosition === "left" || sourcePosition === "right";
 
-  // Create path with proper spacing
-  if (Math.abs(targetX - sourceX) < 10) {
-    // If nodes are vertically aligned, use simple path
-    path = `M ${sourceX},${sourceY} L ${sourceX},${targetY - 20} L ${targetX},${targetY}`;
+  if (isSourceSide) {
+    // Handle lateral outputs (from decision nodes)
+    const horizontalOffset = 60; // Distance to go horizontally before turning
+
+    if (sourcePosition === "left") {
+      // Left side output
+      const midX = sourceX - horizontalOffset;
+
+      if (targetX < sourceX - horizontalOffset) {
+        // Target is to the left
+        path = `M ${sourceX},${sourceY} L ${midX},${sourceY} L ${midX},${targetY} L ${targetX},${targetY}`;
+      } else {
+        // Target is to the right or below
+        path = `M ${sourceX},${sourceY} L ${midX},${sourceY} L ${midX},${targetY} L ${targetX},${targetY}`;
+      }
+    } else {
+      // Right side output
+      const midX = sourceX + horizontalOffset;
+
+      if (targetX > sourceX + horizontalOffset) {
+        // Target is to the right
+        path = `M ${sourceX},${sourceY} L ${midX},${sourceY} L ${midX},${targetY} L ${targetX},${targetY}`;
+      } else {
+        // Target is to the left or below
+        path = `M ${sourceX},${sourceY} L ${midX},${sourceY} L ${midX},${targetY} L ${targetX},${targetY}`;
+      }
+    }
   } else {
-    // Standard orthogonal path
-    path = `M ${sourceX},${sourceY} L ${sourceX},${midY} L ${targetX},${midY} L ${targetX},${targetY}`;
+    // Handle bottom outputs (from other nodes)
+    const verticalOffset = 40;
+    const midY = Math.max(
+      sourceY + verticalOffset,
+      sourceY + (targetY - sourceY) / 2,
+    );
+
+    if (Math.abs(targetX - sourceX) < 10) {
+      // Vertically aligned
+      path = `M ${sourceX},${sourceY} L ${sourceX},${targetY - 20} L ${targetX},${targetY}`;
+    } else {
+      // Standard orthogonal path
+      path = `M ${sourceX},${sourceY} L ${sourceX},${midY} L ${targetX},${midY} L ${targetX},${targetY}`;
+    }
   }
 
-  // Calculate label position - place it near the source, slightly down from the node
-  let labelX = sourceX;
-  let labelY = sourceY + 25; // Position label below the node
+  // Calculate label position
+  let labelX: number;
+  let labelY: number;
 
-  // For yes/no handles, offset horizontally to avoid overlap
-  if (sourceHandle === "yes") {
-    labelX = sourceX - 20; // Slight left offset for "yes"
-  } else if (sourceHandle === "no") {
-    labelX = sourceX + 20; // Slight right offset for "no"
+  if (isSourceSide) {
+    // For side handles, position label near the first bend
+    if (sourcePosition === "left") {
+      labelX = sourceX - 30;
+      labelY = sourceY;
+    } else {
+      labelX = sourceX + 30;
+      labelY = sourceY;
+    }
+  } else {
+    // For bottom handles, position label below the node
+    labelX = sourceX;
+    labelY = sourceY + 25;
+
+    // Offset for yes/no to avoid overlap
+    if (sourceHandle === "yes") {
+      labelX = sourceX - 20;
+    } else if (sourceHandle === "no") {
+      labelX = sourceX + 20;
+    }
   }
 
   return (

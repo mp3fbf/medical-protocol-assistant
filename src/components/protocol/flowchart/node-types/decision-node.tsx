@@ -22,9 +22,23 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
     ],
   } = data;
 
-  // Function to get handle position - all outputs use bottom position
-  const getHandlePosition = (): Position => {
-    return Position.Bottom;
+  // Function to get handle position - outputs on sides
+  const getHandlePosition = (
+    outputIndex: number,
+    totalOutputs: number,
+  ): Position => {
+    // For 2 outputs (typical yes/no), use left and right
+    if (totalOutputs === 2) {
+      return outputIndex === 0 ? Position.Left : Position.Right;
+    }
+
+    // For odd number of outputs > 2, alternate between left and right
+    if (totalOutputs > 2) {
+      return outputIndex % 2 === 0 ? Position.Left : Position.Right;
+    }
+
+    // Default to right for single output
+    return Position.Right;
   };
 
   const getHandleStyle = (
@@ -32,28 +46,41 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
     outputIndex: number,
     totalOutputs: number,
   ) => {
-    // For dichotomic decisions (yes/no), position handles at 30% and 70% of width
-    if (totalOutputs === 2 && (outputId === "yes" || outputId === "no")) {
-      if (outputId === "yes") {
-        return { bottom: -6, left: "30%", transform: "translateX(-50%)" };
+    const position = getHandlePosition(outputIndex, totalOutputs);
+
+    // For 2 outputs, position at 50% height
+    if (totalOutputs === 2) {
+      if (position === Position.Left) {
+        return { top: "50%", left: -6, transform: "translateY(-50%)" };
       } else {
-        return { bottom: -6, left: "70%", transform: "translateX(-50%)" };
+        return { top: "50%", right: -6, transform: "translateY(-50%)" };
       }
     }
 
-    // For multiple outputs, distribute evenly
+    // For multiple outputs, distribute vertically on each side
     if (totalOutputs > 2) {
-      const spacing = 100 / (totalOutputs + 1);
-      const position = spacing * (outputIndex + 1);
-      return {
-        bottom: -6,
-        left: `${position}%`,
-        transform: "translateX(-50%)",
-      };
+      const sideOutputs = Math.ceil(totalOutputs / 2);
+      const sideIndex = Math.floor(outputIndex / 2);
+      const verticalSpacing = 100 / (sideOutputs + 1);
+      const verticalPosition = verticalSpacing * (sideIndex + 1);
+
+      if (position === Position.Left) {
+        return {
+          top: `${verticalPosition}%`,
+          left: -6,
+          transform: "translateY(-50%)",
+        };
+      } else {
+        return {
+          top: `${verticalPosition}%`,
+          right: -6,
+          transform: "translateY(-50%)",
+        };
+      }
     }
 
-    // Default center position
-    return { bottom: -6, left: "50%", transform: "translateX(-50%)" };
+    // Default single output on right
+    return { top: "50%", right: -6, transform: "translateY(-50%)" };
   };
 
   return (
@@ -118,7 +145,7 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
         <Handle
           key={output.id}
           type="source"
-          position={getHandlePosition()}
+          position={getHandlePosition(index, outputs.length)}
           id={output.id}
           isConnectable={isConnectable}
           style={getHandleStyle(output.id, index, outputs.length)}
