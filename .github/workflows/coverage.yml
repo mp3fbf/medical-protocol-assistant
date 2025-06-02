@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload coverage to Codecov (Optional)
         if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # Repository secret for Codecov token
           files: ./coverage/lcov.info # Path to LCOV file
