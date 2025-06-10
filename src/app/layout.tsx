@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import "@/styles/ultra-design-system.css";
@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   title: "Medical Protocol Assistant",
   description: "AI-assisted creation of standardized medical protocols.",
   manifest: "/manifest.json",
-  themeColor: "#6366f1",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -42,6 +40,13 @@ export const metadata: Metadata = {
       "Ferramenta web para criação assistida por IA de protocolos médicos padronizados",
     siteName: "Medical Protocol Assistant",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6366f1",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default async function RootLayout({
