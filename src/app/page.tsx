@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeToggleStandalone } from "@/components/ui/theme-toggle-standalone";
 
 export default function HomePage() {
   const [isLoaded, setIsLoaded] = useState(true);
@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Theme Toggle in the top right */}
         <div className="absolute right-4 top-4 z-50 sm:right-6 sm:top-6">
-          <ThemeToggle size="md" />
+          <ThemeToggleStandalone size="md" />
         </div>
 
         {/* Subtle Background Pattern */}
