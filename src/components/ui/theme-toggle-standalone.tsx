@@ -88,14 +88,18 @@ export const ThemeToggleStandalone: React.FC<ThemeToggleStandaloneProps> = ({
           "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
           config.button,
         )}
-        aria-label="Alternar tema"
-        title="Alternar tema"
+        aria-label={
+          theme === "light" ? "Mudar para modo escuro" : "Mudar para modo claro"
+        }
+        title={
+          theme === "light" ? "Mudar para modo escuro" : "Mudar para modo claro"
+        }
       >
         <Sun
           className={cn(
             config.icon,
             "absolute transition-all duration-300",
-            theme === "light"
+            theme === "dark"
               ? "rotate-0 scale-100 opacity-100"
               : "rotate-90 scale-0 opacity-0",
           )}
@@ -104,7 +108,7 @@ export const ThemeToggleStandalone: React.FC<ThemeToggleStandaloneProps> = ({
           className={cn(
             config.icon,
             "absolute transition-all duration-300",
-            theme === "dark"
+            theme === "light"
               ? "rotate-0 scale-100 opacity-100"
               : "-rotate-90 scale-0 opacity-0",
           )}
