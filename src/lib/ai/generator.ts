@@ -36,11 +36,44 @@ import {
   GeneratedFullProtocolSchema,
   GeneratedSingleSectionSchema,
 } from "../validators/generated-content";
+import {
+  generateModularProtocolAI,
+  shouldUseModularGeneration,
+  type ProgressCallback,
+} from "./generator-modular";
+
+// Re-export types for external use
+export type {
+  ProgressCallback,
+  ModularGenerationProgress,
+} from "./generator-modular";
 
 export async function generateFullProtocolAI(
   input: AIFullProtocolGenerationInput,
+  options?: {
+    useModular?: boolean;
+    progressCallback?: ProgressCallback;
+  },
 ): Promise<AIFullProtocolGenerationOutput> {
   const { medicalCondition, researchData, specificInstructions } = input;
+
+  // Determine if we should use modular generation
+  const useModular =
+    options?.useModular ??
+    shouldUseModularGeneration(researchData, specificInstructions);
+
+  // Use modular generation if appropriate
+  if (useModular) {
+    console.log(
+      "[generateFullProtocolAI] Using modular generation with O3 model",
+    );
+    return generateModularProtocolAI(input, options?.progressCallback);
+  }
+
+  // Otherwise, use traditional single-pass generation
+  console.log(
+    "[generateFullProtocolAI] Using traditional single-pass generation",
+  );
   // const openaiClient = _getOpenAIClient(); // Marked as unused
 
   const userPrompt = createFullProtocolUserPrompt(

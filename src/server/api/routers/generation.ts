@@ -27,6 +27,7 @@ const AIFullProtocolGenerationInputSchema = z.object({
   medicalCondition: z.string().min(1, "Condição médica é obrigatória."),
   researchData: AIResearchDataSchema,
   specificInstructions: z.string().optional(),
+  useModularGeneration: z.boolean().optional(), // Enable modular generation
 });
 
 const AIProtocolSectionInputSchema = z.object({
@@ -55,8 +56,14 @@ export const generationRouter = router({
         console.log(
           `User ${ctx.session.user.id} initiated full protocol generation for: ${input.medicalCondition}`,
         );
+        const { useModularGeneration, ...generationInput } = input;
+
         return generateFullProtocolAI(
-          input as unknown as AIFullProtocolGenerationInput,
+          generationInput as unknown as AIFullProtocolGenerationInput,
+          {
+            useModular: useModularGeneration,
+            // Note: Progress callback would need to be implemented via WebSocket or SSE for real-time updates
+          },
         );
       },
     ),

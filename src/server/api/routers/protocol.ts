@@ -218,13 +218,18 @@ export const protocolRouter = router({
             );
 
             // Step 2: Generate protocol content using AI
-            const generationResult = await generateFullProtocolAI({
-              medicalCondition: condition,
-              researchData,
-              specificInstructions: targetPopulation
-                ? `População alvo: ${targetPopulation}`
-                : undefined,
-            });
+            const generationResult = await generateFullProtocolAI(
+              {
+                medicalCondition: condition,
+                researchData,
+                specificInstructions: targetPopulation
+                  ? `População alvo: ${targetPopulation}`
+                  : undefined,
+              },
+              {
+                useModular: true, // Enable modular generation for better depth
+              },
+            );
 
             if (generationResult.protocolContent) {
               protocolContent = generationResult.protocolContent;
@@ -372,15 +377,20 @@ export const protocolRouter = router({
               );
             }
 
-            const generationResult = await generateFullProtocolAI({
-              medicalCondition: condition,
-              researchData: researchData || {
-                query: condition,
-                findings: [],
-                timestamp: new Date().toISOString(),
+            const generationResult = await generateFullProtocolAI(
+              {
+                medicalCondition: condition,
+                researchData: researchData || {
+                  query: condition,
+                  findings: [],
+                  timestamp: new Date().toISOString(),
+                },
+                specificInstructions: materialInstructions.join("\n"),
               },
-              specificInstructions: materialInstructions.join("\n"),
-            });
+              {
+                useModular: true, // Enable modular generation for material-based protocols too
+              },
+            );
 
             if (generationResult.protocolContent) {
               protocolContent = generationResult.protocolContent;
