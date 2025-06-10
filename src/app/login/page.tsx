@@ -21,7 +21,7 @@ import {
   KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-// import { ThemeToggle } from "@/components/ui/theme-toggle"; // Removed to fix ThemeProvider error
+import { ThemeToggleStandalone } from "@/components/ui/theme-toggle-standalone";
 
 function LoginForm() {
   const router = useRouter();
@@ -121,7 +121,10 @@ function LoginForm() {
         <div className="absolute -bottom-40 -left-40 h-80 w-80 animate-[float_12s_ease-in-out_infinite_reverse] rounded-full bg-gradient-to-br from-purple-400/20 to-pink-400/20 blur-3xl" />
       </div>
 
-      {/* Theme Toggle - Removed to fix ThemeProvider error */}
+      {/* Theme Toggle in the top right */}
+      <div className="absolute right-4 top-4 z-50 sm:right-6 sm:top-6">
+        <ThemeToggleStandalone size="md" />
+      </div>
 
       <div
         className={cn(
