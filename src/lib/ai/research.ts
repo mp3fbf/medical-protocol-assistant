@@ -23,6 +23,7 @@ import type {
 import {
   DEFAULT_CHAT_MODEL,
   JSON_RESPONSE_FORMAT,
+  getModelTemperature,
   // DEEPRESEARCH_API_TIMEOUT_MS, // Marked as unused
 } from "./config";
 import { /* DeepResearchError, */ OpenAIError } from "./errors"; // DeepResearchError marked as unused
@@ -37,53 +38,69 @@ async function callDeepResearchAPI(
   const apiKey = process.env.DEEPRESEARCH_API_KEY;
 
   if (!apiKey && process.env.NODE_ENV !== "test") {
-    console.warn("DEEPRESEARCH_API_KEY not set. Using mock research data.");
+    console.warn(
+      "DEEPRESEARCH_API_KEY not set. Returning empty research results.",
+    );
+    console.warn(
+      "Note: DeepResearch is a ChatGPT feature not yet available via API.",
+    );
+    return [];
   }
 
-  console.log(
-    `Simulating DeepResearch API call for condition: "${query.condition}" with sources: ${query.sources?.join(", ")}`,
-  );
+  // Only use mock data in test environment
+  if (process.env.NODE_ENV === "test") {
+    console.log(
+      `Test mode: Simulating DeepResearch API call for condition: "${query.condition}" with sources: ${query.sources?.join(", ")}`,
+    );
 
-  await new Promise((resolve) =>
-    setTimeout(resolve, Math.random() * 500 + 200),
-  );
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.random() * 500 + 200),
+    );
 
-  const mockData: RawDeepResearchArticle[] = [
-    {
-      id: "pubmed-123",
-      title: `Guidelines for ${query.condition}`,
-      sourceName: "PubMed Central",
-      sourceUrl: `https://pubmed.example.com/123`,
-      publicationDate: "2023-05-10",
-      abstract: `This article reviews the latest guidelines for diagnosing and treating ${query.condition}. Key diagnostic criteria include X, Y, and Z. Treatment typically involves medication A (500mg BID) and medication B (10mg OD). Special attention is needed for geriatric patients due to renal clearance.`,
-      fullTextSnippet: `For diagnosis of ${query.condition}, at least two of the following must be present: symptom X, lab value Y > 50 units/L, or imaging finding Z. First-line treatment for adults is Amoxicillin 500mg three times daily for 7 days. For patients over 65, consider reducing Amoxicillin dose by 50% if CrCl < 30 mL/min.`,
-      keywords: [query.condition, "guidelines", "treatment", "diagnosis"],
-    },
-    {
-      id: "scielo-456",
-      title: `Considerações Geriátricas em ${query.condition}`,
-      sourceName: "SciELO",
-      sourceUrl: `https://scielo.example.com/456`,
-      publicationDate: "2022-11-20",
-      abstract: `Elderly patients with ${query.condition} require careful management. Polypharmacy and comorbidities are common. Dose adjustments for drug X are critical.`,
-      fullTextSnippet: `In the geriatric population, managing ${query.condition} presents unique challenges. Drug X metabolism is significantly altered in patients >75 years, requiring a dose reduction to 2.5mg daily. Falls risk should be assessed.`,
-      keywords: [query.condition, "geriatrics", "elderly"],
-    },
-  ];
-  if (query.sources?.includes("cfm")) {
-    mockData.push({
-      id: "cfm-789",
-      title: `Diretriz CFM para ${query.condition}`,
-      sourceName: "CFM",
-      sourceUrl: `https://cfm.example.com/789`,
-      publicationDate: "2024-01-15",
-      abstract: `Conselho Federal de Medicina (CFM) guideline for ${query.condition}.`,
-      fullTextSnippet: `O CFM recomenda o uso de Paracetamol 750mg a cada 6 horas para controle sintomático de ${query.condition} leve.`,
-      keywords: [query.condition, "diretriz", "CFM"],
-    });
+    const mockData: RawDeepResearchArticle[] = [
+      {
+        id: "pubmed-123",
+        title: `Guidelines for ${query.condition}`,
+        sourceName: "PubMed Central",
+        sourceUrl: `https://pubmed.example.com/123`,
+        publicationDate: "2023-05-10",
+        abstract: `This article reviews the latest guidelines for diagnosing and treating ${query.condition}. Key diagnostic criteria include X, Y, and Z. Treatment typically involves medication A (500mg BID) and medication B (10mg OD). Special attention is needed for geriatric patients due to renal clearance.`,
+        fullTextSnippet: `For diagnosis of ${query.condition}, at least two of the following must be present: symptom X, lab value Y > 50 units/L, or imaging finding Z. First-line treatment for adults is Amoxicillin 500mg three times daily for 7 days. For patients over 65, consider reducing Amoxicillin dose by 50% if CrCl < 30 mL/min.`,
+        keywords: [query.condition, "guidelines", "treatment", "diagnosis"],
+      },
+      {
+        id: "scielo-456",
+        title: `Considerações Geriátricas em ${query.condition}`,
+        sourceName: "SciELO",
+        sourceUrl: `https://scielo.example.com/456`,
+        publicationDate: "2022-11-20",
+        abstract: `Elderly patients with ${query.condition} require careful management. Polypharmacy and comorbidities are common. Dose adjustments for drug X are critical.`,
+        fullTextSnippet: `In the geriatric population, managing ${query.condition} presents unique challenges. Drug X metabolism is significantly altered in patients >75 years, requiring a dose reduction to 2.5mg daily. Falls risk should be assessed.`,
+        keywords: [query.condition, "geriatrics", "elderly"],
+      },
+    ];
+    if (query.sources?.includes("cfm")) {
+      mockData.push({
+        id: "cfm-789",
+        title: `Diretriz CFM para ${query.condition}`,
+        sourceName: "CFM",
+        sourceUrl: `https://cfm.example.com/789`,
+        publicationDate: "2024-01-15",
+        abstract: `Conselho Federal de Medicina (CFM) guideline for ${query.condition}.`,
+        fullTextSnippet: `O CFM recomenda o uso de Paracetamol 750mg a cada 6 horas para controle sintomático de ${query.condition} leve.`,
+        keywords: [query.condition, "diretriz", "CFM"],
+      });
+    }
+
+    return mockData;
   }
 
-  return mockData;
+  // TODO: Implement real DeepResearch API call when available
+  // For now, return empty results as DeepResearch is a ChatGPT feature not yet available via API
+  console.warn(
+    "DeepResearch API implementation pending. Returning empty results.",
+  );
+  return [];
 }
 
 async function processDeepResearchResults(
@@ -113,14 +130,19 @@ async function processDeepResearchResults(
         ],
         {
           response_format: JSON_RESPONSE_FORMAT,
-          temperature: 0.1,
+          temperature: getModelTemperature(DEFAULT_CHAT_MODEL, 0.1),
         },
       );
 
       const content = response.content;
       if (content) {
         try {
-          const parsedData = JSON.parse(content);
+          // Clean markdown code blocks if present (O3 model tends to add them)
+          const cleanedContent = content
+            .replace(/^```json\s*\n?/i, "")
+            .replace(/\n?```\s*$/i, "")
+            .trim();
+          const parsedData = JSON.parse(cleanedContent);
           console.log(
             `[Research] Parsed data type for ${article.id}:`,
             typeof parsedData,

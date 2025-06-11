@@ -32,7 +32,8 @@
       "Bash(file:*)",
       "Bash(git push:*)",
       "WebFetch(domain:reactflow.dev)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(pnpm typecheck:*)"
     ]
   },
   "enableAllProjectMcpServers": false

@@ -254,11 +254,21 @@ export const protocolRouter = router({
               changelogNotes =
                 "Versão inicial criada (geração IA falhou - conteúdo vazio).";
             }
-          } catch (aiError) {
+          } catch (aiError: any) {
             console.error(
               "[TRPC /protocol.create] AI pipeline error:",
               aiError,
             );
+
+            // Check if it's an O3 model verification error
+            if (aiError?.message?.includes("verified to use the model `o3`")) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message:
+                  "O modelo O3 requer verificação da organização na OpenAI. Por favor, aguarde 15 minutos após a verificação ou selecione outro modelo (GPT-4).",
+              });
+            }
+
             // Continue with empty content if AI fails
             changelogNotes =
               "Versão inicial criada (erro na geração IA - conteúdo vazio).";
@@ -417,6 +427,21 @@ export const protocolRouter = router({
             changelogNotes =
               "Versão inicial criada (erro no processamento de material - conteúdo vazio).";
           }
+        }
+
+        // Validate that we have actual content before saving
+        const hasContent = Object.keys(protocolContent).some(
+          (key) =>
+            protocolContent[key]?.content &&
+            protocolContent[key].content.trim() !== "",
+        );
+
+        if (!hasContent && generationMode === "automatic") {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              "Falha na geração do protocolo. O modelo O3 pode estar sobrecarregado. Por favor, tente novamente em alguns minutos ou use o modo de geração manual.",
+          });
         }
 
         const protocol = await ctx.db.protocol.create({

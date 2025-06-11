@@ -18,7 +18,7 @@ import type {
   AIFullProtocolGenerationOutput,
 } from "@/types/ai-generation";
 import type { ProtocolFullContent } from "@/types/protocol";
-import { O3, JSON_RESPONSE_FORMAT, DEFAULT_TEMPERATURE } from "./config";
+import { O3, JSON_RESPONSE_FORMAT, getModelTemperature } from "./config";
 import { OpenAIError } from "./errors";
 import { GeneratedFullProtocolSchema } from "../validators/generated-content";
 
@@ -63,7 +63,7 @@ async function generateContextSummary(
       },
     ],
     {
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: getModelTemperature(O3),
       max_tokens: 1000,
     },
   );
@@ -97,7 +97,7 @@ async function generateSectionGroup(
     ],
     {
       response_format: JSON_RESPONSE_FORMAT,
-      temperature: DEFAULT_TEMPERATURE,
+      temperature: getModelTemperature(O3),
       max_tokens: 6000, // Increased for detailed content
     },
   );
@@ -106,7 +106,12 @@ async function generateSectionGroup(
     throw new OpenAIError(`O3 returned empty content for group ${groupKey}`);
   }
 
-  const parsedContent = JSON.parse(response.content);
+  // Clean markdown code blocks if present (O3 model tends to add them)
+  const cleanedContent = response.content
+    .replace(/^```json\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
+  const parsedContent = JSON.parse(cleanedContent);
 
   // Validate that we got the expected sections
   const group = SECTION_GROUPS[groupKey];
@@ -150,7 +155,7 @@ async function integrateProtocol(
     ],
     {
       response_format: JSON_RESPONSE_FORMAT,
-      temperature: 0.1, // Very low for consistency check
+      temperature: getModelTemperature(O3, 0.1), // Very low for consistency check (or 1 for O3)
       max_tokens: 10000,
     },
   );

@@ -20,6 +20,8 @@ export class OpenAIProvider implements AIProvider {
     "gpt-4",
     "gpt-3.5-turbo",
     "o4-mini",
+    "o3",
+    "o3-mini",
   ];
 
   constructor(apiKey?: string, baseUrl?: string) {
@@ -35,7 +37,7 @@ export class OpenAIProvider implements AIProvider {
   ): Promise<AICompletionResponse> {
     const model = options?.model || this.defaultModel;
 
-    // Handle o4-mini model's specific requirements
+    // Handle model-specific requirements
     const completionParams: any = {
       model,
       messages: messages.map((msg) => ({
@@ -44,11 +46,19 @@ export class OpenAIProvider implements AIProvider {
       })),
     };
 
-    if (model === "o4-mini") {
-      // o4-mini specific parameters
+    // Check if it's an O-series model (o3, o3-mini, o4-mini)
+    const isOSeriesModel = model.startsWith("o3") || model === "o4-mini";
+
+    if (isOSeriesModel) {
+      // O-series models specific parameters
       completionParams.max_completion_tokens = options?.max_tokens;
-      // o4-mini only supports temperature = 1 (default), so we omit it
-      // o4-mini doesn't support response_format either
+      // O-series models only support temperature = 1 (default), so we omit it
+      // They also don't support response_format
+
+      // Explicitly set temperature to 1 for O3 models to ensure compliance
+      if (model.startsWith("o3")) {
+        completionParams.temperature = 1;
+      }
     } else {
       // Standard parameters for other models
       completionParams.max_tokens = options?.max_tokens;

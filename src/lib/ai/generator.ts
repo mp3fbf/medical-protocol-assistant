@@ -28,8 +28,8 @@ import {
   JSON_RESPONSE_FORMAT,
   DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
   DEFAULT_MAX_TOKENS_SECTION_GENERATION,
-  DEFAULT_TEMPERATURE,
   LARGE_DOCUMENT_THRESHOLD,
+  getModelTemperature,
 } from "./config";
 import { OpenAIError } from "./errors";
 import {
@@ -105,7 +105,7 @@ export async function generateFullProtocolAI(
       ],
       {
         response_format: JSON_RESPONSE_FORMAT,
-        temperature: DEFAULT_TEMPERATURE,
+        temperature: getModelTemperature(modelToUse),
         max_tokens: DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
       },
     );
@@ -187,7 +187,7 @@ export async function generateProtocolSectionAI(
       ],
       {
         response_format: JSON_RESPONSE_FORMAT,
-        temperature: DEFAULT_TEMPERATURE,
+        temperature: getModelTemperature(DEFAULT_CHAT_MODEL),
         max_tokens: DEFAULT_MAX_TOKENS_SECTION_GENERATION,
       },
     );

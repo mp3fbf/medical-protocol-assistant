@@ -53,3 +53,28 @@ export const MODEL_TOKEN_LIMITS = {
 
 // Document size thresholds
 export const LARGE_DOCUMENT_THRESHOLD = 25000; // tokens
+
+// O-series models configuration
+export const O_SERIES_MODELS = ["o3", "o3-mini", "o4-mini"] as const;
+
+/**
+ * Get the appropriate temperature for a given model
+ * O3 models require temperature = 1
+ */
+export function getModelTemperature(
+  model: string,
+  requestedTemperature?: number,
+): number | undefined {
+  // O3 models must use temperature = 1
+  if (model.startsWith("o3")) {
+    return 1;
+  }
+
+  // O4-mini doesn't support temperature parameter (omit it)
+  if (model === "o4-mini") {
+    return undefined;
+  }
+
+  // Other models use the requested temperature or default
+  return requestedTemperature ?? DEFAULT_TEMPERATURE;
+}
