@@ -11,6 +11,7 @@ import type {
 } from "@/types/flowchart";
 import type { ProtocolFullContent } from "@/types/protocol";
 import { getAIProvider } from "@/lib/ai/providers";
+import { getModelTemperature } from "@/lib/ai/config";
 import { flowchartProgressEmitter } from "@/lib/events/flowchart-progress";
 
 // Types for each generation step
@@ -148,13 +149,15 @@ Critérios:
 - keyMedications: Medicamentos principais mencionados
 - estimatedNodes: Estimativa do número total de nós necessários`;
 
+  const model = "o3";
+  const temperature = getModelTemperature(model, 0.3);
   const provider = getAIProvider();
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
-      model: "o3-mini", // Use O3 mini for analysis
-      temperature: 0.3,
-      max_tokens: 1000,
+      model,
+      temperature,
+      // NO LIMITS - let O3 work freely
     },
   );
 
@@ -228,13 +231,15 @@ Regras IMPORTANTES:
 - Use linguagem médica clara e precisa
 - IDs únicos no formato decision_N`;
 
+    const model = "o3";
+    const temperature = getModelTemperature(model, 0.3);
     const provider = getAIProvider();
     const completion = await provider.createCompletion(
       [{ role: "user", content: prompt }],
       {
-        model: "o3-mini", // Use O3 mini for decision extraction
-        temperature: 0.3,
-        max_tokens: 2000,
+        model,
+        temperature,
+        // NO LIMITS - let O3 work freely
       },
     );
 
@@ -343,13 +348,15 @@ Regras importantes:
 - Mantenha labels concisos mas claros
 - Mínimo de 15 nós para protocolos complexos`;
 
+  const model = "o3";
+  const temperature = getModelTemperature(model, 0.3);
   const provider = getAIProvider();
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
-      model: "o3-mini", // Use O3 mini for flow mapping
-      temperature: 0.3,
-      max_tokens: 4000,
+      model,
+      temperature,
+      // NO LIMITS - let O3 work freely
     },
   );
 
@@ -585,16 +592,8 @@ export async function generateFlowchartModular(
 export function shouldUseModularFlowchartGeneration(
   protocolContent: ProtocolFullContent,
 ): boolean {
-  // Calculate approximate size
-  const contentLength = Object.values(protocolContent)
-    .map((section) => section.content?.length || 0)
-    .reduce((sum, len) => sum + len, 0);
-
-  // Use modular for protocols > 10KB or with many sections
-  const hasManySections = Object.keys(protocolContent).length > 10;
-  const isLarge = contentLength > 10000;
-
-  return hasManySections || isLarge;
+  // ALWAYS USE MODULAR GENERATION WITH O3
+  return true;
 }
 
 /**
@@ -603,10 +602,6 @@ export function shouldUseModularFlowchartGeneration(
 export function getFlowchartGenerationModel(
   protocolContent: ProtocolFullContent,
 ): string {
-  const contentLength = Object.values(protocolContent)
-    .map((section) => section.content?.length || 0)
-    .reduce((sum, len) => sum + len, 0);
-
-  // Always use O3 mini for flowchart generation for better quality
-  return "o3-mini";
+  // ALWAYS USE O3 - NO COMPROMISES
+  return "o3";
 }

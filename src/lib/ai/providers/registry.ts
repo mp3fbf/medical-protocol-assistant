@@ -20,8 +20,11 @@ export class AIProviderRegistry {
     // Register OpenAI
     const openaiConfig: AIProviderConfig = {
       name: "openai",
-      defaultModel: "gpt-4o-mini",
+      defaultModel: "o3", // USE O3 AS DEFAULT
       supportedModels: [
+        "o3", // O3 FULL MODEL
+        "o3-mini",
+        "o4-mini",
         "gpt-4o",
         "gpt-4o-mini",
         "gpt-4-turbo",

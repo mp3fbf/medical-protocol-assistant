@@ -48,12 +48,39 @@ function stripHtml(html: string): string {
   text = text.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
   text = text.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "");
 
-  // Replace block elements with line breaks
-  text = text.replace(/<\/(p|div|h[1-6]|li|tr|blockquote)>/gi, "\n");
+  // Replace headings with double line breaks for better spacing
+  text = text.replace(/<h[1-6][^>]*>/gi, "\n\n");
+  text = text.replace(/<\/h[1-6]>/gi, "\n\n");
+
+  // Replace paragraphs and divs with double line breaks
+  text = text.replace(/<p[^>]*>/gi, "\n\n");
+  text = text.replace(/<\/p>/gi, "\n\n");
+  text = text.replace(/<div[^>]*>/gi, "\n\n");
+  text = text.replace(/<\/div>/gi, "\n\n");
+
+  // Handle ordered and unordered lists
+  let listCounter = 0;
+  text = text.replace(/<ol[^>]*>/gi, () => {
+    listCounter = 0;
+    return "\n";
+  });
+  text = text.replace(/<ul[^>]*>/gi, "\n");
+  text = text.replace(/<li[^>]*>/gi, () => {
+    // Check if we're in an ordered list (simplified - assumes ol comes before li)
+    if (text.lastIndexOf("<ol") > text.lastIndexOf("<ul")) {
+      listCounter++;
+      return `\n${listCounter}. `;
+    }
+    return "\n• ";
+  });
+  text = text.replace(/<\/li>/gi, "");
+  text = text.replace(/<\/(ol|ul)>/gi, "\n");
+
+  // Replace line breaks
   text = text.replace(/<br\s*\/?>/gi, "\n");
 
-  // Replace list items
-  text = text.replace(/<li[^>]*>/gi, "• ");
+  // Replace other block elements
+  text = text.replace(/<\/(tr|blockquote)>/gi, "\n");
 
   // Replace table cells with tabs
   text = text.replace(/<\/(td|th)>/gi, "\t");
@@ -65,9 +92,14 @@ function stripHtml(html: string): string {
   text = decodeHtmlEntities(text);
 
   // Clean up whitespace
-  text = text.replace(/\n{3,}/g, "\n\n");
+  text = text.replace(/\n{4,}/g, "\n\n\n"); // Maximum 3 line breaks
+  text = text.replace(/\n\s*\n/g, "\n\n"); // Remove empty lines with just spaces
   text = text.replace(/\t+/g, "\t");
   text = text.trim();
+
+  // Fix bullet point spacing
+  text = text.replace(/\n•/g, "\n•"); // Ensure bullets start on new line
+  text = text.replace(/([^•\d])•/g, "$1\n•"); // Add line break before bullets if missing
 
   return text;
 }
@@ -181,44 +213,57 @@ export async function generateJsPDFProtocolPdf(
       format: "a4",
     });
 
-    // Variables for positioning
-    let yPosition = 20;
-    const leftMargin = 20;
-    const pageWidth = 170; // A4 width - margins
-    const lineHeight = 7;
+    // Professional layout variables
+    let yPosition = 30;
+    const leftMargin = 25;
+    const rightMargin = 25;
+    const pageWidth = 210 - leftMargin - rightMargin; // A4 width - margins
+    const titleLineHeight = 10;
+    const contentLineHeight = 6;
+    const paragraphSpacing = 4;
+    const sectionSpacing = 8;
+    const bulletIndent = 10;
+    const subBulletIndent = 20;
 
-    // Add title
-    doc.setFontSize(16);
-    doc.text(
+    // Add main title with proper formatting
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    const titleLines = doc.splitTextToSize(
       protocolMainTitle || "Protocolo Médico",
-      pageWidth / 2 + leftMargin,
-      yPosition,
-      { align: "center" },
+      pageWidth,
     );
-    yPosition += lineHeight * 2;
+    titleLines.forEach((line: string) => {
+      doc.text(line, 210 / 2, yPosition, { align: "center" });
+      yPosition += titleLineHeight;
+    });
+    yPosition += sectionSpacing * 2; // Extra space after main title
 
     // Process each section
     Object.values(protocolData || {}).forEach((section) => {
       // Check if need new page
-      if (yPosition > 250) {
+      if (yPosition > 260) {
         doc.addPage();
-        yPosition = 20;
+        yPosition = 30;
       }
 
-      // Section title
-      doc.setFontSize(12);
+      // Section title with proper spacing
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text(section.title, leftMargin, yPosition);
-      yPosition += lineHeight;
+      const sectionTitle = `${section.sectionNumber}. ${section.title}`;
+      const titleLines = doc.splitTextToSize(sectionTitle, pageWidth);
+      titleLines.forEach((line: string) => {
+        doc.text(line, leftMargin, yPosition);
+        yPosition += titleLineHeight;
+      });
+      yPosition += paragraphSpacing; // Space after section title
 
-      // Section content
+      // Section content with improved formatting
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
+      doc.setFontSize(11);
 
       let content = "";
       if (typeof section.content === "string") {
         const rawContent = section.content || "[Conteúdo vazio]";
-        // Always strip HTML since rich text editor outputs HTML
         content = stripHtml(rawContent);
       } else if (section.content && typeof section.content === "object") {
         content = formatStructuredContent(section.content);
@@ -226,19 +271,55 @@ export async function generateJsPDFProtocolPdf(
         content = "[Conteúdo vazio]";
       }
 
-      // Split content into lines
-      const lines = doc.splitTextToSize(content, pageWidth);
+      // Process content with proper paragraph handling
+      const paragraphs = content.split(/\n\n+/);
 
-      lines.forEach((line: string) => {
-        if (yPosition > 270) {
-          doc.addPage();
-          yPosition = 20;
+      paragraphs.forEach((paragraph) => {
+        if (!paragraph.trim()) return;
+
+        // Check for bullet points
+        const isBullet =
+          paragraph.trim().startsWith("•") || paragraph.trim().startsWith("-");
+        const isSubItem =
+          paragraph.trim().startsWith("  •") ||
+          paragraph.trim().startsWith("  -");
+
+        let xPosition = leftMargin;
+        if (isBullet && !isSubItem) {
+          xPosition += bulletIndent;
+        } else if (isSubItem) {
+          xPosition += subBulletIndent;
         }
-        doc.text(line, leftMargin, yPosition);
-        yPosition += lineHeight;
+
+        // Split paragraph into lines
+        const lines = doc.splitTextToSize(
+          paragraph.trim(),
+          pageWidth - (xPosition - leftMargin),
+        );
+
+        lines.forEach((line: string, index: number) => {
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 30;
+            // Repeat section title on new page
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "italic");
+            doc.text(`(continuação) ${section.title}`, leftMargin, yPosition);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            yPosition += titleLineHeight + paragraphSpacing;
+          }
+
+          // Add extra indent for continuation lines of bullets
+          const lineX = index === 0 ? xPosition : xPosition + 5;
+          doc.text(line, lineX, yPosition);
+          yPosition += contentLineHeight;
+        });
+
+        yPosition += paragraphSpacing; // Space between paragraphs
       });
 
-      yPosition += lineHeight; // Extra space between sections
+      yPosition += sectionSpacing; // Extra space between sections
     });
 
     // Get PDF as array buffer
