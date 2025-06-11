@@ -69,6 +69,7 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
   >("idle");
   const [formError, setFormError] = useState<string | null>(null);
   const [researchProgress, setResearchProgress] = useState<string>("");
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [_uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const {
@@ -129,12 +130,15 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
         }
       } else if (data.generationMode === "automatic") {
         messages = [
-          "🔍 Consultando PubMed e bases médicas...",
-          "📚 Analisando literatura científica recente...",
-          "🏥 Extraindo protocolos hospitalares similares...",
-          "💡 Identificando melhores práticas clínicas...",
-          "🧬 Correlacionando evidências encontradas...",
-          "✨ Sintetizando informações coletadas...",
+          "🔍 Iniciando pesquisa médica...",
+          "📊 Processando dados com modelo O3...",
+          "📝 Gerando Seções 1-3: Identificação e Contexto...",
+          "🏥 Gerando Seções 4-6: Critérios Clínicos...",
+          "💊 Gerando Seções 7-8: Tratamento...",
+          "📋 Gerando Seções 9-10: Fluxo Assistencial...",
+          "✨ Gerando Seções 11-13: Especificidades e Qualidade...",
+          "🔄 Realizando integração final e verificação de consistência...",
+          "✅ Finalizando protocolo completo...",
         ];
       } else {
         messages = [
@@ -144,15 +148,35 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
         ];
       }
 
-      // Cycle through messages
+      // Cycle through messages with appropriate timing for O3
       let messageIndex = 0;
-      const progressInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        setResearchProgress(messages[messageIndex]);
-      }, 2500);
+      setResearchProgress(messages[0]);
 
-      // Store interval reference for cleanup
-      setTimeout(() => clearInterval(progressInterval), 30000); // Max 30 seconds
+      // Different timing based on generation mode
+      const intervalTime = data.generationMode === "automatic" ? 15000 : 2500; // 15s for O3, 2.5s for others
+
+      const progressInterval = setInterval(() => {
+        messageIndex = messageIndex + 1;
+        if (messageIndex < messages.length) {
+          setResearchProgress(messages[messageIndex]);
+        } else {
+          // Keep showing the last message until completion
+          setResearchProgress(messages[messages.length - 1] + " (Aguarde...)");
+        }
+      }, intervalTime);
+
+      // Start elapsed time counter
+      const startTime = Date.now();
+      const timerInterval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+
+      // Store interval references for cleanup
+      const cleanupIntervals = () => {
+        clearInterval(progressInterval);
+        clearInterval(timerInterval);
+        setElapsedTime(0);
+      };
 
       setFormStatus("loading");
 
@@ -173,15 +197,16 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
             ];
 
       let creationIndex = 0;
-      const creationInterval = setInterval(() => {
+      let creationInterval: NodeJS.Timeout | undefined;
+      creationInterval = setInterval(() => {
         creationIndex = (creationIndex + 1) % creationMessages.length;
         setResearchProgress(creationMessages[creationIndex]);
       }, 3000);
 
       const result = await onSubmit(data);
 
-      // Clear intervals
-      clearInterval(progressInterval);
+      // Clear all intervals
+      cleanupIntervals();
       clearInterval(creationInterval);
 
       if (result.success) {
@@ -192,12 +217,16 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
       } else {
         setFormStatus("error");
         setFormError(result.error || "Ocorreu um erro desconhecido.");
+        setResearchProgress("");
       }
     } catch (error) {
+      cleanupIntervals();
+      if (creationInterval) clearInterval(creationInterval);
       setFormStatus("error");
       setFormError(
         error instanceof Error ? error.message : "Falha ao criar protocolo.",
       );
+      setResearchProgress("");
     }
   };
 
@@ -496,6 +525,32 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Progress Display */}
+        {(formStatus === "researching" || formStatus === "loading") &&
+          researchProgress && (
+            <Alert className="border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/30">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="flex items-center justify-between text-blue-700 dark:text-blue-300">
+                <span>Processando com Modelo O3</span>
+                {elapsedTime > 0 && (
+                  <span className="text-sm font-normal">
+                    {Math.floor(elapsedTime / 60)}:
+                    {(elapsedTime % 60).toString().padStart(2, "0")}
+                  </span>
+                )}
+              </AlertTitle>
+              <AlertDescription className="text-blue-600 dark:text-blue-400">
+                {researchProgress}
+              </AlertDescription>
+              {formStatus === "loading" && (
+                <p className="mt-2 text-xs text-blue-500 dark:text-blue-400">
+                  ⚠️ O modelo O3 é mais lento mas gera protocolos mais completos
+                  e detalhados. Este processo pode levar de 3 a 5 minutos...
+                </p>
+              )}
+            </Alert>
+          )}
 
         {/* Submit Button */}
         <div className="flex justify-end space-x-4">

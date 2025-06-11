@@ -28,6 +28,8 @@ export class OpenAIProvider implements AIProvider {
     this.client = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY,
       baseURL: baseUrl,
+      timeout: 600000, // 10 minutes timeout for O3 model
+      maxRetries: 2, // Retry up to 2 times on failure
     });
   }
 
