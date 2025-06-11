@@ -41,11 +41,8 @@ function decodeHtmlEntities(text: string): string {
 function stripHtml(html: string): string {
   if (!html) return "";
 
-  console.log("[STRIP-DEBUG] Input to stripHtml:", html.substring(0, 100));
-
   // Decode HTML entities first in case of double escaping
   let text = decodeHtmlEntities(html);
-  console.log("[STRIP-DEBUG] After decode entities:", text.substring(0, 100));
 
   // Remove script and style elements
   text = text.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
@@ -71,8 +68,6 @@ function stripHtml(html: string): string {
   text = text.replace(/\n{3,}/g, "\n\n");
   text = text.replace(/\t+/g, "\t");
   text = text.trim();
-
-  console.log("[STRIP-DEBUG] Output from stripHtml:", text.substring(0, 100));
 
   return text;
 }
@@ -177,11 +172,7 @@ export async function generateJsPDFProtocolPdf(
   protocolMainTitle?: string,
 ): Promise<Buffer> {
   try {
-    console.log("[PDF-DEBUG] Starting jsPDF generation...");
-    console.log(
-      "[PDF-DEBUG] First section content:",
-      Object.values(protocolData || {})[0]?.content?.substring?.(0, 200),
-    );
+    console.log("Starting jsPDF generation...");
 
     // Create new PDF document
     const doc = new jsPDF({
@@ -227,23 +218,6 @@ export async function generateJsPDFProtocolPdf(
       let content = "";
       if (typeof section.content === "string") {
         const rawContent = section.content || "[Conteúdo vazio]";
-
-        // Debug: Check for escaped HTML entities
-        console.log("[PDF-DEBUG] Section:", section.title);
-        console.log(
-          "[PDF-DEBUG] Raw content (first 300 chars):",
-          rawContent.substring(0, 300),
-        );
-        console.log("[PDF-DEBUG] Has &lt;?", rawContent.includes("&lt;"));
-        console.log("[PDF-DEBUG] Has <?", rawContent.includes("<"));
-        console.log(
-          "[PDF-DEBUG] Content char codes:",
-          rawContent
-            .substring(0, 50)
-            .split("")
-            .map((c) => c.charCodeAt(0)),
-        );
-
         // Always strip HTML since rich text editor outputs HTML
         content = stripHtml(rawContent);
       } else if (section.content && typeof section.content === "object") {

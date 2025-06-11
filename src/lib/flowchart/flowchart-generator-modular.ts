@@ -152,6 +152,7 @@ Critérios:
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
+      model: "o3-mini", // Use O3 mini for analysis
       temperature: 0.3,
       max_tokens: 1000,
     },
@@ -187,7 +188,7 @@ async function extractDecisionPoints(
     const section = protocolContent[sectionNum.toString()];
     if (!section?.content) continue;
 
-    const prompt = `Extraia os pontos de decisão da seção ${sectionNum} deste protocolo médico.
+    const prompt = `Extraia TODOS os pontos de decisão da seção ${sectionNum} deste protocolo médico.
 
 Seção ${sectionNum} - ${section.title}:
 ${section.content}
@@ -206,22 +207,32 @@ Para cada decisão encontrada, responda APENAS com um array JSON:
         "label": "Sim/Opção 1",
         "condition": "Condição para esta escolha",
         "nextStep": "Próximo passo se escolher esta opção"
+      },
+      {
+        "label": "Não/Opção 2",
+        "condition": "Condição para esta escolha",
+        "nextStep": "Próximo passo alternativo"
       }
     ],
     "section": ${sectionNum}
   }
 ]
 
-Regras:
-- Foque em decisões que afetam o fluxo do tratamento
+Regras IMPORTANTES:
+- ENCONTRE TODAS as decisões, não apenas as óbvias
+- Procure por palavras como: "se", "quando", "caso", "avaliar", "considerar", "verificar", "determinar"
+- Identifique critérios de inclusão/exclusão como decisões
+- Para cada exame/teste mencionado, crie uma decisão sobre o resultado
+- Para cada medicamento, considere contraindicações como decisão
+- SEMPRE inclua pelo menos 2 outcomes (sim/não, positivo/negativo, etc)
 - Use linguagem médica clara e precisa
-- Cada decisão deve ter 2-4 possíveis resultados
 - IDs únicos no formato decision_N`;
 
     const provider = getAIProvider();
     const completion = await provider.createCompletion(
       [{ role: "user", content: prompt }],
       {
+        model: "o3-mini", // Use O3 mini for decision extraction
         temperature: 0.3,
         max_tokens: 2000,
       },
@@ -233,9 +244,24 @@ Regras:
         .replace(/```\n?/g, "")
         .trim();
 
+      // Fix potential JSON formatting issues
+      let jsonToparse = cleanedResponse;
+
+      // If response is not a valid JSON array, try to extract it
+      if (!jsonToparse.startsWith("[")) {
+        // Try to find JSON array in the response
+        const arrayMatch = jsonToparse.match(/\[.*\]/s);
+        if (arrayMatch) {
+          jsonToparse = arrayMatch[0];
+        } else {
+          // If no array found, wrap in array
+          jsonToparse = "[" + jsonToparse + "]";
+        }
+      }
+
       const sectionDecisions = z
         .array(DecisionPointSchema)
-        .parse(JSON.parse(cleanedResponse));
+        .parse(JSON.parse(jsonToparse));
       decisions.push(...sectionDecisions);
     } catch (error) {
       console.warn(
@@ -309,14 +335,19 @@ Regras importantes:
 - SEMPRE inclua nós start e end
 - Use os IDs das decisões extraídas quando criar nós de decisão
 - Tipos de nó: start, end, action, decision, medication, triage
-- Conecte todos os nós formando um fluxo lógico
-- Para nós de decisão, crie conexões para cada possível resultado
-- Mantenha labels concisos mas claros`;
+- Conecte todos os nós formando um fluxo lógico e COMPLEXO
+- Para nós de decisão, SEMPRE crie conexões para CADA possível resultado
+- Use sourceHandle para decision nodes (ex: "yes", "no", "option_1")
+- Crie fluxos que se bifurcam e convergem, NÃO apenas lineares
+- Inclua loops quando apropriado (ex: reavaliar após tratamento)
+- Mantenha labels concisos mas claros
+- Mínimo de 15 nós para protocolos complexos`;
 
   const provider = getAIProvider();
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
+      model: "o3-mini", // Use O3 mini for flow mapping
       temperature: 0.3,
       max_tokens: 4000,
     },
@@ -394,15 +425,30 @@ async function convertToFlowchart(
     const sourceNode = nodes.find((n) => n.id === conn.from);
     const isDecisionNode = sourceNode?.type === "decision";
 
+    // Find the correct sourceHandle based on the label/condition
+    let sourceHandle: string | undefined = undefined;
+    if (isDecisionNode && sourceNode) {
+      const decision = decisionMap.get(sourceNode.id);
+      if (decision && conn.label) {
+        // Try to match the connection label with an outcome
+        const matchingOutcome = decision.possibleOutcomes.find(
+          (o) =>
+            o.label.toLowerCase() === conn.label.toLowerCase() ||
+            o.label.toLowerCase().includes(conn.label.toLowerCase()) ||
+            conn.label.toLowerCase().includes(o.label.toLowerCase()),
+        );
+        if (matchingOutcome) {
+          sourceHandle = `${sourceNode.id}_${matchingOutcome.label.toLowerCase().replace(/\s+/g, "_")}`;
+        }
+      }
+    }
+
     edges.push({
       id: `${conn.from}-${conn.to}`,
       source: conn.from,
       target: conn.to,
       label: conn.label,
-      sourceHandle:
-        isDecisionNode && conn.condition
-          ? `${conn.from}_${conn.condition.toLowerCase().replace(/\s+/g, "_")}`
-          : undefined,
+      sourceHandle,
       targetHandle: undefined,
       type: "orthogonal",
     });
@@ -561,16 +607,6 @@ export function getFlowchartGenerationModel(
     .map((section) => section.content?.length || 0)
     .reduce((sum, len) => sum + len, 0);
 
-  // For very large protocols or when O3 is available, use O3
-  if (contentLength > 20000 || process.env.OPENAI_MODEL?.includes("o3")) {
-    return "o3-mini"; // or "o3" for even better quality
-  }
-
-  // For medium protocols, use GPT-4
-  if (contentLength > 10000) {
-    return "gpt-4-turbo-preview";
-  }
-
-  // For smaller protocols, GPT-3.5 is sufficient
-  return "gpt-3.5-turbo-16k";
+  // Always use O3 mini for flowchart generation for better quality
+  return "o3-mini";
 }
