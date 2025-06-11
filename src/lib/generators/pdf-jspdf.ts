@@ -5,11 +5,47 @@ import { jsPDF } from "jspdf";
 import type { ProtocolFullContent } from "@/types/protocol";
 
 /**
+ * Decode HTML entities
+ */
+function decodeHtmlEntities(text: string): string {
+  // First pass: decode numeric entities
+  text = text.replace(/&#(\d+);/g, (match, dec) =>
+    String.fromCharCode(Number(dec)),
+  );
+  text = text.replace(/&#x([0-9a-f]+);/gi, (match, hex) =>
+    String.fromCharCode(parseInt(hex, 16)),
+  );
+
+  // Second pass: decode named entities
+  const entities: Record<string, string> = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&#039;": "'",
+    "&apos;": "'",
+    "&nbsp;": " ",
+  };
+
+  Object.entries(entities).forEach(([entity, char]) => {
+    text = text.replace(new RegExp(entity, "g"), char);
+  });
+
+  return text;
+}
+
+/**
  * Strip HTML tags and convert to plain text
  * Server-side compatible (no DOM)
  */
 function stripHtml(html: string): string {
   if (!html) return "";
+
+  console.log("[STRIP-DEBUG] Input to stripHtml:", html.substring(0, 100));
+
+  // Decode HTML entities first in case of double escaping
+  let text = decodeHtmlEntities(html);
+  console.log("[STRIP-DEBUG] After decode entities:", text.substring(0, 100));
 
   // Remove script and style elements
   let text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
@@ -28,19 +64,15 @@ function stripHtml(html: string): string {
   // Strip remaining tags
   text = text.replace(/<[^>]+>/g, "");
 
-  // Decode HTML entities
-  text = text.replace(/&nbsp;/g, " ");
-  text = text.replace(/&amp;/g, "&");
-  text = text.replace(/&lt;/g, "<");
-  text = text.replace(/&gt;/g, ">");
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#039;/g, "'");
-  text = text.replace(/&apos;/g, "'");
+  // Decode remaining HTML entities (in case some were created during tag removal)
+  text = decodeHtmlEntities(text);
 
   // Clean up whitespace
   text = text.replace(/\n{3,}/g, "\n\n");
   text = text.replace(/\t+/g, "\t");
   text = text.trim();
+
+  console.log("[STRIP-DEBUG] Output from stripHtml:", text.substring(0, 100));
 
   return text;
 }
@@ -145,7 +177,11 @@ export async function generateJsPDFProtocolPdf(
   protocolMainTitle?: string,
 ): Promise<Buffer> {
   try {
-    console.log("Starting jsPDF generation...");
+    console.log("[PDF-DEBUG] Starting jsPDF generation...");
+    console.log(
+      "[PDF-DEBUG] First section content:",
+      Object.values(protocolData || {})[0]?.content?.substring?.(0, 200),
+    );
 
     // Create new PDF document
     const doc = new jsPDF({
@@ -191,6 +227,23 @@ export async function generateJsPDFProtocolPdf(
       let content = "";
       if (typeof section.content === "string") {
         const rawContent = section.content || "[Conteúdo vazio]";
+
+        // Debug: Check for escaped HTML entities
+        console.log("[PDF-DEBUG] Section:", section.title);
+        console.log(
+          "[PDF-DEBUG] Raw content (first 300 chars):",
+          rawContent.substring(0, 300),
+        );
+        console.log("[PDF-DEBUG] Has &lt;?", rawContent.includes("&lt;"));
+        console.log("[PDF-DEBUG] Has <?", rawContent.includes("<"));
+        console.log(
+          "[PDF-DEBUG] Content char codes:",
+          rawContent
+            .substring(0, 50)
+            .split("")
+            .map((c) => c.charCodeAt(0)),
+        );
+
         // Always strip HTML since rich text editor outputs HTML
         content = stripHtml(rawContent);
       } else if (section.content && typeof section.content === "object") {
