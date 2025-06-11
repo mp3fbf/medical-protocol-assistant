@@ -3,9 +3,9 @@
  * No wasted space, maximum efficiency
  */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -26,8 +26,14 @@ import { ThemeToggleStandalone as ThemeToggle } from "@/components/ui/theme-togg
 export const HeaderUltra: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    // Prefetch the new protocol page to avoid chunk loading issues
+    router.prefetch("/protocols/new");
+  }, [router]);
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/login" });

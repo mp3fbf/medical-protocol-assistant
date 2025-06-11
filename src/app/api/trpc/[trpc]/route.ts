@@ -11,6 +11,10 @@ import { type NextRequest } from "next/server";
 import { createContext } from "@/server/api/context";
 import { appRouter } from "@/server/api/root";
 
+// REMOVE ALL TIMEOUTS FOR O3 TESTING
+export const maxDuration = 300; // 5 minutes max on Vercel (maximum allowed)
+export const dynamic = "force-dynamic";
+
 /**
  * @see https://trpc.io/docs/v11/server/adapters/fetch#used-with-nextjs-app-router
  */

@@ -2,7 +2,7 @@
 
 Ferramenta web para criação assistida por IA de protocolos médicos padronizados, gerando documentação estruturada (Word/ABNT com 13 seções) e fluxogramas visuais complexos para pronto-atendimentos da rede Sancta Maggiore/Prevent Senior.
 
-## 🚀 Status do Projeto (v1.9.3)
+## 🚀 Status do Projeto (v1.9.4)
 
 **~70% Funcional** - Sistema core implementado mas com **30% de dados mock** no dashboard, homepage e pesquisa médica. MVP parcialmente completo.
 
@@ -25,7 +25,17 @@ Ferramenta web para criação assistida por IA de protocolos médicos padronizad
 - **Loading States**: Simulações com setTimeout, não carregam dados reais
 - **Ficha Técnica**: IA inventa nomes de médicos (Dr. João da Silva, etc.) impossibilitando validação
 
-### 🔄 Melhorias Recentes (06/01/2025)
+### 🔄 Melhorias Recentes (11/01/2025)
+
+#### Correção de Compatibilidade com O3 Model
+
+- **Problema corrigido**: O3 model retornava `sectionNumber` como string causando erros de validação
+- **Transformação de dados**: Adicionada conversão automática de string para number em respostas O3
+- **Limpeza de respostas**: Remoção automática de markdown code blocks que O3 adiciona no JSON
+- **Compatibilidade ampliada**: Correção aplicada tanto em geração modular quanto tradicional
+- **Build otimizado**: Correção de sintaxe JSX e TypeScript warnings resolvidos
+
+### 🔄 Melhorias Anteriores (06/01/2025)
 
 #### Correção de Geração de Fluxogramas com Decision Nodes
 

@@ -26,8 +26,8 @@ import {
   DEFAULT_CHAT_MODEL,
   DEFAULT_LARGE_CONTEXT_MODEL,
   JSON_RESPONSE_FORMAT,
-  DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
-  DEFAULT_MAX_TOKENS_SECTION_GENERATION,
+  // DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
+  // DEFAULT_MAX_TOKENS_SECTION_GENERATION,
   LARGE_DOCUMENT_THRESHOLD,
   getModelTemperature,
 } from "./config";
@@ -53,6 +53,8 @@ export async function generateFullProtocolAI(
   options?: {
     useModular?: boolean;
     progressCallback?: ProgressCallback;
+    protocolId?: string;
+    sessionId?: string;
   },
 ): Promise<AIFullProtocolGenerationOutput> {
   const { medicalCondition, researchData, specificInstructions } = input;
@@ -67,7 +69,12 @@ export async function generateFullProtocolAI(
     console.log(
       "[generateFullProtocolAI] Using modular generation with O3 model",
     );
-    return generateModularProtocolAI(input, options?.progressCallback);
+    return generateModularProtocolAI(
+      input,
+      options?.progressCallback,
+      options?.sessionId,
+      options?.protocolId,
+    );
   }
 
   // Otherwise, use traditional single-pass generation
@@ -106,7 +113,7 @@ export async function generateFullProtocolAI(
       {
         response_format: JSON_RESPONSE_FORMAT,
         temperature: getModelTemperature(modelToUse),
-        max_tokens: DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
+        // max_tokens: DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION, // Removed to let models use their default maximum
       },
     );
 
@@ -117,9 +124,30 @@ export async function generateFullProtocolAI(
       );
     }
 
-    const parsedContent = JSON.parse(content);
+    // Clean markdown code blocks if present (some models add them)
+    const cleanedContent = content
+      .replace(/^```json\s*\n?/i, "")
+      .replace(/\n?```\s*$/i, "")
+      .trim();
+
+    const parsedContent = JSON.parse(cleanedContent);
+
+    // Transform response to ensure sectionNumber is a number (O3 model compatibility)
+    const transformedContent: any = {};
+    for (const [key, section] of Object.entries(parsedContent)) {
+      if (section && typeof section === "object") {
+        transformedContent[key] = {
+          ...section,
+          sectionNumber:
+            typeof (section as any).sectionNumber === "string"
+              ? parseInt((section as any).sectionNumber, 10)
+              : (section as any).sectionNumber,
+        };
+      }
+    }
+
     const validationResult =
-      GeneratedFullProtocolSchema.safeParse(parsedContent);
+      GeneratedFullProtocolSchema.safeParse(transformedContent);
 
     if (!validationResult.success) {
       console.error(
@@ -188,7 +216,7 @@ export async function generateProtocolSectionAI(
       {
         response_format: JSON_RESPONSE_FORMAT,
         temperature: getModelTemperature(DEFAULT_CHAT_MODEL),
-        max_tokens: DEFAULT_MAX_TOKENS_SECTION_GENERATION,
+        // max_tokens: DEFAULT_MAX_TOKENS_SECTION_GENERATION, // Removed to let models use their default maximum
       },
     );
 
@@ -199,9 +227,25 @@ export async function generateProtocolSectionAI(
       );
     }
 
-    const parsedSection = JSON.parse(content);
+    // Clean markdown code blocks if present
+    const cleanedContent = content
+      .replace(/^```json\s*\n?/i, "")
+      .replace(/\n?```\s*$/i, "")
+      .trim();
+
+    const parsedSection = JSON.parse(cleanedContent);
+
+    // Transform response to ensure sectionNumber is a number (O3 model compatibility)
+    const transformedSection = {
+      ...parsedSection,
+      sectionNumber:
+        typeof parsedSection.sectionNumber === "string"
+          ? parseInt(parsedSection.sectionNumber, 10)
+          : parsedSection.sectionNumber,
+    };
+
     const validationResult =
-      GeneratedSingleSectionSchema.safeParse(parsedSection);
+      GeneratedSingleSectionSchema.safeParse(transformedSection);
 
     if (!validationResult.success) {
       console.error(

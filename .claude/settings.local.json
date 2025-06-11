@@ -33,7 +33,11 @@
       "Bash(git push:*)",
       "WebFetch(domain:reactflow.dev)",
       "Bash(git checkout:*)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(pnpm prisma generate:*)"
     ]
   },
   "enableAllProjectMcpServers": false

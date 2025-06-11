@@ -9,6 +9,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { UltraGradientButton } from "@/components/ui/ultra-button";
+import { Button } from "@/components/ui/button";
 import { UltraGlassCard } from "@/components/ui/ultra-card";
 import { UltraBadge } from "@/components/ui/ultra-badge";
 import {
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/ui/file-upload";
+import { RealProgressBar } from "@/components/protocol/generation/real-progress-bar";
 
 // Enhanced schema with generation mode, research options, and material upload
 const createProtocolFormSchema = z.object({
@@ -121,6 +123,13 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
   const [researchProgress, setResearchProgress] = useState<string>("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isFormLoaded, setIsFormLoaded] = useState(false);
+  const [generatingProtocolId, setGeneratingProtocolId] = useState<
+    string | null
+  >(null);
+  const [generationSessionId, setGenerationSessionId] = useState<string | null>(
+    null,
+  );
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     setIsFormLoaded(true);
@@ -133,6 +142,7 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
     reset,
     watch,
     setValue,
+    // getValues, // For future use with retry functionality
   } = useForm<CreateProtocolFormValues>({
     resolver: zodResolver(createProtocolFormSchema),
     defaultValues: {
@@ -166,103 +176,101 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
   const processSubmit: SubmitHandler<CreateProtocolFormValues> = async (
     data,
   ) => {
-    setFormStatus("researching");
+    setIsGenerating(true);
+    setFormStatus("loading");
     setFormError(null);
-    setResearchProgress("Iniciando pesquisa médica...");
+    setResearchProgress("Iniciando geração do protocolo...");
 
     try {
-      // Dynamic progress messages based on generation mode
-      let messages: string[];
-
-      if (data.generationMode === "material_based") {
-        messages = [
-          "📄 Processando documentos enviados...",
-          "🔍 Extraindo conteúdo médico relevante...",
-          "📊 Analisando estrutura do material...",
-          "💊 Identificando medicamentos e dosagens...",
-          "🔬 Validando informações médicas...",
-        ];
-        if (data.supplementWithResearch) {
-          messages.push(
-            "🌐 Buscando evidências complementares...",
-            "📚 Cruzando com literatura científica...",
-          );
-        }
-      } else if (data.generationMode === "automatic") {
-        messages = [
-          "🔍 Consultando PubMed e bases médicas...",
-          "📚 Analisando literatura científica recente...",
-          "🏥 Extraindo protocolos hospitalares similares...",
-          "💡 Identificando melhores práticas clínicas...",
-          "🧬 Correlacionando evidências encontradas...",
-          "✨ Sintetizando informações coletadas...",
-        ];
-      } else {
-        messages = [
-          "📝 Preparando estrutura do protocolo...",
-          "🏗️ Criando as 13 seções obrigatórias...",
-          "✅ Protocolo pronto para edição manual...",
-        ];
-      }
-
-      // Cycle through messages
-      let messageIndex = 0;
-      const progressInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        setResearchProgress(messages[messageIndex]);
-      }, 2500);
-
-      setTimeout(() => clearInterval(progressInterval), 30000);
-
-      setFormStatus("loading");
-
-      const creationMessages =
-        data.generationMode === "material_based"
-          ? [
-              "🏗️ Estruturando protocolo a partir do material...",
-              "📋 Organizando as 13 seções obrigatórias...",
-              "🔧 Aplicando formatação ABNT...",
-              "✨ Finalizando protocolo médico...",
-            ]
-          : [
-              "🧠 Aplicando inteligência artificial médica...",
-              "📝 Gerando conteúdo baseado em evidências...",
-              "🏥 Adaptando para contexto hospitalar...",
-              "✅ Validando completude do protocolo...",
-            ];
-
-      let creationIndex = 0;
-      const creationInterval = setInterval(() => {
-        creationIndex = (creationIndex + 1) % creationMessages.length;
-        setResearchProgress(creationMessages[creationIndex]);
-      }, 3000);
-
+      // Submit the form - this creates the protocol and starts generation
       const result = await onSubmit(data);
 
-      clearInterval(progressInterval);
-      clearInterval(creationInterval);
+      if (result.success && result.data?.id) {
+        console.log(
+          "[CreateProtocolForm] Protocol created with ID:",
+          result.data.id,
+        );
+        // Set the protocol ID to start SSE connection for real-time progress
+        setGeneratingProtocolId(result.data.id);
 
-      if (result.success) {
-        setFormStatus("success");
-        setResearchProgress("✅ Protocolo criado com sucesso!");
-        if (onSuccess) onSuccess(result.data);
-        reset();
+        // The RealProgressBar component will now show and handle progress
+        // Don't navigate away - let onComplete handle that
       } else {
+        setIsGenerating(false);
         setFormStatus("error");
         setFormError(result.error || "Ocorreu um erro desconhecido.");
+
+        // Extract session ID for resume if available
+        if (result.error?.includes("Session ID:")) {
+          const match = result.error.match(/Session ID: (gen-[\w-]+)/);
+          if (match) {
+            setGenerationSessionId(match[1]);
+          }
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
+      setIsGenerating(false);
       setFormStatus("error");
       setFormError(
         error instanceof Error ? error.message : "Falha ao criar protocolo.",
       );
+
+      // Check for session ID in error
+      if (error.message?.includes("Session ID:")) {
+        const match = error.message.match(/Session ID: (gen-[\w-]+)/);
+        if (match) {
+          setGenerationSessionId(match[1]);
+        }
+      }
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Progress indicator during research */}
-      {(formStatus === "researching" || formStatus === "loading") && (
+      {/* Real-time progress indicator via SSE */}
+      {isGenerating &&
+        generatingProtocolId &&
+        (() => {
+          console.log(
+            "[CreateProtocolForm] Rendering RealProgressBar with protocolId:",
+            generatingProtocolId,
+          );
+          return (
+            <>
+              <RealProgressBar
+                protocolId={generatingProtocolId}
+                sessionId={generationSessionId}
+                onError={(error) => {
+                  console.error(
+                    "[CreateProtocolForm] RealProgressBar error:",
+                    error,
+                  );
+                  setIsGenerating(false);
+                  setFormStatus("error");
+                  setFormError(error);
+                }}
+                onComplete={() => {
+                  console.log(
+                    "[CreateProtocolForm] Protocol generation completed!",
+                  );
+                  setIsGenerating(false);
+                  setFormStatus("success");
+                  setResearchProgress("✅ Protocolo criado com sucesso!");
+                  // Navigate to the protocol
+                  if (generatingProtocolId) {
+                    onSuccess?.({ id: generatingProtocolId });
+                  }
+                  reset();
+                  setGeneratingProtocolId(null);
+                  setGenerationSessionId(null);
+                }}
+              />
+            </>
+          );
+        })()}
+
+      {/* Legacy progress indicator - shows while waiting for protocol ID */}
+      {!generatingProtocolId && isGenerating && (
         <UltraGlassCard className="border-blue-200 bg-blue-50/30 p-6 dark:border-blue-800 dark:bg-blue-900/20">
           <div className="flex items-center space-x-4">
             <div className="relative">
@@ -271,19 +279,18 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
             </div>
             <div className="flex-1">
               <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                {formStatus === "researching"
-                  ? "Pesquisando Literatura Médica"
-                  : "Gerando Protocolo"}
+                Criando protocolo no banco de dados...
               </p>
               <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                {researchProgress}
+                Aguardando confirmação do servidor para iniciar progresso em
+                tempo real
               </p>
             </div>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-800">
             <div
-              className="h-full animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
-              style={{ width: formStatus === "researching" ? "40%" : "80%" }}
+              className="h-full animate-[pulse_2s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
+              style={{ width: "100%" }}
             />
           </div>
         </UltraGlassCard>
@@ -585,16 +592,24 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
           <UltraGradientButton
             type="submit"
             size="lg"
-            disabled={formStatus === "researching" || formStatus === "loading"}
+            disabled={
+              isGenerating ||
+              formStatus === "researching" ||
+              formStatus === "loading"
+            }
             icon={
-              formStatus === "researching" || formStatus === "loading" ? (
+              isGenerating ||
+              formStatus === "researching" ||
+              formStatus === "loading" ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Sparkles className="h-5 w-5" />
               )
             }
           >
-            {formStatus === "researching" || formStatus === "loading"
+            {isGenerating ||
+            formStatus === "researching" ||
+            formStatus === "loading"
               ? "Processando..."
               : "Criar Protocolo"}
           </UltraGradientButton>
@@ -620,8 +635,8 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
         </UltraGlassCard>
       )}
 
-      {/* Error Message */}
-      {formStatus === "error" && formError && (
+      {/* Error Message for legacy system */}
+      {!generatingProtocolId && formStatus === "error" && formError && (
         <UltraGlassCard className="border-red-200 bg-red-50/30 p-6 dark:border-red-800 dark:bg-red-900/20">
           <div className="flex items-start gap-3">
             <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/50">
@@ -635,6 +650,38 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
                 {formError}
               </p>
             </div>
+          </div>
+        </UltraGlassCard>
+      )}
+
+      {/* Error display */}
+      {formError && !isGenerating && (
+        <UltraGlassCard className="border-red-200 bg-red-50/30 p-6 dark:border-red-800 dark:bg-red-900/20">
+          <div className="flex items-center space-x-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+            <div className="flex-1">
+              <p className="text-lg font-semibold text-red-900 dark:text-red-100">
+                Erro ao criar protocolo
+              </p>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                {formError}
+              </p>
+              {generationSessionId && (
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                  Session ID: {generationSessionId}
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setFormStatus("idle");
+                setFormError(null);
+              }}
+            >
+              Tentar novamente
+            </Button>
           </div>
         </UltraGlassCard>
       )}

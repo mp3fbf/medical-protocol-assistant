@@ -7,6 +7,7 @@ import {
   generateFullProtocolAI,
   generateProtocolSectionAI,
 } from "@/lib/ai/generator";
+import { resumeGenerationSession } from "@/lib/ai/generator-modular";
 import type {
   AIFullProtocolGenerationInput,
   AIFullProtocolGenerationOutput,
@@ -18,6 +19,7 @@ import {
   // ProtocolFullContentSchema as _ProtocolFullContentSchema, // Marked as unused
 } from "@/lib/validators/protocol-schema"; // AIResearchDataSchema is actually defined here
 import type { ProtocolFullContent } from "@/types/protocol";
+import { TRPCError } from "@trpc/server";
 
 const AIFullProtocolGenerationInputSchema = z.object({
   protocolId: z
@@ -67,6 +69,86 @@ export const generationRouter = router({
         );
       },
     ),
+
+  resumeGeneration: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+        sessionId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(
+        `User ${ctx.session.user.id} resuming generation for protocol ${input.protocolId} with session ${input.sessionId}`,
+      );
+
+      // Get the protocol to retrieve the original generation params
+      const protocol = await ctx.db.protocol.findUnique({
+        where: { id: input.protocolId },
+        include: {
+          ProtocolVersion: {
+            orderBy: { versionNumber: "desc" },
+            take: 1,
+          },
+        },
+      });
+
+      if (!protocol) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Protocol not found",
+        });
+      }
+
+      // Check ownership
+      if (protocol.createdById !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only resume your own protocol generation",
+        });
+      }
+
+      try {
+        // Resume the generation with the saved session
+        const result = await resumeGenerationSession(
+          input.sessionId,
+          {
+            medicalCondition: protocol.condition,
+            researchData: {
+              query: protocol.condition,
+              findings: [], // This would need to be retrieved from somewhere
+              timestamp: new Date().toISOString(),
+            },
+          },
+          // Progress callback could be added here for SSE
+        );
+
+        // Update the protocol with the completed content
+        if (result.protocolContent) {
+          const latestVersion = protocol.ProtocolVersion[0];
+          await ctx.db.protocolVersion.create({
+            data: {
+              protocolId: input.protocolId,
+              versionNumber: (latestVersion?.versionNumber || 0) + 1,
+              content: result.protocolContent as any,
+              flowchart:
+                latestVersion?.flowchart || ({ nodes: [], edges: [] } as any),
+              changelogNotes: "Geração retomada e concluída com sucesso",
+              createdById: ctx.session.user.id,
+            },
+          });
+        }
+
+        return result;
+      } catch (error: any) {
+        console.error("Failed to resume generation:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Failed to resume generation",
+          cause: error,
+        });
+      }
+    }),
 
   generateSingleSection: protectedProcedure
     .input(AIProtocolSectionInputSchema)

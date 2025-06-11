@@ -76,6 +76,7 @@ enum ProtocolStatus {
   REVIEW
   APPROVED
   ARCHIVED
+  FAILED
 }
 
 enum UserRole {

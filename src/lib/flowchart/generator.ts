@@ -11,7 +11,7 @@ import {
 import {
   O4_MINI,
   JSON_RESPONSE_FORMAT,
-  DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
+  // DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
   DEFAULT_TEMPERATURE,
 } from "@/lib/ai/config";
 import { OpenAIError } from "@/lib/ai/errors";
@@ -103,7 +103,7 @@ export async function generateFlowchartFromProtocolContent(
       {
         response_format: JSON_RESPONSE_FORMAT,
         temperature: DEFAULT_TEMPERATURE,
-        max_tokens: DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION,
+        // max_tokens: DEFAULT_MAX_TOKENS_PROTOCOL_GENERATION, // Removed to let models use their default maximum
       },
     );
 

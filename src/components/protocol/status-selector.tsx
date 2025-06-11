@@ -23,7 +23,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/api/client";
-import { AlertCircle, CheckCircle, FileText, Archive } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Archive,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface StatusSelectorProps {
@@ -61,6 +67,13 @@ const statusConfig = {
     bgColor: "bg-gray-50",
     icon: Archive,
     description: "Protocolo arquivado",
+  },
+  [ProtocolStatus.FAILED]: {
+    label: "Falhou",
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    icon: XCircle,
+    description: "Geração do protocolo falhou",
   },
 };
 

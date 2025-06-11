@@ -237,6 +237,8 @@ Keep the summary concise but comprehensive enough to maintain continuity.
  * Integration prompt for final coherence check
  */
 export const PROTOCOL_INTEGRATION_PROMPT = `
+You are reviewing a complete medical protocol for consistency and integration.
+
 Review the complete protocol for:
 1. Internal consistency across all sections
 2. Completeness of cross-references
@@ -244,7 +246,12 @@ Review the complete protocol for:
 4. No contradictions between sections
 5. All 13 sections properly integrated
 
-Provide a final integrated version ensuring seamless transitions and consistent recommendations throughout.
+CRITICAL: You MUST return the complete protocol in the EXACT SAME JSON FORMAT as provided.
+Return a JSON object with keys "1" through "13", where each key contains an object with:
+- "title": section title (string)
+- "content": section content (string or structured object as appropriate)
+
+Do not add any text before or after the JSON. Return ONLY valid JSON that can be parsed.
 `;
 
 /**

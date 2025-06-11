@@ -35,6 +35,9 @@ export default function DashboardPage() {
   useEffect(() => {
     setIsPageLoaded(true);
 
+    // Prefetch the new protocol page to avoid chunk loading issues
+    router.prefetch("/protocols/new");
+
     // Keyboard shortcut for new protocol
     const handleKeyPress = (e: KeyboardEvent) => {
       // Check if N is pressed without any modifier keys

@@ -5,15 +5,33 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import {
-  CreateProtocolFormUltra as CreateProtocolForm,
-  type CreateProtocolFormValues,
-} from "@/components/protocol/forms/create-protocol-form-ultra";
+import type { CreateProtocolFormValues } from "@/components/protocol/forms/create-protocol-form-ultra";
 import { trpc } from "@/lib/api/client";
 import { UltraGlassCard } from "@/components/ui/ultra-card";
 import { AlertCircle, Sparkles, ArrowLeft } from "lucide-react";
 import { UltraButton } from "@/components/ui/ultra-button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load the heavy form component to avoid chunk loading issues
+const CreateProtocolForm = dynamic(
+  () =>
+    import("@/components/protocol/forms/create-protocol-form-ultra").then(
+      (mod) => ({ default: mod.CreateProtocolFormUltra }),
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    ),
+  },
+);
 
 export default function NewProtocolPage() {
   const router = useRouter();

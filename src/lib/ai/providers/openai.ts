@@ -2,12 +2,29 @@
  * OpenAI Provider Implementation
  */
 import OpenAI from "openai";
+import https from "https";
 import type {
   AIProvider,
   AIMessage,
   AICompletionOptions,
   AICompletionResponse,
 } from "./types";
+
+// Timeout configurations for different request types
+const TIMEOUT_CONFIGS = {
+  standard: 3600000, // 1 hour for standard requests
+  large: 7200000, // 2 hours for large context requests
+  o3: 86400000, // 24 HOURS for O3 model requests
+  research: 3600000, // 1 hour for research requests
+};
+
+// Retry configuration - DISABLED FOR O3 TESTING
+const RETRY_CONFIG = {
+  maxRetries: 1, // NO RETRIES - let it run once forever
+  initialDelay: 1000, // 1 second
+  maxDelay: 32000, // 32 seconds
+  backoffMultiplier: 2,
+};
 
 export class OpenAIProvider implements AIProvider {
   name = "openai";
@@ -23,14 +40,99 @@ export class OpenAIProvider implements AIProvider {
     "o3",
     "o3-mini",
   ];
+  private retryDelays = new Map<string, number>();
 
   constructor(apiKey?: string, baseUrl?: string) {
+    // Create HTTPS agent with keep-alive for better connection stability
+    // Note: Don't set timeout here as it will be set per request
+    const httpAgent = new https.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 30000, // 30 seconds
+      // timeout removed - will be set dynamically per request
+    });
+
     this.client = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY,
       baseURL: baseUrl,
-      timeout: 600000, // 10 minutes timeout for O3 model
-      maxRetries: 2, // Retry up to 2 times on failure
+      timeout: 86400000, // 24 HOURS default for O3 testing
+      maxRetries: 0, // We'll handle retries ourselves
+      httpAgent: httpAgent,
     });
+  }
+
+  /**
+   * Determine the appropriate timeout based on request type
+   */
+  private getRequestTimeout(
+    model: string,
+    options?: AICompletionOptions,
+  ): number {
+    // O3 models need more time
+    if (model.startsWith("o3")) {
+      return TIMEOUT_CONFIGS.o3;
+    }
+
+    // Large context requests
+    if (options?.max_tokens && options.max_tokens > 4000) {
+      return TIMEOUT_CONFIGS.large;
+    }
+
+    // Research requests (if we add a flag later)
+    // if (options?.isResearch) return TIMEOUT_CONFIGS.research;
+
+    return TIMEOUT_CONFIGS.standard;
+  }
+
+  /**
+   * Calculate exponential backoff delay with jitter
+   */
+  private calculateBackoffDelay(attempt: number): number {
+    const exponentialDelay = Math.min(
+      RETRY_CONFIG.initialDelay *
+        Math.pow(RETRY_CONFIG.backoffMultiplier, attempt - 1),
+      RETRY_CONFIG.maxDelay,
+    );
+    // Add jitter (±25%)
+    const jitter = exponentialDelay * 0.25 * (Math.random() * 2 - 1);
+    return Math.round(exponentialDelay + jitter);
+  }
+
+  /**
+   * Check if error is retryable - DISABLED FOR O3 TESTING
+   */
+  private isRetryableError(error: any): boolean {
+    // FOR O3 TESTING - NO RETRIES AT ALL
+    return false;
+
+    /* ORIGINAL CODE - DISABLED
+    // Network errors
+    if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
+      return true;
+    }
+    
+    // OpenAI rate limits or server errors
+    if (error.status === 429 || (error.status >= 500 && error.status < 600)) {
+      return true;
+    }
+    
+    // Timeout errors
+    if (error.message?.includes('timeout') || error.message?.includes('Timeout')) {
+      return true;
+    }
+    
+    // Context length errors are not retryable
+    if (error.message?.includes('context_length_exceeded')) {
+      return false;
+    }
+    
+    // Quota errors are not retryable
+    if (error.message?.includes('quota_exceeded')) {
+      return false;
+    }
+    
+    // Default to retryable for unknown errors
+    return true;
+    */
   }
 
   async createCompletion(
@@ -46,6 +148,7 @@ export class OpenAIProvider implements AIProvider {
         role: msg.role,
         content: msg.content,
       })),
+      stream: true, // ENABLE STREAMING FOR O3
     };
 
     // Check if it's an O-series model (o3, o3-mini, o4-mini)
@@ -68,26 +171,129 @@ export class OpenAIProvider implements AIProvider {
       completionParams.response_format = options?.response_format;
     }
 
-    const response =
-      await this.client.chat.completions.create(completionParams);
+    const timeout = this.getRequestTimeout(model, options);
+    const requestId = `${model}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    const choice = response.choices[0];
-    if (!choice?.message?.content) {
-      throw new Error("OpenAI returned empty response");
+    console.log(
+      `[OpenAI] Starting STREAMING request ${requestId} to ${model} at ${new Date().toISOString()}`,
+    );
+    console.log(
+      `[OpenAI] Token limits: max_completion_tokens=${completionParams.max_completion_tokens || "UNLIMITED"}`,
+    );
+    console.log(
+      `[OpenAI] Using streaming to keep connection alive during O3 processing`,
+    );
+
+    let lastError: any;
+
+    // Retry loop with exponential backoff
+    for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+      const startTime = Date.now();
+
+      try {
+        // Create a new HTTPS agent with aggressive keep-alive
+        const requestAgent = new https.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 10000, // Send keep-alive every 10 seconds
+          // NO TIMEOUT - let the request run as long as needed
+        });
+
+        // Create a new client instance with INFINITE timeout
+        const requestClient = new OpenAI({
+          apiKey: this.client.apiKey,
+          baseURL: this.client.baseURL,
+          timeout: 86400000, // 24 HOURS - maximum timeout for O3
+          maxRetries: 0,
+          httpAgent: requestAgent,
+        });
+
+        // Create streaming completion
+        const streamResponse =
+          await requestClient.beta.chat.completions.stream(completionParams);
+
+        // Collect all chunks
+        let fullContent = "";
+        let lastChunkTime = Date.now();
+        let chunkCount = 0;
+
+        console.log(`[OpenAI] Stream started for ${requestId}`);
+
+        for await (const chunk of streamResponse) {
+          const currentTime = Date.now();
+          const timeSinceLastChunk = currentTime - lastChunkTime;
+          lastChunkTime = currentTime;
+
+          chunkCount++;
+
+          // Log every 10th chunk to show progress
+          if (chunkCount % 10 === 0) {
+            console.log(
+              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk`,
+            );
+          }
+
+          const delta = chunk.choices[0]?.delta?.content;
+          if (delta) {
+            fullContent += delta;
+          }
+        }
+
+        const duration = Date.now() - startTime;
+        console.log(
+          `[OpenAI] Stream completed for ${requestId} from ${model} after ${duration}ms (${chunkCount} chunks)`,
+        );
+
+        // Clear retry delay on success
+        this.retryDelays.delete(requestId);
+
+        if (!fullContent) {
+          throw new Error("OpenAI returned empty response from stream");
+        }
+
+        return {
+          content: fullContent,
+          usage: undefined, // Streaming doesn't provide usage info for O3
+          model: model,
+          finish_reason: "stop",
+        };
+      } catch (error: any) {
+        const duration = Date.now() - startTime;
+        lastError = error;
+
+        console.error(
+          `[OpenAI] Stream request ${requestId} failed after ${duration}ms (attempt ${attempt}/${RETRY_CONFIG.maxRetries}):`,
+          {
+            model,
+            error: error.message,
+            code: error.code,
+            type: error.type,
+            status: error.status,
+          },
+        );
+
+        // Check if we should retry
+        if (attempt < RETRY_CONFIG.maxRetries && this.isRetryableError(error)) {
+          const delay = this.calculateBackoffDelay(attempt);
+          this.retryDelays.set(requestId, delay);
+
+          console.log(
+            `[OpenAI] Retrying request ${requestId} in ${delay}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
+          );
+
+          // Wait before retrying
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          // No more retries
+          this.retryDelays.delete(requestId);
+          break;
+        }
+      }
     }
 
-    return {
-      content: choice.message.content,
-      usage: response.usage
-        ? {
-            prompt_tokens: response.usage.prompt_tokens,
-            completion_tokens: response.usage.completion_tokens,
-            total_tokens: response.usage.total_tokens,
-          }
-        : undefined,
-      model: response.model,
-      finish_reason: choice.finish_reason || undefined,
-    };
+    // All retries exhausted
+    throw lastError;
+
+    // This part is now handled inside the retry loop above
   }
 
   isConfigured(): boolean {

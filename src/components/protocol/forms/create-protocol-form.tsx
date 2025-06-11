@@ -110,6 +110,11 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
     setFormError(null);
     setResearchProgress("Iniciando pesquisa médica...");
 
+    // Declare intervals outside try block so they can be cleared in catch
+    let progressInterval: NodeJS.Timeout | undefined;
+    let timerInterval: NodeJS.Timeout | undefined;
+    let creationInterval: NodeJS.Timeout | undefined;
+
     try {
       // Dynamic progress messages based on generation mode
       let messages: string[];
@@ -155,7 +160,7 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
       // Different timing based on generation mode
       const intervalTime = data.generationMode === "automatic" ? 15000 : 2500; // 15s for O3, 2.5s for others
 
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         messageIndex = messageIndex + 1;
         if (messageIndex < messages.length) {
           setResearchProgress(messages[messageIndex]);
@@ -167,16 +172,9 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
 
       // Start elapsed time counter
       const startTime = Date.now();
-      const timerInterval = setInterval(() => {
+      timerInterval = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
-
-      // Store interval references for cleanup
-      const cleanupIntervals = () => {
-        clearInterval(progressInterval);
-        clearInterval(timerInterval);
-        setElapsedTime(0);
-      };
 
       setFormStatus("loading");
 
@@ -197,7 +195,6 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
             ];
 
       let creationIndex = 0;
-      let creationInterval: NodeJS.Timeout | undefined;
       creationInterval = setInterval(() => {
         creationIndex = (creationIndex + 1) % creationMessages.length;
         setResearchProgress(creationMessages[creationIndex]);
@@ -206,8 +203,11 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
       const result = await onSubmit(data);
 
       // Clear all intervals
-      cleanupIntervals();
-      clearInterval(creationInterval);
+      // Clear all intervals on completion
+      clearInterval(progressInterval);
+      clearInterval(timerInterval);
+      if (creationInterval) clearInterval(creationInterval);
+      setElapsedTime(0);
 
       if (result.success) {
         setFormStatus("success");
@@ -220,8 +220,12 @@ export const CreateProtocolForm: React.FC<CreateProtocolFormProps> = ({
         setResearchProgress("");
       }
     } catch (error) {
-      cleanupIntervals();
+      // Clear all intervals on error
+      if (progressInterval) clearInterval(progressInterval);
+      if (timerInterval) clearInterval(timerInterval);
       if (creationInterval) clearInterval(creationInterval);
+      setElapsedTime(0);
+
       setFormStatus("error");
       setFormError(
         error instanceof Error ? error.message : "Falha ao criar protocolo.",
