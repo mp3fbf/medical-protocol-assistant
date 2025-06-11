@@ -50,7 +50,8 @@ function stripHtml(html: string): string {
  */
 function isHtml(content: string): boolean {
   if (!content || typeof content !== "string") return false;
-  return /<[a-z][\s\S]*>/i.test(content);
+  // More comprehensive HTML detection
+  return /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/i.test(content);
 }
 
 // Translation mapping for common medical fields
@@ -85,8 +86,8 @@ const fieldTranslations: Record<string, string> = {
 // Format structured content for display in PDF
 function formatStructuredContent(content: any): string {
   if (typeof content === "string") {
-    // Check if content has HTML and strip it
-    return isHtml(content) ? stripHtml(content) : content;
+    // Always strip HTML from string content
+    return stripHtml(content);
   }
 
   let formatted = "";
@@ -118,14 +119,20 @@ function formatStructuredContent(content: any): string {
           if (typeof item === "object" && item !== null) {
             formatted += `  • ${formatStructuredContent(item)}\n`;
           } else {
-            formatted += `  • ${item}\n`;
+            // Strip HTML from array items too
+            const displayItem =
+              typeof item === "string" ? stripHtml(item) : item;
+            formatted += `  • ${displayItem}\n`;
           }
         });
         formatted += "\n";
       } else if (typeof value === "object" && value !== null) {
         formatted += `${readableKey}:\n${formatStructuredContent(value)}\n\n`;
       } else if (value) {
-        formatted += `${readableKey}: ${value}\n\n`;
+        // Strip HTML from string values in objects too
+        const displayValue =
+          typeof value === "string" ? stripHtml(value) : value;
+        formatted += `${readableKey}: ${displayValue}\n\n`;
       }
     });
   }
@@ -183,9 +190,9 @@ export async function generateJsPDFProtocolPdf(
 
       let content = "";
       if (typeof section.content === "string") {
-        // Check if content has HTML and strip it
         const rawContent = section.content || "[Conteúdo vazio]";
-        content = isHtml(rawContent) ? stripHtml(rawContent) : rawContent;
+        // Always strip HTML since rich text editor outputs HTML
+        content = stripHtml(rawContent);
       } else if (section.content && typeof section.content === "object") {
         content = formatStructuredContent(section.content);
       } else {

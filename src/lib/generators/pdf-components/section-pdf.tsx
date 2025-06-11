@@ -79,8 +79,8 @@ const renderContent = (content: any, depth = 0): JSX.Element[] => {
   const indent = depth * 10; // Simple indentation for nested objects
 
   if (typeof content === "string") {
-    // Check if content has HTML and strip it
-    const textContent = isHtml(content) ? stripHtml(content) : content;
+    // Always strip HTML since rich text editor outputs HTML
+    const textContent = stripHtml(content);
 
     // Split by line breaks to preserve paragraph structure
     const paragraphs = textContent.split(/\n\n+/).filter((p) => p.trim());
