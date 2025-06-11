@@ -255,7 +255,7 @@ Regras IMPORTANTES:
       // If response is not a valid JSON array, try to extract it
       if (!jsonToparse.startsWith("[")) {
         // Try to find JSON array in the response
-        const arrayMatch = jsonToparse.match(/\[.*\]/s);
+        const arrayMatch = jsonToparse.match(/\[.*\]/);
         if (arrayMatch) {
           jsonToparse = arrayMatch[0];
         } else {
@@ -440,9 +440,9 @@ async function convertToFlowchart(
         // Try to match the connection label with an outcome
         const matchingOutcome = decision.possibleOutcomes.find(
           (o) =>
-            o.label.toLowerCase() === conn.label.toLowerCase() ||
-            o.label.toLowerCase().includes(conn.label.toLowerCase()) ||
-            conn.label.toLowerCase().includes(o.label.toLowerCase()),
+            o.label.toLowerCase() === conn.label!.toLowerCase() ||
+            o.label.toLowerCase().includes(conn.label!.toLowerCase()) ||
+            conn.label!.toLowerCase().includes(o.label.toLowerCase()),
         );
         if (matchingOutcome) {
           sourceHandle = `${sourceNode.id}_${matchingOutcome.label.toLowerCase().replace(/\s+/g, "_")}`;
