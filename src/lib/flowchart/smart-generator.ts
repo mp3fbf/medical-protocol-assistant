@@ -21,6 +21,10 @@ import type { ProtocolFullContent } from "@/types/protocol";
 import type { FlowchartDefinition, CustomFlowNode } from "@/types/flowchart";
 import { GeneratedFlowchartSchema } from "@/lib/validators/flowchart";
 import { applyDagreLayout } from "./layout";
+import {
+  generateFlowchartModular,
+  shouldUseModularFlowchartGeneration,
+} from "./flowchart-generator-modular";
 
 // Enhanced section mapping for different protocol types
 const PROTOCOL_TYPE_MAPPINGS = {
@@ -137,6 +141,12 @@ export async function generateSmartFlowchart(
     protocolType?: keyof typeof PROTOCOL_TYPE_MAPPINGS;
     maxNodes?: number;
     includeMedications?: boolean;
+    progressCallback?: (progress: {
+      step: number;
+      totalSteps: number;
+      message: string;
+      data?: any;
+    }) => void;
   } = {},
 ): Promise<FlowchartDefinition & { metadata?: any }> {
   const {
@@ -144,6 +154,15 @@ export async function generateSmartFlowchart(
     maxNodes = 50,
     includeMedications = true,
   } = options;
+
+  // Check if we should use modular generation
+  if (shouldUseModularFlowchartGeneration(protocolContent)) {
+    console.log(`[SmartFlowchart] Using modular generation for large protocol`);
+    return generateFlowchartModular(protocolContent, {
+      protocolId,
+      progressCallback: options.progressCallback,
+    });
+  }
 
   // Analyze protocol type if not provided
   const protocolType =

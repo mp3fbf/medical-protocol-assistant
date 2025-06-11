@@ -22,11 +22,6 @@ import { checkPermission } from "@/lib/auth/rbac";
 // import { randomUUID } from "crypto"; // No longer manually setting IDs
 
 import { SECTION_DEFINITIONS } from "@/lib/ai/prompts/section-specific";
-import { performMedicalResearch } from "@/lib/ai/research";
-import { generateFullProtocolAI } from "@/lib/ai/generator";
-import type { DeepResearchQuery } from "@/types/research";
-import { documentParser } from "@/lib/upload/document-parser";
-import { generationProgressEmitter } from "@/lib/events/generation-progress";
 
 const DEFAULT_EMPTY_CONTENT: ProtocolFullContent = Object.fromEntries(
   SECTION_DEFINITIONS.map((def) => [
@@ -150,15 +145,6 @@ export const protocolRouter = router({
         supplementWithResearch = false,
       } = input;
 
-      // Log the generation configuration for future implementation
-      console.log(`[TRPC /protocol.create] Generation mode: ${generationMode}`);
-      console.log(
-        `[TRPC /protocol.create] Target population: ${targetPopulation || "Not specified"}`,
-      );
-      console.log(
-        `[TRPC /protocol.create] Research sources: ${researchSources.join(", ")}`,
-      );
-      console.log(`[TRPC /protocol.create] Year range: ${yearRange} years`);
       const userId = ctx.session.user.id;
 
       if (!title || !condition) {
@@ -192,11 +178,9 @@ export const protocolRouter = router({
         .toString()
         .padStart(3, "0")}`;
 
-      let protocol: any = null;
-
       try {
-        // Create protocol record first to get the ID for real-time progress tracking
-        protocol = await ctx.db.protocol.create({
+        // Create protocol record with generation metadata
+        const protocol = await ctx.db.protocol.create({
           data: {
             title,
             condition,
@@ -211,310 +195,47 @@ export const protocolRouter = router({
           `[TRPC /protocol.create] Created protocol record: ${protocol.id} - ${protocol.title}`,
         );
 
-        // Initialize protocol content - will be empty for manual mode, generated for automatic mode
-        let protocolContent: ProtocolFullContent = DEFAULT_EMPTY_CONTENT;
-        let changelogNotes = "Versão inicial criada.";
-
-        // If automatic mode, trigger AI research and generation
-        if (generationMode === "automatic") {
-          console.log(
-            "[TRPC /protocol.create] Starting AI research and generation pipeline...",
-          );
-
-          try {
-            // Step 1: Perform medical research
-            const researchQuery: DeepResearchQuery = {
-              condition,
-              sources: researchSources as any,
-              yearRange,
-              keywords: targetPopulation ? [targetPopulation] : undefined,
-            };
-
-            console.log("[TRPC /protocol.create] Starting medical research...");
-            const researchData = await performMedicalResearch(researchQuery);
-            console.log(
-              "[TRPC /protocol.create] Research completed, starting protocol generation...",
-            );
-
-            // Step 2: Generate protocol content using AI
-            console.log(
-              "[TRPC /protocol.create] Starting O3 model generation...",
-            );
-            console.log(
-              "[TRPC /protocol.create] This may take 3-10 minutes for O3 to reason through all sections...",
-            );
-
-            const generationResult = await generateFullProtocolAI(
-              {
-                medicalCondition: condition,
-                researchData,
-                specificInstructions: targetPopulation
-                  ? `População alvo: ${targetPopulation}`
-                  : undefined,
-              },
-              {
-                useModular: true, // Enable modular generation for better depth
-                protocolId: protocol.id, // Pass protocol ID for real-time progress tracking
-                progressCallback: (progress) => {
-                  console.log(
-                    `[TRPC /protocol.create] Progress: ${progress.message}`,
-                  );
-                  console.log(
-                    `[TRPC /protocol.create] Sections completed: ${progress.sectionsCompleted.join(", ") || "none yet"}`,
-                  );
-                },
-              },
-            );
-
-            if (generationResult.protocolContent) {
-              protocolContent = generationResult.protocolContent;
-              changelogNotes =
-                "Versão inicial criada com IA baseada em pesquisa médica.";
-              console.log(
-                "[TRPC /protocol.create] AI generation completed successfully",
-              );
-              console.log(
-                "[TRPC /protocol.create] Sample section from generated content:",
-                {
-                  section1: protocolContent["1"],
-                  hasSection1: !!protocolContent["1"],
-                  section1SectionNumber: protocolContent["1"]?.sectionNumber,
-                  allSections: Object.keys(protocolContent),
-                },
-              );
-            } else {
-              console.warn(
-                "[TRPC /protocol.create] AI generation failed, using empty content",
-              );
-              changelogNotes =
-                "Versão inicial criada (geração IA falhou - conteúdo vazio).";
-            }
-          } catch (aiError: any) {
-            console.error(
-              "[TRPC /protocol.create] AI pipeline error:",
-              aiError,
-            );
-
-            // Check if partial progress was saved
-            if (aiError.sessionId && aiError.completedSections) {
-              console.log(
-                `[TRPC /protocol.create] Partial progress saved: Session ${aiError.sessionId} with ${aiError.completedSections} sections completed`,
-              );
-
-              // Add session info to error message
-              throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: `Falha na geração do protocolo após ${aiError.completedSections} seções. Session ID: ${aiError.sessionId}. Você pode tentar novamente ou usar o modo manual.`,
-                cause: {
-                  sessionId: aiError.sessionId,
-                  completedSections: aiError.completedSections,
-                },
-              });
-            }
-
-            // Check if it's an O3 model verification error
-            if (aiError?.message?.includes("verified to use the model `o3`")) {
-              throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message:
-                  "O modelo O3 requer verificação da organização na OpenAI. Por favor, aguarde 15 minutos após a verificação ou selecione outro modelo (GPT-4).",
-              });
-            }
-
-            // Continue with empty content if AI fails
-            changelogNotes =
-              "Versão inicial criada (erro na geração IA - conteúdo vazio).";
-          }
-        } else if (generationMode === "material_based") {
-          console.log(
-            "[TRPC /protocol.create] Starting material-based generation pipeline...",
-          );
-
-          try {
-            // Step 1: Parse uploaded documents
-            if (!materialFiles || materialFiles.length === 0) {
-              throw new Error(
-                "No material files provided for material-based generation",
-              );
-            }
-
-            console.log(
-              `[TRPC /protocol.create] Processing ${materialFiles.length} uploaded documents...`,
-            );
-
-            let combinedMaterialContent = "";
-            const documentSummaries: string[] = [];
-
-            // Parse each uploaded file
-            for (const file of materialFiles) {
-              if (!file.buffer || !file.name) {
-                console.warn(
-                  "[TRPC /protocol.create] Skipping invalid file:",
-                  file,
-                );
-                continue;
-              }
-
-              try {
-                // Convert base64 to buffer if needed
-                const buffer = Buffer.isBuffer(file.buffer)
-                  ? file.buffer
-                  : Buffer.from(file.buffer, "base64");
-
-                const parsedDoc = await documentParser.parseFile(
-                  buffer,
-                  file.name,
-                );
-
-                combinedMaterialContent += `\n\n=== DOCUMENTO: ${parsedDoc.metadata.fileName} ===\n`;
-                combinedMaterialContent += parsedDoc.content;
-
-                documentSummaries.push(
-                  `${parsedDoc.metadata.fileName} (${parsedDoc.metadata.fileType}, ${Math.round(parsedDoc.metadata.fileSize / 1024)}KB)`,
-                );
-
-                console.log(
-                  `[TRPC /protocol.create] Successfully parsed: ${parsedDoc.metadata.fileName}`,
-                );
-              } catch (parseError) {
-                console.error(
-                  `[TRPC /protocol.create] Failed to parse file ${file.name}:`,
-                  parseError,
-                );
-                // Continue with other files
-              }
-            }
-
-            if (!combinedMaterialContent.trim()) {
-              throw new Error(
-                "No content could be extracted from uploaded files",
-              );
-            }
-
-            // Step 2: Optional research supplementation
-            let researchData = undefined;
-            if (supplementWithResearch && researchSources.length > 0) {
-              console.log(
-                "[TRPC /protocol.create] Supplementing with medical research...",
-              );
-
-              const researchQuery: DeepResearchQuery = {
-                condition,
-                sources: researchSources as any,
-                yearRange,
-                keywords: targetPopulation ? [targetPopulation] : undefined,
-              };
-
-              researchData = await performMedicalResearch(researchQuery);
-              console.log(
-                "[TRPC /protocol.create] Research supplementation completed",
-              );
-            }
-
-            // Step 3: Generate protocol from material + optional research
-            console.log(
-              "[TRPC /protocol.create] Generating protocol from material content...",
-            );
-
-            const materialInstructions = [
-              `Baseie o protocolo principalmente no seguinte material médico fornecido:`,
-              ``,
-              combinedMaterialContent,
-              ``,
-              `=== INSTRUÇÕES ===`,
-              `- Use o conteúdo acima como base principal para o protocolo`,
-              `- Mantenha a estrutura e as recomendações do material original`,
-              `- Documente as fontes dos documentos: ${documentSummaries.join(", ")}`,
-            ];
-
-            if (targetPopulation) {
-              materialInstructions.push(
-                `- População alvo: ${targetPopulation}`,
-              );
-            }
-
-            if (supplementWithResearch && researchData) {
-              materialInstructions.push(
-                `- Complementar com evidências da pesquisa científica quando apropriado`,
-              );
-            }
-
-            const generationResult = await generateFullProtocolAI(
-              {
-                medicalCondition: condition,
-                researchData: researchData || {
-                  query: condition,
-                  findings: [],
-                  timestamp: new Date().toISOString(),
-                },
-                specificInstructions: materialInstructions.join("\n"),
-              },
-              {
-                useModular: true, // Enable modular generation for material-based protocols too
-              },
-            );
-
-            if (generationResult.protocolContent) {
-              protocolContent = generationResult.protocolContent;
-              changelogNotes = supplementWithResearch
-                ? `Versão inicial criada a partir de material próprio e pesquisa complementar. Documentos: ${documentSummaries.join(", ")}.`
-                : `Versão inicial criada a partir de material próprio. Documentos: ${documentSummaries.join(", ")}.`;
-
-              console.log(
-                "[TRPC /protocol.create] Material-based generation completed successfully",
-              );
-            } else {
-              console.warn(
-                "[TRPC /protocol.create] Material-based generation failed, using empty content",
-              );
-              changelogNotes =
-                "Versão inicial criada (geração baseada em material falhou - conteúdo vazio).";
-            }
-          } catch (materialError) {
-            console.error(
-              "[TRPC /protocol.create] Material-based pipeline error:",
-              materialError,
-            );
-            // Continue with empty content if material processing fails
-            changelogNotes =
-              "Versão inicial criada (erro no processamento de material - conteúdo vazio).";
-          }
-        }
-
-        // Validate that we have actual content before saving
-        const hasContent = Object.keys(protocolContent).some(
-          (key) =>
-            protocolContent[key]?.content &&
-            (typeof protocolContent[key].content === "string"
-              ? protocolContent[key].content.trim() !== ""
-              : true),
-        );
-
-        if (!hasContent && generationMode === "automatic") {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message:
-              "Falha na geração do protocolo. Verifique o log de erros para mais detalhes.",
-          });
-        }
-
-        // Create the first version with the generated content
+        // Create empty initial version
         await ctx.db.protocolVersion.create({
           data: {
             protocolId: protocol.id,
             versionNumber: 1,
             createdById: userId,
-            content: protocolContent as any,
+            content: DEFAULT_EMPTY_CONTENT as any,
             flowchart: DEFAULT_EMPTY_FLOWCHART as any,
-            changelogNotes,
+            changelogNotes:
+              "Versão inicial criada - aguardando geração de conteúdo.",
+          },
+        });
+
+        // Store generation parameters in audit log for later use
+        await ctx.db.auditLog.create({
+          data: {
+            userId,
+            action: "PROTOCOL_CREATED",
+            resourceType: "PROTOCOL",
+            resourceId: protocol.id,
+            details: {
+              generationMode,
+              targetPopulation,
+              researchSources,
+              yearRange,
+              materialFiles:
+                materialFiles?.map((f) => ({
+                  name: f.name,
+                  size: f.size,
+                  type: f.type,
+                })) || [],
+              supplementWithResearch,
+            },
           },
         });
 
         console.log(
-          `[TRPC /protocol.create] Successfully created protocol version for: ${protocol.id} - ${protocol.title}`,
+          `[TRPC /protocol.create] Successfully created protocol and stored generation params`,
         );
 
-        // Return a very simplified object for now to minimize serialization issues
+        // Return immediately - generation will be started separately
         return {
           id: protocol.id,
           code: protocol.code,
@@ -524,39 +245,9 @@ export const protocolRouter = router({
         };
       } catch (error) {
         console.error(
-          `[TRPC /protocol.create] Error during protocol creation in DB:`,
+          `[TRPC /protocol.create] Error during protocol creation:`,
           error,
         );
-
-        // If we created a protocol record but failed during generation, mark it as FAILED
-        if (protocol?.id) {
-          try {
-            await ctx.db.protocol.update({
-              where: { id: protocol.id },
-              data: {
-                status: ProtocolStatus.FAILED,
-                updatedAt: new Date(),
-              },
-            });
-            console.log(
-              `[TRPC /protocol.create] Marked protocol as FAILED: ${protocol.id}`,
-            );
-
-            // Emit error event for progress tracking
-            generationProgressEmitter.emitError(
-              protocol.id,
-              `gen-${Date.now()}`,
-              error instanceof Error
-                ? error.message
-                : "Erro desconhecido durante a geração",
-            );
-          } catch (updateError) {
-            console.error(
-              `[TRPC /protocol.create] Failed to update protocol status after error:`,
-              updateError,
-            );
-          }
-        }
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

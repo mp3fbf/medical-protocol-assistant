@@ -176,13 +176,12 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
   const processSubmit: SubmitHandler<CreateProtocolFormValues> = async (
     data,
   ) => {
-    setIsGenerating(true);
     setFormStatus("loading");
     setFormError(null);
-    setResearchProgress("Iniciando geração do protocolo...");
+    setResearchProgress("Criando protocolo...");
 
     try {
-      // Submit the form - this creates the protocol and starts generation
+      // Submit the form - this creates the protocol only
       const result = await onSubmit(data);
 
       if (result.success && result.data?.id) {
@@ -190,23 +189,26 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
           "[CreateProtocolForm] Protocol created with ID:",
           result.data.id,
         );
-        // Set the protocol ID to start SSE connection for real-time progress
-        setGeneratingProtocolId(result.data.id);
 
-        // The RealProgressBar component will now show and handle progress
-        // Don't navigate away - let onComplete handle that
+        // For automatic modes, show progress bar
+        if (data.generationMode !== "manual") {
+          setIsGenerating(true);
+          // Set the protocol ID to start SSE connection for real-time progress
+          setGeneratingProtocolId(result.data.id);
+          // The RealProgressBar component will now show and handle progress
+          // Don't navigate away - let onComplete handle that
+        } else {
+          // For manual mode, navigate immediately
+          setFormStatus("success");
+          setResearchProgress("✅ Protocolo criado com sucesso!");
+          if (result.data?.id) {
+            onSuccess?.({ id: result.data.id });
+          }
+        }
       } else {
         setIsGenerating(false);
         setFormStatus("error");
         setFormError(result.error || "Ocorreu um erro desconhecido.");
-
-        // Extract session ID for resume if available
-        if (result.error?.includes("Session ID:")) {
-          const match = result.error.match(/Session ID: (gen-[\w-]+)/);
-          if (match) {
-            setGenerationSessionId(match[1]);
-          }
-        }
       }
     } catch (error: any) {
       setIsGenerating(false);
@@ -214,14 +216,6 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
       setFormError(
         error instanceof Error ? error.message : "Falha ao criar protocolo.",
       );
-
-      // Check for session ID in error
-      if (error.message?.includes("Session ID:")) {
-        const match = error.message.match(/Session ID: (gen-[\w-]+)/);
-        if (match) {
-          setGenerationSessionId(match[1]);
-        }
-      }
     }
   };
 
@@ -269,352 +263,331 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
           );
         })()}
 
-      {/* Legacy progress indicator - shows while waiting for protocol ID */}
-      {!generatingProtocolId && isGenerating && (
-        <UltraGlassCard className="border-blue-200 bg-blue-50/30 p-6 dark:border-blue-800 dark:bg-blue-900/20">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <div className="absolute inset-0 animate-pulse bg-blue-600/30 blur-xl" />
-            </div>
-            <div className="flex-1">
-              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                Criando protocolo no banco de dados...
-              </p>
-              <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                Aguardando confirmação do servidor para iniciar progresso em
-                tempo real
-              </p>
-            </div>
-          </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-800">
-            <div
-              className="h-full animate-[pulse_2s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
-              style={{ width: "100%" }}
-            />
-          </div>
-        </UltraGlassCard>
+      {/* Show info message when generating */}
+      {isGenerating && (
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            O protocolo está sendo gerado com IA. Aguarde a conclusão...
+          </p>
+        </div>
       )}
 
-      <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
-        {/* Basic Information */}
-        <div
-          className={cn(
-            "space-y-4 transition-all duration-700",
-            isFormLoaded
-              ? "translate-y-0 opacity-100"
-              : "translate-y-4 opacity-0",
-          )}
-        >
-          <div className="mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary-500" />
-            <h3 className="text-lg font-semibold">Informações Básicas</h3>
-          </div>
-
-          <div>
-            <label htmlFor="title" className="mb-2 block text-sm font-medium">
-              Título do Protocolo <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              placeholder="Ex: Protocolo de Atendimento à Bradicardia"
-              aria-required="true"
-              {...register("title")}
-              className={cn(
-                "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
-                "rounded-xl border border-gray-200 dark:border-gray-700",
-                "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
-                "transition-all duration-300 placeholder:text-gray-400",
-                errors.title && "border-red-500 focus:ring-red-500",
-              )}
-            />
-            {errors.title && (
-              <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                {errors.title.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="condition"
-              className="mb-2 block text-sm font-medium"
-            >
-              Condição Médica Principal <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="condition"
-              type="text"
-              placeholder="Ex: Bradicardia sintomática"
-              aria-required="true"
-              {...register("condition")}
-              className={cn(
-                "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
-                "rounded-xl border border-gray-200 dark:border-gray-700",
-                "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
-                "transition-all duration-300 placeholder:text-gray-400",
-                errors.condition && "border-red-500 focus:ring-red-500",
-              )}
-            />
-            {errors.condition && (
-              <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                {errors.condition.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="targetPopulation"
-              className="mb-2 block text-sm font-medium"
-            >
-              População Alvo <span className="text-gray-400">(Opcional)</span>
-            </label>
-            <input
-              id="targetPopulation"
-              type="text"
-              placeholder="Ex: Pacientes adultos em emergência"
-              {...register("targetPopulation")}
-              className={cn(
-                "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
-                "rounded-xl border border-gray-200 dark:border-gray-700",
-                "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
-                "transition-all duration-300 placeholder:text-gray-400",
-                errors.targetPopulation && "border-red-500 focus:ring-red-500",
-              )}
-            />
-            {errors.targetPopulation && (
-              <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                {errors.targetPopulation.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Generation Mode Selection */}
-        <div
-          className={cn(
-            "space-y-4 transition-all delay-100 duration-700",
-            isFormLoaded
-              ? "translate-y-0 opacity-100"
-              : "translate-y-4 opacity-0",
-          )}
-        >
-          <div className="mb-4 flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary-500" />
-            <h3 className="text-lg font-semibold">
-              Modo de Geração <span className="text-red-500">*</span>
-            </h3>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {generationModes.map((mode) => {
-              const Icon = mode.icon;
-              const isSelected = watchedGenerationMode === mode.id;
-              return (
-                <button
-                  key={mode.id}
-                  type="button"
-                  onClick={() => setValue("generationMode", mode.id as any)}
-                  className={cn(
-                    "group relative rounded-xl border-2 p-6 transition-all duration-300",
-                    "transform-gpu hover:scale-[1.02] hover:shadow-lg",
-                    isSelected
-                      ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/20"
-                      : "border-gray-200 hover:border-primary-300 dark:border-gray-700",
-                  )}
-                >
-                  {isSelected && (
-                    <div className="absolute right-3 top-3">
-                      <UltraBadge status="success" size="sm">
-                        Selecionado
-                      </UltraBadge>
-                    </div>
-                  )}
-
-                  <div
-                    className={cn(
-                      "mb-4 flex h-12 w-12 items-center justify-center rounded-lg",
-                      "bg-gradient-to-br",
-                      mode.color,
-                      "text-white",
-                    )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-
-                  <h4 className="mb-2 text-left font-semibold">{mode.title}</h4>
-                  <p className="mb-3 text-left text-sm text-gray-600 dark:text-gray-400">
-                    {mode.description}
-                  </p>
-
-                  <ul className="space-y-1">
-                    {mode.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
-                      >
-                        <Check className="h-3 w-3 text-emerald-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Research Configuration (for automatic mode) */}
-        {(watchedGenerationMode === "automatic" ||
-          (watchedGenerationMode === "material_based" &&
-            watchedSupplementWithResearch)) && (
+      {/* Show form only if not generating */}
+      {!isGenerating && (
+        <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
+          {/* Basic Information */}
           <div
             className={cn(
-              "space-y-4 transition-all delay-200 duration-700",
+              "space-y-4 transition-all duration-700",
               isFormLoaded
                 ? "translate-y-0 opacity-100"
                 : "translate-y-4 opacity-0",
             )}
           >
             <div className="mb-4 flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary-500" />
-              <h3 className="text-lg font-semibold">
-                Configuração de Pesquisa
-              </h3>
+              <FileText className="h-5 w-5 text-primary-500" />
+              <h3 className="text-lg font-semibold">Informações Básicas</h3>
             </div>
 
             <div>
-              <label className="mb-3 block text-sm font-medium">
-                Fontes de Pesquisa <span className="text-red-500">*</span>
+              <label htmlFor="title" className="mb-2 block text-sm font-medium">
+                Título do Protocolo <span className="text-red-500">*</span>
               </label>
-              <div
-                className="grid grid-cols-2 gap-3 md:grid-cols-4"
-                role="group"
-              >
-                {researchSources.map((source) => {
-                  const isSelected = watchedResearchSources.includes(
-                    source.id as any,
-                  );
-                  return (
-                    <button
-                      key={source.id}
-                      type="button"
-                      onClick={() => toggleResearchSource(source.id)}
-                      className={cn(
-                        "rounded-lg border-2 p-3 transition-all duration-300",
-                        "transform-gpu hover:scale-[1.02]",
-                        isSelected
-                          ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                          : "border-gray-200 hover:border-primary-300 dark:border-gray-700",
-                      )}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-lg">{source.icon}</span>
-                        <span className="text-sm font-medium">
-                          {source.label}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <input
+                id="title"
+                type="text"
+                placeholder="Ex: Protocolo de Atendimento à Bradicardia"
+                aria-required="true"
+                {...register("title")}
+                className={cn(
+                  "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
+                  "rounded-xl border border-gray-200 dark:border-gray-700",
+                  "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
+                  "transition-all duration-300 placeholder:text-gray-400",
+                  errors.title && "border-red-500 focus:ring-red-500",
+                )}
+              />
+              {errors.title && (
+                <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             <div>
               <label
-                htmlFor="yearRange"
+                htmlFor="condition"
                 className="mb-2 block text-sm font-medium"
               >
-                Período de Pesquisa
+                Condição Médica Principal{" "}
+                <span className="text-red-500">*</span>
               </label>
-              <div className="flex items-center gap-4">
-                <input
-                  id="yearRange"
-                  type="range"
-                  min="1"
-                  max="10"
-                  {...register("yearRange", { valueAsNumber: true })}
-                  className="flex-1"
-                />
-                <span className="w-20 text-sm font-medium">
-                  Últimos {watch("yearRange")} anos
-                </span>
-              </div>
+              <input
+                id="condition"
+                type="text"
+                placeholder="Ex: Bradicardia sintomática"
+                aria-required="true"
+                {...register("condition")}
+                className={cn(
+                  "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
+                  "rounded-xl border border-gray-200 dark:border-gray-700",
+                  "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
+                  "transition-all duration-300 placeholder:text-gray-400",
+                  errors.condition && "border-red-500 focus:ring-red-500",
+                )}
+              />
+              {errors.condition && (
+                <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.condition.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="targetPopulation"
+                className="mb-2 block text-sm font-medium"
+              >
+                População Alvo <span className="text-gray-400">(Opcional)</span>
+              </label>
+              <input
+                id="targetPopulation"
+                type="text"
+                placeholder="Ex: Pacientes adultos em emergência"
+                {...register("targetPopulation")}
+                className={cn(
+                  "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",
+                  "rounded-xl border border-gray-200 dark:border-gray-700",
+                  "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500",
+                  "transition-all duration-300 placeholder:text-gray-400",
+                  errors.targetPopulation &&
+                    "border-red-500 focus:ring-red-500",
+                )}
+              />
+              {errors.targetPopulation && (
+                <p className="mt-2 flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.targetPopulation.message}
+                </p>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Material Upload (for material_based mode) */}
-        {watchedGenerationMode === "material_based" && (
+          {/* Generation Mode Selection */}
           <div
             className={cn(
-              "space-y-4 transition-all delay-200 duration-700",
+              "space-y-4 transition-all delay-100 duration-700",
               isFormLoaded
                 ? "translate-y-0 opacity-100"
                 : "translate-y-4 opacity-0",
             )}
           >
             <div className="mb-4 flex items-center gap-2">
-              <Upload className="h-5 w-5 text-primary-500" />
-              <h3 className="text-lg font-semibold">Upload de Material</h3>
+              <Zap className="h-5 w-5 text-primary-500" />
+              <h3 className="text-lg font-semibold">
+                Modo de Geração <span className="text-red-500">*</span>
+              </h3>
             </div>
 
-            <FileUpload
-              onFilesSelected={handleFilesSelected}
-              onFileRemove={(index) => {
-                const newFiles = uploadedFiles.filter((_, i) => i !== index);
-                setUploadedFiles(newFiles);
-                setValue("materialFiles", newFiles);
-              }}
-            />
+            <div className="grid gap-4 md:grid-cols-3">
+              {generationModes.map((mode) => {
+                const Icon = mode.icon;
+                const isSelected = watchedGenerationMode === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => setValue("generationMode", mode.id as any)}
+                    className={cn(
+                      "group relative rounded-xl border-2 p-6 transition-all duration-300",
+                      "transform-gpu hover:scale-[1.02] hover:shadow-lg",
+                      isSelected
+                        ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/20"
+                        : "border-gray-200 hover:border-primary-300 dark:border-gray-700",
+                    )}
+                  >
+                    {isSelected && (
+                      <div className="absolute right-3 top-3">
+                        <UltraBadge status="success" size="sm">
+                          Selecionado
+                        </UltraBadge>
+                      </div>
+                    )}
 
-            <div className="flex items-center gap-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
-              <input
-                id="supplementWithResearch"
-                type="checkbox"
-                {...register("supplementWithResearch")}
-                className="h-4 w-4 rounded text-primary-600"
-              />
-              <label htmlFor="supplementWithResearch" className="text-sm">
-                Complementar com pesquisa adicional em bases médicas
-              </label>
+                    <div
+                      className={cn(
+                        "mb-4 flex h-12 w-12 items-center justify-center rounded-lg",
+                        "bg-gradient-to-br",
+                        mode.color,
+                        "text-white",
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+
+                    <h4 className="mb-2 text-left font-semibold">
+                      {mode.title}
+                    </h4>
+                    <p className="mb-3 text-left text-sm text-gray-600 dark:text-gray-400">
+                      {mode.description}
+                    </p>
+
+                    <ul className="space-y-1">
+                      {mode.features.map((feature, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          <Check className="h-3 w-3 text-emerald-500" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        )}
 
-        {/* Submit Button */}
-        <div className="flex justify-end pt-6">
-          <UltraGradientButton
-            type="submit"
-            size="lg"
-            disabled={
-              isGenerating ||
-              formStatus === "researching" ||
-              formStatus === "loading"
-            }
-            icon={
-              isGenerating ||
-              formStatus === "researching" ||
-              formStatus === "loading" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Sparkles className="h-5 w-5" />
-              )
-            }
-          >
-            {isGenerating ||
-            formStatus === "researching" ||
-            formStatus === "loading"
-              ? "Processando..."
-              : "Criar Protocolo"}
-          </UltraGradientButton>
-        </div>
-      </form>
+          {/* Research Configuration (for automatic mode) */}
+          {(watchedGenerationMode === "automatic" ||
+            (watchedGenerationMode === "material_based" &&
+              watchedSupplementWithResearch)) && (
+            <div
+              className={cn(
+                "space-y-4 transition-all delay-200 duration-700",
+                isFormLoaded
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-4 opacity-0",
+              )}
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <Search className="h-5 w-5 text-primary-500" />
+                <h3 className="text-lg font-semibold">
+                  Configuração de Pesquisa
+                </h3>
+              </div>
+
+              <div>
+                <label className="mb-3 block text-sm font-medium">
+                  Fontes de Pesquisa <span className="text-red-500">*</span>
+                </label>
+                <div
+                  className="grid grid-cols-2 gap-3 md:grid-cols-4"
+                  role="group"
+                >
+                  {researchSources.map((source) => {
+                    const isSelected = watchedResearchSources.includes(
+                      source.id as any,
+                    );
+                    return (
+                      <button
+                        key={source.id}
+                        type="button"
+                        onClick={() => toggleResearchSource(source.id)}
+                        className={cn(
+                          "rounded-lg border-2 p-3 transition-all duration-300",
+                          "transform-gpu hover:scale-[1.02]",
+                          isSelected
+                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                            : "border-gray-200 hover:border-primary-300 dark:border-gray-700",
+                        )}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg">{source.icon}</span>
+                          <span className="text-sm font-medium">
+                            {source.label}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="yearRange"
+                  className="mb-2 block text-sm font-medium"
+                >
+                  Período de Pesquisa
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    id="yearRange"
+                    type="range"
+                    min="1"
+                    max="10"
+                    {...register("yearRange", { valueAsNumber: true })}
+                    className="flex-1"
+                  />
+                  <span className="w-20 text-sm font-medium">
+                    Últimos {watch("yearRange")} anos
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Material Upload (for material_based mode) */}
+          {watchedGenerationMode === "material_based" && (
+            <div
+              className={cn(
+                "space-y-4 transition-all delay-200 duration-700",
+                isFormLoaded
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-4 opacity-0",
+              )}
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <Upload className="h-5 w-5 text-primary-500" />
+                <h3 className="text-lg font-semibold">Upload de Material</h3>
+              </div>
+
+              <FileUpload
+                onFilesSelected={handleFilesSelected}
+                onFileRemove={(index) => {
+                  const newFiles = uploadedFiles.filter((_, i) => i !== index);
+                  setUploadedFiles(newFiles);
+                  setValue("materialFiles", newFiles);
+                }}
+              />
+
+              <div className="flex items-center gap-3 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
+                <input
+                  id="supplementWithResearch"
+                  type="checkbox"
+                  {...register("supplementWithResearch")}
+                  className="h-4 w-4 rounded text-primary-600"
+                />
+                <label htmlFor="supplementWithResearch" className="text-sm">
+                  Complementar com pesquisa adicional em bases médicas
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="flex justify-end pt-6">
+            <UltraGradientButton
+              type="submit"
+              size="lg"
+              disabled={isGenerating || formStatus === "loading"}
+              icon={
+                formStatus === "loading" ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-5 w-5" />
+                )
+              }
+            >
+              {formStatus === "loading" ? "Criando..." : "Criar Protocolo"}
+            </UltraGradientButton>
+          </div>
+        </form>
+      )}
 
       {/* Success Message */}
       {formStatus === "success" && (

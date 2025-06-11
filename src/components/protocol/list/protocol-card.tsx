@@ -12,15 +12,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Edit, CalendarDays } from "lucide-react";
+import { FileText, Edit, CalendarDays, Brain, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProtocolStatus } from "@prisma/client"; // Changed from type-only import
+// Use string literals instead of Prisma enum in client components
+type GenerationStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
+import { UltraBadge } from "@/components/ui/ultra-badge";
 
 export interface ProtocolCardProps {
   id: string;
   title: string;
   condition: string;
   status: ProtocolStatus | string; // Allow string for mock data flexibility
+  generationStatus?: GenerationStatus;
   updatedAt: string; // Formatted date string
   versionCount?: number;
   latestVersionNumber?: number;
@@ -59,6 +63,7 @@ export const ProtocolCard: React.FC<ProtocolCardProps> = ({
   title,
   condition,
   status,
+  generationStatus,
   updatedAt,
   versionCount,
   latestVersionNumber,
@@ -70,14 +75,48 @@ export const ProtocolCard: React.FC<ProtocolCardProps> = ({
       <CardHeader className="pb-4">
         <div className="mb-2 flex items-start justify-between">
           <FileText className="h-8 w-8 text-primary-500 dark:text-primary-400" />
-          <span
-            className={cn(
-              "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-              currentStatusStyle.badge,
+          <div className="flex items-center gap-2">
+            {/* Generation status indicator */}
+            {generationStatus && generationStatus !== "COMPLETED" && (
+              <UltraBadge
+                status={
+                  generationStatus === "NOT_STARTED"
+                    ? "info"
+                    : generationStatus === "IN_PROGRESS"
+                      ? "info"
+                      : "error"
+                }
+                size="sm"
+              >
+                {generationStatus === "NOT_STARTED" && (
+                  <>
+                    <Brain className="mr-1 h-3 w-3" />
+                    Não Gerado
+                  </>
+                )}
+                {generationStatus === "IN_PROGRESS" && (
+                  <>
+                    <Brain className="mr-1 h-3 w-3 animate-pulse" />
+                    Gerando
+                  </>
+                )}
+                {generationStatus === "FAILED" && (
+                  <>
+                    <AlertCircle className="mr-1 h-3 w-3" />
+                    Falha
+                  </>
+                )}
+              </UltraBadge>
             )}
-          >
-            {currentStatusStyle.text}
-          </span>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                currentStatusStyle.badge,
+              )}
+            >
+              {currentStatusStyle.text}
+            </span>
+          </div>
         </div>
         <CardTitle className="truncate text-lg font-semibold text-gray-800 dark:text-gray-100">
           {title}

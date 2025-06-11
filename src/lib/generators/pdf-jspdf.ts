@@ -4,6 +4,55 @@
 import { jsPDF } from "jspdf";
 import type { ProtocolFullContent } from "@/types/protocol";
 
+/**
+ * Strip HTML tags and convert to plain text
+ * Server-side compatible (no DOM)
+ */
+function stripHtml(html: string): string {
+  if (!html) return "";
+
+  // Remove script and style elements
+  let text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
+  text = text.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "");
+
+  // Replace block elements with line breaks
+  text = text.replace(/<\/(p|div|h[1-6]|li|tr|blockquote)>/gi, "\n");
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+
+  // Replace list items
+  text = text.replace(/<li[^>]*>/gi, "• ");
+
+  // Replace table cells with tabs
+  text = text.replace(/<\/(td|th)>/gi, "\t");
+
+  // Strip remaining tags
+  text = text.replace(/<[^>]+>/g, "");
+
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, " ");
+  text = text.replace(/&amp;/g, "&");
+  text = text.replace(/&lt;/g, "<");
+  text = text.replace(/&gt;/g, ">");
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#039;/g, "'");
+  text = text.replace(/&apos;/g, "'");
+
+  // Clean up whitespace
+  text = text.replace(/\n{3,}/g, "\n\n");
+  text = text.replace(/\t+/g, "\t");
+  text = text.trim();
+
+  return text;
+}
+
+/**
+ * Check if content contains HTML tags
+ */
+function isHtml(content: string): boolean {
+  if (!content || typeof content !== "string") return false;
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
 // Translation mapping for common medical fields
 const fieldTranslations: Record<string, string> = {
   // Medication fields
@@ -35,7 +84,10 @@ const fieldTranslations: Record<string, string> = {
 
 // Format structured content for display in PDF
 function formatStructuredContent(content: any): string {
-  if (typeof content === "string") return content;
+  if (typeof content === "string") {
+    // Check if content has HTML and strip it
+    return isHtml(content) ? stripHtml(content) : content;
+  }
 
   let formatted = "";
 
@@ -131,7 +183,9 @@ export async function generateJsPDFProtocolPdf(
 
       let content = "";
       if (typeof section.content === "string") {
-        content = section.content || "[Conteúdo vazio]";
+        // Check if content has HTML and strip it
+        const rawContent = section.content || "[Conteúdo vazio]";
+        content = isHtml(rawContent) ? stripHtml(rawContent) : rawContent;
       } else if (section.content && typeof section.content === "object") {
         content = formatStructuredContent(section.content);
       } else {

@@ -25,19 +25,87 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * Strip HTML tags and convert to plain text for PDF rendering
+ * Server-side compatible (no DOM)
+ */
+function stripHtml(html: string): string {
+  if (!html) return "";
+
+  // Remove script and style elements
+  let text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
+  text = text.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "");
+
+  // Replace block elements with line breaks
+  text = text.replace(/<\/(p|div|h[1-6]|li|tr|blockquote)>/gi, "\n");
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+
+  // Replace list items
+  text = text.replace(/<li[^>]*>/gi, "• ");
+
+  // Replace table cells with tabs
+  text = text.replace(/<\/(td|th)>/gi, "\t");
+
+  // Strip remaining tags
+  text = text.replace(/<[^>]+>/g, "");
+
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, " ");
+  text = text.replace(/&amp;/g, "&");
+  text = text.replace(/&lt;/g, "<");
+  text = text.replace(/&gt;/g, ">");
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#039;/g, "'");
+  text = text.replace(/&apos;/g, "'");
+
+  // Clean up whitespace
+  text = text.replace(/\n{3,}/g, "\n\n");
+  text = text.replace(/\t+/g, "\t");
+  text = text.trim();
+
+  return text;
+}
+
+/**
+ * Check if content contains HTML tags
+ */
+function isHtml(content: string): boolean {
+  if (!content || typeof content !== "string") return false;
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
 const renderContent = (content: any, depth = 0): JSX.Element[] => {
   const elements: JSX.Element[] = [];
   const indent = depth * 10; // Simple indentation for nested objects
 
   if (typeof content === "string") {
-    elements.push(
-      <Text
-        key={`text-${Math.random()}`}
-        style={[abntStyles.paragraph, { marginLeft: indent }]}
-      >
-        {content}
-      </Text>,
-    );
+    // Check if content has HTML and strip it
+    const textContent = isHtml(content) ? stripHtml(content) : content;
+
+    // Split by line breaks to preserve paragraph structure
+    const paragraphs = textContent.split(/\n\n+/).filter((p) => p.trim());
+
+    if (paragraphs.length > 1) {
+      paragraphs.forEach((paragraph, idx) => {
+        elements.push(
+          <Text
+            key={`text-${idx}-${Math.random()}`}
+            style={[abntStyles.paragraph, { marginLeft: indent }]}
+          >
+            {paragraph.trim()}
+          </Text>,
+        );
+      });
+    } else {
+      elements.push(
+        <Text
+          key={`text-${Math.random()}`}
+          style={[abntStyles.paragraph, { marginLeft: indent }]}
+        >
+          {textContent}
+        </Text>,
+      );
+    }
   } else if (Array.isArray(content)) {
     content.forEach((item, index) => {
       if (typeof item === "string") {

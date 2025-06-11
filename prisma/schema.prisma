@@ -29,6 +29,7 @@ model Protocol {
   title           String
   condition       String
   status          ProtocolStatus    @default(DRAFT)
+  generationStatus GenerationStatus @default(NOT_STARTED)
   createdById     String
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -38,6 +39,7 @@ model Protocol {
   @@index([condition])
   @@index([createdById])
   @@index([status])
+  @@index([generationStatus])
 }
 
 model ProtocolVersion {
@@ -83,4 +85,11 @@ enum UserRole {
   CREATOR
   REVIEWER
   ADMIN
+}
+
+enum GenerationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }

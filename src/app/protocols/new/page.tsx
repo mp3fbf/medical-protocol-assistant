@@ -45,6 +45,8 @@ export default function NewProtocolPage() {
     // but we are handling it via the promise returned by mutateAsync for now.
   });
 
+  const startGenerationMutation = trpc.generation.startGeneration.useMutation();
+
   const triggerMutation = async (data: CreateProtocolFormValues) => {
     console.log("[NewProtocolPage] triggerMutation called with data:", data);
     if (!data || !data.title || !data.condition) {
@@ -101,6 +103,20 @@ export default function NewProtocolPage() {
         "[NewProtocolPage] Protocol mutation successful, result data:",
         result,
       );
+
+      // For automatic or material_based modes, start generation immediately
+      if (data.generationMode !== "manual") {
+        console.log(
+          "[NewProtocolPage] Starting automatic generation for protocol:",
+          result.id,
+        );
+
+        // Don't wait for generation to complete - it will happen in background
+        startGenerationMutation.mutate({
+          protocolId: result.id,
+        });
+      }
+
       return { success: true, data: result, error: undefined };
     } catch (error: any) {
       console.error(

@@ -192,28 +192,31 @@ export type Database = {
   };
 };
 
-// Convenience types for easier usage
-export type Protocol = Database["public"]["Tables"]["Protocol"]["Row"];
+// Re-export everything from Prisma client for convenience
+export type {
+  User,
+  Protocol,
+  ProtocolVersion,
+  AuditLog,
+  Prisma,
+} from "@prisma/client";
+
+export { UserRole, ProtocolStatus } from "@prisma/client";
+
+// Keep the Supabase types for backward compatibility
 export type ProtocolInsert = Database["public"]["Tables"]["Protocol"]["Insert"];
 export type ProtocolUpdate = Database["public"]["Tables"]["Protocol"]["Update"];
 
-export type ProtocolVersion =
-  Database["public"]["Tables"]["ProtocolVersion"]["Row"];
 export type ProtocolVersionInsert =
   Database["public"]["Tables"]["ProtocolVersion"]["Insert"];
 export type ProtocolVersionUpdate =
   Database["public"]["Tables"]["ProtocolVersion"]["Update"];
 
-export type User = Database["public"]["Tables"]["User"]["Row"];
 export type UserInsert = Database["public"]["Tables"]["User"]["Insert"];
 export type UserUpdate = Database["public"]["Tables"]["User"]["Update"];
 
-export type AuditLog = Database["public"]["Tables"]["AuditLog"]["Row"];
 export type AuditLogInsert = Database["public"]["Tables"]["AuditLog"]["Insert"];
 export type AuditLogUpdate = Database["public"]["Tables"]["AuditLog"]["Update"];
-
-export type ProtocolStatus = Database["public"]["Enums"]["ProtocolStatus"];
-export type UserRole = Database["public"]["Enums"]["UserRole"];
 
 // JsonValue type for compatibility
 export type JsonValue = Json;

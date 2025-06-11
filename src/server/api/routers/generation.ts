@@ -51,6 +51,199 @@ const AIProtocolSectionInputSchema = z.object({
 });
 
 export const generationRouter = router({
+  startGeneration: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(
+        `[Generation] Starting generation for protocol ${input.protocolId}`,
+      );
+
+      // Get protocol and generation parameters
+      const protocol = await ctx.db.protocol.findUnique({
+        where: { id: input.protocolId },
+        include: {
+          ProtocolVersion: {
+            orderBy: { versionNumber: "desc" },
+            take: 1,
+          },
+        },
+      });
+
+      if (!protocol) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Protocolo não encontrado",
+        });
+      }
+
+      // Check ownership
+      if (protocol.createdById !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Você só pode gerar conteúdo para seus próprios protocolos",
+        });
+      }
+
+      // Check if already has content
+      const latestVersion = protocol.ProtocolVersion[0];
+      if (
+        latestVersion &&
+        latestVersion.content &&
+        Object.keys(latestVersion.content as any).length > 0
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Este protocolo já tem conteúdo gerado",
+        });
+      }
+
+      // Get generation parameters from audit log
+      const auditLog = await ctx.db.auditLog.findFirst({
+        where: {
+          resourceId: input.protocolId,
+          action: "PROTOCOL_CREATED",
+        },
+        orderBy: { timestamp: "desc" },
+      });
+
+      if (!auditLog?.details) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Parâmetros de geração não encontrados",
+        });
+      }
+
+      const generationParams = auditLog.details as any;
+
+      // Update status to IN_PROGRESS
+      // Update protocol to mark as in progress
+      await ctx.db.protocol.update({
+        where: { id: input.protocolId },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+
+      // Import necessary modules
+      const { performMedicalResearch } = await import("@/lib/ai/research");
+      const { generateFullProtocolAI } = await import("@/lib/ai/generator");
+      const { documentParser } = await import("@/lib/upload/document-parser");
+      const { generationProgressEmitter } = await import(
+        "@/lib/events/generation-progress"
+      );
+
+      try {
+        let protocolContent = {};
+        let changelogNotes = "";
+
+        if (generationParams.generationMode === "automatic") {
+          // Perform research
+          const researchData = await performMedicalResearch({
+            condition: protocol.condition,
+            sources: generationParams.researchSources,
+            yearRange: generationParams.yearRange,
+            keywords: generationParams.targetPopulation
+              ? [generationParams.targetPopulation]
+              : undefined,
+          });
+
+          // Generate protocol with real-time progress
+          const result = await generateFullProtocolAI(
+            {
+              medicalCondition: protocol.condition,
+              researchData,
+              specificInstructions: generationParams.targetPopulation
+                ? `População alvo: ${generationParams.targetPopulation}`
+                : undefined,
+            },
+            {
+              useModular: true,
+              protocolId: input.protocolId,
+              progressCallback: (progress) => {
+                console.log(`[Generation] Progress: ${progress.message}`);
+              },
+            },
+          );
+
+          if (result.protocolContent) {
+            protocolContent = result.protocolContent;
+            changelogNotes =
+              "Protocolo gerado com IA baseado em pesquisa médica.";
+          }
+        } else if (generationParams.generationMode === "material_based") {
+          // Handle material-based generation
+          // This would need file retrieval logic
+          throw new TRPCError({
+            code: "NOT_IMPLEMENTED",
+            message:
+              "Geração baseada em material ainda não implementada neste endpoint",
+          });
+        }
+
+        // Update protocol version with generated content
+        const latestVersion = protocol.ProtocolVersion[0];
+        await ctx.db.protocolVersion.create({
+          data: {
+            protocolId: input.protocolId,
+            versionNumber: (latestVersion?.versionNumber || 0) + 1,
+            content: protocolContent as any,
+            flowchart:
+              latestVersion?.flowchart || ({ nodes: [], edges: [] } as any),
+            changelogNotes,
+            createdById: ctx.session.user.id,
+          },
+        });
+
+        // Update protocol status
+        await ctx.db.protocol.update({
+          where: { id: input.protocolId },
+          data: {
+            updatedAt: new Date(),
+          },
+        });
+
+        // Emit completion event
+        generationProgressEmitter.emitComplete(
+          input.protocolId,
+          `gen-${Date.now()}`,
+          Array.from({ length: 13 }, (_, i) => i + 1),
+        );
+
+        return {
+          success: true,
+          protocolId: input.protocolId,
+          message: "Protocolo gerado com sucesso!",
+        };
+      } catch (error: any) {
+        console.error("[Generation] Error:", error);
+
+        // Update status to FAILED
+        await ctx.db.protocol.update({
+          where: { id: input.protocolId },
+          data: {
+            updatedAt: new Date(),
+          },
+        });
+
+        // Emit error event
+        generationProgressEmitter.emitError(
+          input.protocolId,
+          `gen-${Date.now()}`,
+          error.message || "Erro desconhecido durante a geração",
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Falha na geração do protocolo",
+          cause: error,
+        });
+      }
+    }),
+
   generateFullProtocol: protectedProcedure
     .input(AIFullProtocolGenerationInputSchema)
     .mutation(

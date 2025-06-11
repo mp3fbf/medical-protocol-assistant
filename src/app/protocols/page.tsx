@@ -425,14 +425,16 @@ export default function ProtocolsPage() {
                     <div className="flex h-full flex-col p-6">
                       {/* Header */}
                       <div className="mb-4 flex items-start justify-between">
-                        <UltraBadge
-                          status={getStatusBadgeType(protocol.status)}
-                          size="sm"
-                        >
-                          {statusOptions.find(
-                            (s) => s.value === protocol.status,
-                          )?.label || protocol.status}
-                        </UltraBadge>
+                        <div className="flex items-center gap-2">
+                          <UltraBadge
+                            status={getStatusBadgeType(protocol.status)}
+                            size="sm"
+                          >
+                            {statusOptions.find(
+                              (s) => s.value === protocol.status,
+                            )?.label || protocol.status}
+                          </UltraBadge>
+                        </div>
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

@@ -13,6 +13,9 @@ import { UltraButton } from "@/components/ui/ultra-button";
 import { UltraGlassCard } from "@/components/ui/ultra-card";
 import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { SkeletonEditor } from "@/components/ui/skeleton";
+import { GenerationStatusDisplay } from "@/components/protocol/generation/generation-status-display";
+import { trpc } from "@/lib/api/client";
+import { RealProgressBar } from "@/components/protocol/generation/real-progress-bar";
 
 export default function ProtocolEditPage() {
   const params = useParams();
@@ -41,6 +44,33 @@ export default function ProtocolEditPage() {
   } = useProtocolEditorState(protocolId);
 
   const { userId, userRole } = useCurrentUser();
+
+  // Mutation to start generation
+  const startGenerationMutation = trpc.generation.startGeneration.useMutation({
+    onSuccess: () => {
+      // Refresh the protocol data to get updated generation status
+      if (protocolId) {
+        fetchProtocolData(protocolId);
+      }
+    },
+    onError: (error) => {
+      console.error("[ProtocolEditPage] Failed to start generation:", error);
+    },
+  });
+
+  const handleStartGeneration = () => {
+    if (protocolId) {
+      startGenerationMutation.mutate({
+        protocolId,
+      });
+    }
+  };
+
+  const handleResumeGeneration = () => {
+    // For now, resume just restarts the generation
+    // Later we can implement proper session resumption
+    handleStartGeneration();
+  };
 
   useEffect(() => {
     if (protocolTitle && !isLoading) {
@@ -99,6 +129,51 @@ export default function ProtocolEditPage() {
     // If not loading and still here with 'new', it implies something went wrong or initial state
     // For a true "new" protocol from scratch via editor, useProtocolEditorState should provide initial empty data.
   }
+
+  // Check if protocol needs generation
+  // TODO: Re-enable when generationStatus is added to the schema
+  // if (
+  //   generationStatus &&
+  //   generationStatus !== "COMPLETED" &&
+  //   protocolId &&
+  //   !isLoading
+  // ) {
+  //   return (
+  //     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+  //       <div className="mx-auto max-w-4xl">
+  //         {/* Show real-time progress when generation is in progress */}
+  //         {generationStatus === "IN_PROGRESS" && (
+  //           <RealProgressBar
+  //             protocolId={protocolId}
+  //             sessionId={`gen-${Date.now()}`}
+  //             onComplete={() => {
+  //               // Refresh protocol data to load the generated content
+  //               fetchProtocolData(protocolId);
+  //             }}
+  //             onError={(error) => {
+  //               console.error("[ProtocolEditPage] Generation error:", error);
+  //               // Refresh to update status to FAILED
+  //               fetchProtocolData(protocolId);
+  //             }}
+  //           />
+  //         )}
+
+  //         {/* Show status display for NOT_STARTED or FAILED states */}
+  //         {(generationStatus === "NOT_STARTED" ||
+  //           generationStatus === "FAILED") && (
+  //           <GenerationStatusDisplay
+  //             generationStatus={generationStatus}
+  //             protocolId={protocolId}
+  //             protocolTitle={protocolTitle}
+  //             onStartGeneration={handleStartGeneration}
+  //             onResumeGeneration={handleResumeGeneration}
+  //             isGenerating={startGenerationMutation.isPending}
+  //           />
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <ProtocolEditorLayout

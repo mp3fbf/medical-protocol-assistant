@@ -18,6 +18,11 @@ import { OpenAIError } from "@/lib/ai/errors";
 import type { ProtocolFullContent } from "@/types/protocol";
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { GeneratedFlowchartSchema } from "@/lib/validators/flowchart";
+import {
+  generateFlowchartModular,
+  shouldUseModularFlowchartGeneration,
+  getFlowchartGenerationModel,
+} from "./flowchart-generator-modular";
 
 // Sections typically most relevant for flowchart generation
 const RELEVANT_SECTIONS_FOR_FLOWCHART = [
@@ -67,13 +72,38 @@ function ensureIdsInFlowchartData(rawData: any): {
  * @param protocolId - The ID of the protocol.
  * @param protocolContent - The full content of the protocol.
  * @param protocolCondition - The medical condition the protocol is for.
+ * @param options - Optional generation options including progress callback
  * @returns A promise resolving to the FlowchartDefinition (nodes and edges).
  */
 export async function generateFlowchartFromProtocolContent(
   protocolId: string,
   protocolContent: ProtocolFullContent,
   protocolCondition: string,
+  options?: {
+    progressCallback?: (progress: {
+      step: number;
+      totalSteps: number;
+      message: string;
+      data?: any;
+    }) => void;
+  },
 ): Promise<FlowchartDefinition> {
+  console.log(
+    `[generateFlowchartFromProtocolContent] Generating flowchart for protocol ${protocolId}`,
+  );
+
+  // Check if we should use modular generation
+  if (shouldUseModularFlowchartGeneration(protocolContent)) {
+    console.log(
+      `[generateFlowchartFromProtocolContent] Using modular generation for large protocol`,
+    );
+    return generateFlowchartModular(protocolContent, {
+      protocolId,
+      progressCallback: options?.progressCallback,
+    });
+  }
+
+  // For smaller protocols, use the original single-call approach
   const relevantTextSections: Pick<ProtocolFullContent, string> = {};
   RELEVANT_SECTIONS_FOR_FLOWCHART.forEach((sectionKey) => {
     if (protocolContent[sectionKey]) {
@@ -93,9 +123,13 @@ export async function generateFlowchartFromProtocolContent(
     relevantTextSections,
   );
 
+  // Get appropriate model based on content size
+  const model = getFlowchartGenerationModel(protocolContent);
+  console.log(`[generateFlowchartFromProtocolContent] Using model: ${model}`);
+
   try {
     const response = await createChatCompletion(
-      O4_MINI, // Using o4-mini for flowchart generation
+      model, // Use dynamic model selection
       [
         { role: "system", content: FLOWCHART_GENERATION_SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
