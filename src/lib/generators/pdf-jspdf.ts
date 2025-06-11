@@ -48,7 +48,7 @@ function stripHtml(html: string): string {
   console.log("[STRIP-DEBUG] After decode entities:", text.substring(0, 100));
 
   // Remove script and style elements
-  let text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
+  text = text.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
   text = text.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "");
 
   // Replace block elements with line breaks
