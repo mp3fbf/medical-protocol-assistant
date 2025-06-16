@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { UltraGlassCard } from "@/components/ui/ultra-card";
 import {
@@ -373,12 +374,12 @@ export const UltraRecentActivity: React.FC<{ className?: string }> = ({
     <UltraGlassCard className={cn("p-6", className)}>
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-semibold">Atividade Recente</h3>
-        <a
+        <Link
           href="/protocols"
           className="text-sm font-medium text-primary-600 hover:text-primary-700"
         >
           Ver todas
-        </a>
+        </Link>
       </div>
 
       <div className="space-y-4">
@@ -388,10 +389,10 @@ export const UltraRecentActivity: React.FC<{ className?: string }> = ({
           </p>
         ) : (
           recentProtocols?.slice(0, 3).map((protocol) => (
-            <a
+            <Link
               key={protocol.id}
               href={`/protocols/${protocol.id}`}
-              className="block flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <div
                 className={cn(
@@ -424,7 +425,7 @@ export const UltraRecentActivity: React.FC<{ className?: string }> = ({
               <span className="whitespace-nowrap text-xs text-gray-500">
                 {getRelativeTime(new Date(protocol.updatedAt))}
               </span>
-            </a>
+            </Link>
           ))
         )}
       </div>

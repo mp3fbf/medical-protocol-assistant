@@ -6,7 +6,7 @@
 
 import React, { useEffect } from "react"; // Added useEffect for title update
 import { useParams } from "next/navigation";
-import { ProtocolEditorLayoutUltraV2 as ProtocolEditorLayout } from "@/components/protocol/editor/protocol-editor-layout-ultra-v2";
+import { ProtocolEditorLayoutImproved as ProtocolEditorLayout } from "@/components/protocol/editor/protocol-editor-layout-improved";
 import { useProtocolEditorState } from "@/hooks/use-protocol-editor-state";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { UltraButton } from "@/components/ui/ultra-button";

@@ -5,7 +5,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { TextEditorPaneUltra } from "./text-editor-pane-ultra";
+import { SectionEditorImproved } from "./section-editor-improved";
 import { ValidationReportDisplayUltra } from "./validation-report-display-ultra";
 import type {
   ProtocolSectionData,
@@ -92,6 +92,7 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [showValidation, setShowValidation] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
     setIsPageLoaded(true);
@@ -379,7 +380,12 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
                 variant="primary"
                 size="sm"
                 icon={<Save className="h-4 w-4" />}
-                onClick={onSaveChanges}
+                onClick={async () => {
+                  const success = await onSaveChanges();
+                  if (success) {
+                    setLastSaved(new Date());
+                  }
+                }}
                 disabled={isSaving}
                 className="bg-gradient-to-r from-primary-500 to-indigo-600"
               >
@@ -509,13 +515,22 @@ export const ProtocolEditorLayoutUltraV2: React.FC<
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4">
             {/* Text Editor */}
-            <div className="h-full overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+            <div className="h-full overflow-y-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
               {currentSection && (
-                <TextEditorPaneUltra
-                  currentSection={currentSection}
-                  onUpdateSectionContent={onUpdateSectionContent}
-                  isLoading={isLoading}
-                />
+                <div className="p-8">
+                  <SectionEditorImproved
+                    key={`section-${currentSectionNumber}`}
+                    section={currentSection}
+                    sectionDefinition={
+                      SECTION_DEFINITIONS[currentSectionNumber - 1] || null
+                    }
+                    isEditing={true}
+                    onContentChange={(newContent) =>
+                      onUpdateSectionContent(currentSectionNumber, newContent)
+                    }
+                    lastSaved={lastSaved}
+                  />
+                </div>
               )}
             </div>
           </div>

@@ -18,6 +18,16 @@ import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { FlowchartDefinition } from "@/types/flowchart";
 import { generateFlowchartSvg } from "@/lib/generators/svg";
+import {
+  standardToClinical,
+  createFlowchartExport,
+} from "@/lib/utils/flowchart-converter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function FlowchartPage() {
   const params = useParams();
@@ -113,6 +123,39 @@ export default function FlowchartPage() {
       toast.success("Fluxograma exportado com sucesso!");
     } catch (error) {
       console.error("Erro ao exportar SVG:", error);
+      toast.error("Erro ao exportar o fluxograma");
+    }
+  };
+
+  const handleExportJSON = () => {
+    if (!flowchartData) {
+      toast.error("Nenhum fluxograma disponível para exportar");
+      return;
+    }
+
+    try {
+      // Convert to clinical format for export
+      const clinicalFlowchart = standardToClinical(flowchartData);
+      const exportData = createFlowchartExport(clinicalFlowchart, "clinical", {
+        id: protocolId!,
+        title: protocol?.title || "Protocolo Médico",
+      });
+
+      // Create and download JSON file
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `flowchart-${protocol?.title || "protocolo"}-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("Fluxograma JSON exportado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar JSON:", error);
       toast.error("Erro ao exportar o fluxograma");
     }
   };
@@ -264,13 +307,24 @@ export default function FlowchartPage() {
                     Regenerar
                   </button>
 
-                  <button
-                    onClick={handleExportSVG}
-                    className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    Exportar
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <Download className="h-4 w-4" />
+                        Exportar
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleExportSVG}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar como SVG
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportJSON}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar como JSON
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   <button
                     onClick={toggleFullscreen}

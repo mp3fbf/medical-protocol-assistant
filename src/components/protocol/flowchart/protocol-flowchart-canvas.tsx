@@ -166,11 +166,19 @@ const ProtocolFlowchartCanvasContent: React.FC<
       );
     });
 
+    // Check if it's clinical format by looking at node types
+    const hasClinicalNodes = nodesToLayout.some(
+      (node) =>
+        (node.type as any) === "custom" ||
+        (node.type as any) === "summary" ||
+        (node.type as any) === "conduct",
+    );
+
     const result = getLayoutedElements(nodesToLayout, edgesToLayout, {
       rankdir: "TB",
-      nodesep: 200, // Doubled from 100
-      ranksep: 250, // Increased from 150
-      edgesep: 150, // Drastically increased from 20 to 150
+      nodesep: hasClinicalNodes ? 350 : 200, // Much larger spacing for clinical nodes
+      ranksep: hasClinicalNodes ? 400 : 250, // Much larger spacing for clinical nodes
+      edgesep: 150,
       ranker: "network-simplex",
     });
 

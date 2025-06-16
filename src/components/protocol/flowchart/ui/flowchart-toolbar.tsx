@@ -13,6 +13,8 @@ import {
   Pill,
   Activity,
   HelpCircle,
+  Download,
+  Upload,
 } from "lucide-react";
 
 interface FlowchartToolbarProps {
@@ -24,6 +26,8 @@ interface FlowchartToolbarProps {
   hasChanges: boolean;
   canDelete: boolean;
   onHelp?: () => void;
+  onExportJSON?: () => void;
+  onImportJSON?: () => void;
 }
 
 export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
@@ -33,6 +37,8 @@ export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
   hasChanges,
   canDelete,
   onHelp,
+  onExportJSON,
+  onImportJSON,
 }) => {
   const nodeTypes: Array<{
     type: "action" | "medication" | "decision" | "triage" | "start" | "end";
@@ -121,6 +127,34 @@ export const FlowchartToolbar: React.FC<FlowchartToolbarProps> = ({
             <span className="ml-1 h-2 w-2 rounded-full bg-white"></span>
           )}
         </button>
+
+        {(onExportJSON || onImportJSON) && (
+          <>
+            <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+
+            {onExportJSON && (
+              <button
+                onClick={onExportJSON}
+                className="flex items-center gap-1 rounded px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                title="Exportar JSON"
+              >
+                <Download className="h-4 w-4" />
+                <span>Exportar</span>
+              </button>
+            )}
+
+            {onImportJSON && (
+              <button
+                onClick={onImportJSON}
+                className="flex items-center gap-1 rounded px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                title="Importar JSON"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Importar</span>
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

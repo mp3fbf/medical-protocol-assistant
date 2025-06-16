@@ -66,6 +66,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   disabled = false,
 }) => {
   const editor = useEditor({
+    immediatelyRender: false, // Fix SSR warning
     extensions: [
       StarterKit.configure({
         heading: {

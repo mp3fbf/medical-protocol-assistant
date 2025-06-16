@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-06-13T15:09:02.331Z",
+  "instructions": "Please manually check the browser and fill in the observations below",
+  "observations": {
+    "hasEditButton": "?",
+    "isEditingMode": "?",
+    "contentFormatted": "?",
+    "debugBoxShowing": "?",
+    "consoleErrors": "?"
+  }
+}

@@ -35,6 +35,13 @@ import type {
   CustomFlowEdge,
   FlowchartDefinition,
 } from "@/types/flowchart";
+import {
+  clinicalToStandard,
+  standardToClinical,
+  isValidClinicalFlowchart,
+  createFlowchartExport,
+} from "@/lib/utils/flowchart-converter";
+import { toast } from "sonner";
 
 interface EditableFlowchartCanvasProps {
   flowchartData: FlowchartDefinition | null;
@@ -84,11 +91,19 @@ const EditableFlowchartCanvasContent: React.FC<
       })),
     );
 
+    // Check if it's clinical format by looking at node types
+    const hasClinicalNodes = flowchartData.nodes.some(
+      (node) =>
+        (node.type as any) === "custom" ||
+        (node.type as any) === "summary" ||
+        (node.type as any) === "conduct",
+    );
+
     return getLayoutedElements(flowchartData.nodes, cleanEdges, {
       rankdir: "TB",
-      nodesep: 200, // Same as visualization
-      ranksep: 250, // Same as visualization
-      edgesep: 150, // Same as visualization
+      nodesep: hasClinicalNodes ? 350 : 200, // Larger spacing for clinical nodes
+      ranksep: hasClinicalNodes ? 400 : 250, // Larger spacing for clinical nodes
+      edgesep: 150,
       ranker: "network-simplex",
     });
   }, [flowchartData]);
@@ -350,6 +365,133 @@ const EditableFlowchartCanvasContent: React.FC<
     [setEdges],
   );
 
+  // Export flowchart as JSON
+  const handleExportJSON = useCallback(() => {
+    const currentFlowchart: FlowchartDefinition = {
+      nodes: nodes as CustomFlowNode[],
+      edges: edges.map(
+        (edge) =>
+          ({
+            ...edge,
+            type: edge.type === "conditional" ? "conditional" : "default",
+          }) as CustomFlowEdge,
+      ),
+      viewport: reactFlowInstance.getViewport(),
+    };
+
+    // Convert to clinical format for export
+    const clinicalFlowchart = standardToClinical(currentFlowchart);
+    const exportData = createFlowchartExport(clinicalFlowchart, "clinical", {
+      id: "flowchart-" + Date.now(),
+      title: "Fluxograma Médico",
+    });
+
+    // Create and download JSON file
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `fluxograma-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success("Fluxograma exportado com sucesso!");
+  }, [nodes, edges, reactFlowInstance]);
+
+  // Import flowchart from JSON
+  const handleImportJSON = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        let text = await file.text();
+
+        // Remove trailing semicolon if present (common in exported files)
+        text = text.trim();
+        if (text.endsWith(";")) {
+          text = text.slice(0, -1);
+        }
+
+        // Parse the JSON file - it should work with escaped quotes
+        const data = JSON.parse(text);
+
+        let flowchartToImport: FlowchartDefinition;
+        let isClinicalFormat = false;
+
+        // Check if it's a clinical flowchart
+        if (isValidClinicalFlowchart(data)) {
+          // Direct clinical format - DO NOT convert, use as-is
+          flowchartToImport = data as any;
+          isClinicalFormat = true;
+        } else if (data.flowchart && isValidClinicalFlowchart(data.flowchart)) {
+          // Clinical format with metadata wrapper - DO NOT convert
+          flowchartToImport = data.flowchart as any;
+          isClinicalFormat = true;
+        } else if (data.nodes && data.edges) {
+          // Standard format (direct or with wrapper)
+          flowchartToImport = data.flowchart || data;
+        } else {
+          throw new Error("Formato de arquivo inválido");
+        }
+
+        // Apply layout to imported nodes
+        // Use larger spacing for clinical nodes
+        const layouted = getLayoutedElements(
+          flowchartToImport.nodes,
+          flowchartToImport.edges,
+          {
+            rankdir: "TB",
+            nodesep: isClinicalFormat ? 350 : 200, // Much larger horizontal spacing for clinical
+            ranksep: isClinicalFormat ? 400 : 250, // Much larger vertical spacing for clinical
+            edgesep: 150,
+            ranker: "network-simplex",
+          },
+        );
+
+        // Update the flow
+        setNodes(layouted.nodes);
+        setEdges(layouted.edges);
+        setHasChanges(true);
+
+        // Fit view to show imported content
+        setTimeout(() => {
+          reactFlowInstance.fitView({
+            padding: 0.15,
+            includeHiddenNodes: false,
+            duration: 800,
+          });
+        }, 100);
+
+        toast.success("Fluxograma importado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao importar fluxograma:", error);
+
+        if (error instanceof SyntaxError) {
+          toast.error(
+            "Erro ao processar JSON. O arquivo pode conter caracteres especiais não escapados.",
+          );
+        } else if (
+          error instanceof Error &&
+          error.message === "Formato de arquivo inválido"
+        ) {
+          toast.error(error.message);
+        } else {
+          toast.error("Erro ao importar arquivo. Verifique o formato.");
+        }
+      }
+    };
+
+    input.click();
+  }, [reactFlowInstance, setNodes, setEdges]);
+
   // Keyboard navigation
   useFlowchartKeyboardNavigation({
     enabled: !isReadOnly,
@@ -382,6 +524,8 @@ const EditableFlowchartCanvasContent: React.FC<
           hasChanges={hasChanges}
           canDelete={nodes.some((node) => node.selected)}
           onHelp={() => setIsHelpOpen(true)}
+          onExportJSON={handleExportJSON}
+          onImportJSON={handleImportJSON}
         />
       )}
 
