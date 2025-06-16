@@ -8,6 +8,15 @@ import type { DecisionNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
 import { GitBranch } from "lucide-react";
 
+// Helper to decode HTML entities for display
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
 export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
   data,
   isConnectable,
@@ -99,12 +108,12 @@ export const DecisionNode: React.FC<NodeProps<DecisionNodeData>> = ({
       {/* Content */}
       <div className="p-4">
         <div className="medical-node-title mb-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-          {title}
+          {decodeHtmlEntities(title)}
         </div>
         {criteria && (
           <div
             className="medical-node-subtitle mb-3 text-sm text-gray-600 dark:text-gray-400"
-            dangerouslySetInnerHTML={{ __html: criteria }}
+            dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(criteria) }}
           />
         )}
       </div>

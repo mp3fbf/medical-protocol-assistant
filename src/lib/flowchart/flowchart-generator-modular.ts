@@ -551,8 +551,11 @@ export async function generateFlowchartModular(
       ...flowchart,
       nodes: applyDagreLayout([...flowchart.nodes], flowchart.edges, {
         rankdir: "TB",
-        nodesep: 80,
-        ranksep: 120,
+        nodesep: 400, // MÁXIMO
+        ranksep: 300, // MÁXIMO
+        marginx: 100,
+        marginy: 100,
+        edgesep: 50,
       }),
     };
 
@@ -583,6 +586,112 @@ export async function generateFlowchartModular(
   } finally {
     // Clean up session after a delay
     setTimeout(() => sessions.delete(sessionId), 60000);
+  }
+}
+
+/**
+ * Generate clinical format flowchart using modular approach
+ */
+export async function generateClinicalFlowchartModular(
+  protocolContent: ProtocolFullContent,
+  options?: {
+    protocolId?: string;
+    progressCallback?: (progress: {
+      step: number;
+      totalSteps: number;
+      message: string;
+      data?: any;
+    }) => void;
+  },
+): Promise<any> {
+  // Import clinical generator
+  const { generateClinicalFlowchart } = await import("./clinical-generator");
+
+  const sessionId = `clinical-flowchart-${Date.now()}`;
+  // Extract condition from section 1 or use default
+  const section1Content = protocolContent["1"];
+  const protocolCondition =
+    typeof section1Content?.content === "string"
+      ? section1Content.content
+      : section1Content?.title || "Protocolo Médico";
+
+  const updateProgress = (message: string) => {
+    options?.progressCallback?.({
+      step: 1,
+      totalSteps: 1,
+      message,
+    });
+
+    if (options?.protocolId) {
+      flowchartProgressEmitter.emitProgress(
+        options.protocolId,
+        sessionId,
+        1,
+        1,
+        message,
+      );
+    }
+  };
+
+  try {
+    updateProgress("🏥 Gerando fluxograma clínico detalhado...");
+
+    // Use clinical generator directly
+    const clinicalFlowchart = await generateClinicalFlowchart(
+      protocolCondition,
+      protocolContent,
+      {
+        model: "o3",
+        temperature: 0.3,
+        progressCallback: updateProgress,
+      },
+    );
+
+    // Apply layout to the clinical flowchart
+    // Since the layout function expects standard nodes, we'll cast the types
+    const { applyDagreLayout } = await import("./layout");
+    const layoutedNodes = applyDagreLayout(
+      clinicalFlowchart.nodes as any,
+      clinicalFlowchart.edges as any,
+      {
+        rankdir: "TB",
+        nodesep: 800, // MÁXIMO - espaço horizontal entre nós do mesmo nível
+        ranksep: 600, // MÁXIMO - espaço vertical entre níveis
+        marginx: 200, // Margem lateral gigante
+        marginy: 200, // Margem vertical gigante
+        edgesep: 100, // Espaço entre edges
+      },
+    );
+
+    const layoutedFlowchart = {
+      ...clinicalFlowchart,
+      nodes: layoutedNodes,
+    };
+
+    updateProgress("✅ Fluxograma clínico gerado com sucesso!");
+
+    if (options?.protocolId) {
+      flowchartProgressEmitter.emitComplete(
+        options.protocolId,
+        sessionId,
+        layoutedFlowchart,
+      );
+    }
+
+    return layoutedFlowchart;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Erro desconhecido";
+
+    if (options?.protocolId) {
+      flowchartProgressEmitter.emitError(
+        options.protocolId,
+        sessionId,
+        errorMessage,
+      );
+    }
+
+    throw error;
   }
 }
 

@@ -4,8 +4,8 @@
 import dagre from "dagre";
 import type { CustomFlowNode, CustomFlowEdge } from "@/types/flowchart";
 
-const DEFAULT_NODE_WIDTH = 220; // Default width for layout calculation if not specified
-const DEFAULT_NODE_HEIGHT = 120; // Default height - increased for better spacing
+const DEFAULT_NODE_WIDTH = 320; // Increased for clinical nodes with more content
+const DEFAULT_NODE_HEIGHT = 180; // Increased for questionnaires and conducts
 
 interface DagreLayoutOptions {
   rankdir?: "TB" | "LR" | "BT" | "RL"; // Top-to-Bottom, Left-to-Right, etc.
@@ -43,7 +43,7 @@ export function applyDagreLayout(
     rankdir: options?.rankdir || "TB", // Top-to-Bottom layout by default
     align: options?.align,
     nodesep: options?.nodesep || 100, // Increased horizontal spacing between nodes
-    edgesep: options?.edgesep || 40,  // Increased edge spacing
+    edgesep: options?.edgesep || 40, // Increased edge spacing
     ranksep: options?.ranksep || 120, // Increased vertical spacing between ranks
     marginx: options?.marginx || 40,
     marginy: options?.marginy || 40,

@@ -64,7 +64,9 @@ export default function FlowchartPage() {
     },
   });
 
-  const handleGenerateFlowchart = () => {
+  const handleGenerateFlowchart = (
+    format: "standard" | "clinical" = "clinical",
+  ) => {
     const latestVersion = protocol?.ProtocolVersion?.[0];
     if (!latestVersion?.content) {
       toast.error(
@@ -93,7 +95,8 @@ export default function FlowchartPage() {
       condition,
       content: protocolContent,
       options: {
-        mode: "smart",
+        mode: format === "clinical" ? "clinical" : "smart",
+        format: format,
         includeLayout: true,
         includeMedications: true,
       },
@@ -127,19 +130,50 @@ export default function FlowchartPage() {
     }
   };
 
-  const handleExportJSON = () => {
+  const handleExportJSON = (includeMetadata: boolean = false) => {
     if (!flowchartData) {
       toast.error("Nenhum fluxograma disponível para exportar");
       return;
     }
 
     try {
-      // Convert to clinical format for export
-      const clinicalFlowchart = standardToClinical(flowchartData);
-      const exportData = createFlowchartExport(clinicalFlowchart, "clinical", {
-        id: protocolId!,
-        title: protocol?.title || "Protocolo Médico",
-      });
+      // Debug: Log original flowchart data
+      console.log("=== FLOWCHART EXPORT DEBUG ===");
+      console.log(
+        "Original flowchartData:",
+        JSON.stringify(flowchartData, null, 2),
+      );
+      console.log("Number of nodes:", flowchartData.nodes.length);
+      console.log("Sample node:", flowchartData.nodes[0]);
+
+      // Check if flowchart is already in clinical format
+      const isAlreadyClinical = flowchartData.nodes.some((node) =>
+        ["custom", "summary", "conduct"].includes(node.type),
+      );
+
+      console.log("Is already clinical format?", isAlreadyClinical);
+
+      // Only convert if it's in standard format
+      const clinicalFlowchart = isAlreadyClinical
+        ? flowchartData
+        : standardToClinical(flowchartData);
+
+      // Debug: Log converted flowchart
+      console.log(
+        "Converted clinicalFlowchart:",
+        JSON.stringify(clinicalFlowchart, null, 2),
+      );
+      console.log("Number of clinical nodes:", clinicalFlowchart.nodes.length);
+      console.log("Sample clinical node:", clinicalFlowchart.nodes[0]);
+      console.log("=== END DEBUG ===");
+
+      // Export with or without metadata wrapper
+      const exportData = includeMetadata
+        ? createFlowchartExport(clinicalFlowchart, "clinical", {
+            id: protocolId!,
+            title: protocol?.title || "Protocolo Médico",
+          })
+        : clinicalFlowchart;
 
       // Create and download JSON file
       const jsonString = JSON.stringify(exportData, null, 2);
@@ -277,7 +311,7 @@ export default function FlowchartPage() {
             <div className="flex items-center gap-3">
               {!flowchartData ? (
                 <button
-                  onClick={handleGenerateFlowchart}
+                  onClick={() => handleGenerateFlowchart("clinical")}
                   disabled={flowchartMutation.isPending}
                   className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -288,12 +322,12 @@ export default function FlowchartPage() {
                   )}
                   {flowchartMutation.isPending
                     ? "Gerando com IA..."
-                    : "Gerar Fluxograma"}
+                    : "Gerar Fluxograma Clínico"}
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleGenerateFlowchart}
+                    onClick={() => handleGenerateFlowchart("clinical")}
                     disabled={flowchartMutation.isPending}
                     className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     title="Esta ação irá substituir o fluxograma existente"
@@ -304,7 +338,7 @@ export default function FlowchartPage() {
                         flowchartMutation.isPending && "animate-spin",
                       )}
                     />
-                    Regenerar
+                    Regenerar (Clínico)
                   </button>
 
                   <DropdownMenu>
@@ -319,9 +353,13 @@ export default function FlowchartPage() {
                         <Download className="mr-2 h-4 w-4" />
                         Exportar como SVG
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportJSON}>
+                      <DropdownMenuItem onClick={() => handleExportJSON(false)}>
                         <Download className="mr-2 h-4 w-4" />
-                        Exportar como JSON
+                        Exportar JSON (Sistema Parceiro)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportJSON(true)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar JSON (Com Metadados)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -369,7 +407,7 @@ export default function FlowchartPage() {
                 </p>
 
                 <button
-                  onClick={handleGenerateFlowchart}
+                  onClick={() => handleGenerateFlowchart("clinical")}
                   disabled={flowchartMutation.isPending}
                   className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -381,7 +419,7 @@ export default function FlowchartPage() {
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5" />
-                      <span>Gerar Fluxograma Agora</span>
+                      <span>Gerar Fluxograma Clínico</span>
                     </>
                   )}
                 </button>

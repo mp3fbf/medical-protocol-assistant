@@ -7,6 +7,15 @@ import { Handle, Position, type NodeProps } from "reactflow";
 import type { MedicationNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
 
+// Helper to decode HTML entities for display
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
 export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
   data,
   isConnectable,
@@ -22,24 +31,28 @@ export const MedicationNode: React.FC<NodeProps<MedicationNodeData>> = ({
       )}
     >
       <div className="medical-node-content">
-        <div className="medical-node-title">{title}</div>
+        <div className="medical-node-title">{decodeHtmlEntities(title)}</div>
 
         {/* Medication list */}
         {medications && medications.length > 0 ? (
           <div className="medical-medication-list">
             {medications.map((med, index) => (
               <div key={index} className="medical-medication-item">
-                <div className="medical-medication-name">{med.name}</div>
+                <div className="medical-medication-name">
+                  {decodeHtmlEntities(med.name)}
+                </div>
                 <div className="medical-medication-details">
-                  <span className="dose">{med.dose}</span>
+                  <span className="dose">{decodeHtmlEntities(med.dose)}</span>
                   <span className="separator">•</span>
-                  <span className="route">{med.route}</span>
+                  <span className="route">{decodeHtmlEntities(med.route)}</span>
                   <span className="separator">•</span>
-                  <span className="frequency">{med.frequency}</span>
+                  <span className="frequency">
+                    {decodeHtmlEntities(med.frequency)}
+                  </span>
                 </div>
                 {med.duration && (
                   <div className="medical-medication-duration">
-                    Duração: {med.duration}
+                    Duração: {decodeHtmlEntities(med.duration)}
                   </div>
                 )}
               </div>

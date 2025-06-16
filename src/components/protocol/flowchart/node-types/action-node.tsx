@@ -8,6 +8,15 @@ import type { ActionNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
 
+// Helper to decode HTML entities for display
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
 export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
   data,
   isConnectable,
@@ -25,7 +34,7 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
       <FileText className="medical-node-icon" />
 
       <div className="medical-node-content">
-        <div className="medical-node-title">{title}</div>
+        <div className="medical-node-title">{decodeHtmlEntities(title)}</div>
 
         {/* Action checklist */}
         {actions && actions.length > 0 && (
@@ -35,7 +44,9 @@ export const ActionNode: React.FC<NodeProps<ActionNodeData>> = ({
                 <div className="medical-action-checkbox" />
                 <span
                   className="medical-action-text"
-                  dangerouslySetInnerHTML={{ __html: action }}
+                  dangerouslySetInnerHTML={{
+                    __html: decodeHtmlEntities(action),
+                  }}
                 />
               </div>
             ))}

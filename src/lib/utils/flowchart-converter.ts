@@ -6,6 +6,12 @@ import type {
   FlowchartDefinition,
   CustomFlowNode,
   CustomFlowEdge,
+  DecisionNodeData,
+  ActionNodeData,
+  MedicationNodeData,
+  TriageNodeData,
+  StartNodeData,
+  EndNodeData,
 } from "@/types/flowchart";
 import type {
   ClinicalFlowchart,
@@ -128,26 +134,54 @@ export function standardToClinical(
   standard: FlowchartDefinition,
 ): ClinicalFlowchart {
   // Convert nodes
-  const nodes: ClinicalNode[] = standard.nodes.map((standardNode) => {
+  const nodes: ClinicalNode[] = standard.nodes.map((standardNode, index) => {
+    // Debug logging
+    console.log(`Converting node ${index}:`, {
+      id: standardNode.id,
+      type: standardNode.type,
+      data: standardNode.data,
+      dataKeys: standardNode.data ? Object.keys(standardNode.data) : [],
+    });
+
     // Map standard node types to clinical node types
-    let clinicalType: ClinicalNode["type"];
-    let clinicalData: ClinicalNode["data"];
+    let clinicalType: ClinicalNode["type"] | "start" | "end";
+    let clinicalData: any;
+
+    // Ensure we have data
+    if (!standardNode.data) {
+      console.warn(`Node ${standardNode.id} has no data`, standardNode);
+      clinicalType = "custom";
+      clinicalData = {
+        label: "Nó sem dados",
+        condicao: "SEMPRE",
+        descricao: "",
+        condicional: "visivel",
+        questions: [],
+      };
+      return {
+        id: standardNode.id,
+        type: clinicalType as any,
+        position: standardNode.position,
+        data: clinicalData,
+      } as ClinicalNode;
+    }
 
     switch (standardNode.type) {
       case "decision":
         // Decision nodes map to custom nodes with a single question
+        const decisionData = standardNode.data as DecisionNodeData;
         clinicalType = "custom";
         clinicalData = {
-          label: standardNode.data.title,
+          label: decisionData.title || "Decisão",
           condicao: "SEMPRE",
-          descricao: (standardNode.data as any).criteria || "",
+          descricao: decisionData.criteria || "",
           condicional: "visivel",
           questions: [
             {
               id: `Q${standardNode.id}`,
               uid: "",
-              titulo: standardNode.data.title,
-              descricao: (standardNode.data as any).criteria || "",
+              titulo: decisionData.title || "Decisão",
+              descricao: decisionData.criteria || "",
               condicional: "visivel",
               expressao: "",
               select: "F", // Single choice by default
@@ -172,31 +206,30 @@ export function standardToClinical(
 
       case "triage":
         // Triage nodes map to summary nodes
+        const triageData = standardNode.data as TriageNodeData;
         clinicalType = "summary";
         clinicalData = {
-          label: standardNode.data.title,
+          label: triageData.title || "Triagem",
           condicao: "",
-          descricao: (standardNode.data as any).description || "",
+          descricao: triageData.description || "",
           condicional: "visivel",
         };
         break;
 
       case "action":
-      case "medication":
-        // Action and medication nodes map to conduct nodes
+        // Action nodes map to conduct nodes
+        const actionData = standardNode.data as ActionNodeData;
         clinicalType = "conduct";
-        const actions = (standardNode.data as any).actions || [];
-        const medications = (standardNode.data as any).medications || [];
 
         clinicalData = {
-          label: standardNode.data.title,
+          label: actionData.title || "Ação",
           condicao: "",
           descricao: "",
           condicional: "visivel",
           conduta: "conclusao",
           condutaDataNode: {
             orientacao:
-              actions.length > 0
+              actionData.actions && actionData.actions.length > 0
                 ? [
                     {
                       id: `O${standardNode.id}`,
@@ -204,25 +237,48 @@ export function standardToClinical(
                       descricao: "",
                       condicional: "visivel",
                       condicao: "SEMPRE",
-                      conteudo: `<ul>${actions.map((a: string) => `<li>${a}</li>`).join("")}</ul>`,
+                      conteudo: `<ul>${actionData.actions.map((a: string) => `<li>${a}</li>`).join("")}</ul>`,
                     },
                   ]
                 : [],
             exame: [],
-            medicamento: medications.map((med: any, idx: number) => ({
-              id: `M${standardNode.id}-${idx}`,
-              nome: med.name,
-              descricao: "",
-              condicional: "visivel",
-              condicao: "",
-              condicionalMedicamento: "intra-hospitalar",
-              quantidade: 1,
-              codigo: "",
-              nomeMed: med.name,
-              posologia: `<p>${med.dose} ${med.route} ${med.frequency}</p>`,
-              mensagemMedico: "",
-              via: med.route,
-            })),
+            medicamento: [],
+            encaminhamento: [],
+            mensagem: [],
+          },
+        };
+        break;
+
+      case "medication":
+        // Medication nodes map to conduct nodes
+        const medicationData = standardNode.data as MedicationNodeData;
+        clinicalType = "conduct";
+
+        clinicalData = {
+          label: medicationData.title || "Medicamento",
+          condicao: "",
+          descricao: "",
+          condicional: "visivel",
+          conduta: "conclusao",
+          condutaDataNode: {
+            orientacao: [],
+            exame: [],
+            medicamento: medicationData.medications
+              ? medicationData.medications.map((med, idx) => ({
+                  id: `M${standardNode.id}-${idx}`,
+                  nome: med.name,
+                  descricao: "",
+                  condicional: "visivel",
+                  condicao: "",
+                  condicionalMedicamento: "intra-hospitalar",
+                  quantidade: 1,
+                  codigo: "",
+                  nomeMed: med.name,
+                  posologia: `<p>${med.dose} ${med.route} ${med.frequency}</p>`,
+                  mensagemMedico: "",
+                  via: med.route,
+                }))
+              : [],
             encaminhamento: [],
             mensagem: [],
           },
@@ -230,23 +286,33 @@ export function standardToClinical(
         break;
 
       case "start":
-      case "end":
-        // Start/end nodes map to custom nodes with no questions
-        clinicalType = "custom";
+        // Start nodes keep their type in clinical format
+        const startData = standardNode.data as StartNodeData;
+        clinicalType = "start";
         clinicalData = {
-          label: standardNode.data.title,
-          condicao: "SEMPRE",
-          descricao: "",
-          condicional: "visivel",
-          questions: [],
+          type: "start",
+          title: startData.title || "Início",
+          label: startData.title || "Início",
+        };
+        break;
+
+      case "end":
+        // End nodes keep their type in clinical format
+        const endData = standardNode.data as EndNodeData;
+        clinicalType = "end";
+        clinicalData = {
+          type: "end",
+          title: endData.title || "Fim",
+          label: endData.title || "Fim",
         };
         break;
 
       default:
         // Fallback to custom node
+        console.warn(`Unknown node type: ${standardNode.type}`, standardNode);
         clinicalType = "custom";
         clinicalData = {
-          label: standardNode.data.title || "Nó",
+          label: standardNode.data?.title || "Nó",
           condicao: "SEMPRE",
           descricao: "",
           condicional: "visivel",
@@ -256,21 +322,30 @@ export function standardToClinical(
 
     return {
       id: standardNode.id,
-      type: clinicalType,
+      type: clinicalType as any,
       position: standardNode.position,
       data: clinicalData,
-    };
+    } as ClinicalNode;
   });
 
   // Convert edges
-  const edges: ClinicalEdge[] = standard.edges.map((standardEdge) => ({
-    id: standardEdge.id,
-    source: standardEdge.source,
-    target: standardEdge.target,
-    data: {
-      rule: String(standardEdge.label || "Regra nova"),
-    },
-  }));
+  const edges: ClinicalEdge[] = standard.edges.map((standardEdge, index) => {
+    console.log(`Converting edge ${index}:`, {
+      id: standardEdge.id,
+      source: standardEdge.source,
+      target: standardEdge.target,
+      label: standardEdge.label,
+    });
+
+    return {
+      id: standardEdge.id,
+      source: standardEdge.source,
+      target: standardEdge.target,
+      data: {
+        rule: String(standardEdge.label || "Regra nova"),
+      },
+    };
+  });
 
   return {
     nodes,
@@ -288,7 +363,8 @@ export function isValidClinicalFlowchart(data: any): data is ClinicalFlowchart {
   // Basic validation of nodes
   for (const node of data.nodes) {
     if (!node.id || !node.type || !node.position || !node.data) return false;
-    if (!["custom", "summary", "conduct"].includes(node.type)) return false;
+    if (!["custom", "summary", "conduct", "start", "end"].includes(node.type))
+      return false;
     if (
       typeof node.position.x !== "number" ||
       typeof node.position.y !== "number"

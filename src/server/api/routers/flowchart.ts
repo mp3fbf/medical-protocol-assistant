@@ -14,13 +14,14 @@ const FlowchartGenerationInputSchema = z.object({
   content: ProtocolFullContentSchema,
   options: z
     .object({
-      mode: z.enum(["smart", "basic"]).default("smart"),
+      mode: z.enum(["smart", "basic", "clinical"]).default("smart"),
       includeLayout: z.boolean().default(true),
       protocolType: z
         .enum(["EMERGENCY", "DIAGNOSTIC", "THERAPEUTIC", "MONITORING"])
         .optional(),
       maxNodes: z.number().min(5).max(100).default(50),
       includeMedications: z.boolean().default(true),
+      format: z.enum(["standard", "clinical"]).default("standard"),
     })
     .optional()
     .default({}),
@@ -43,7 +44,26 @@ export const flowchartRouter = router({
 
         let result;
 
-        if (options.mode === "smart") {
+        if (options.mode === "clinical" || options.format === "clinical") {
+          // Generate clinical format flowchart
+          const { generateClinicalFlowchartModular } = await import(
+            "@/lib/flowchart/flowchart-generator-modular"
+          );
+
+          result = await generateClinicalFlowchartModular(content as any, {
+            protocolId,
+          });
+
+          // Add metadata
+          result = {
+            ...result,
+            metadata: {
+              mode: "clinical",
+              format: "clinical",
+              generatedAt: new Date().toISOString(),
+            },
+          };
+        } else if (options.mode === "smart") {
           result = await generateSmartFlowchart(
             protocolId,
             content as any, // Type conversion for now
@@ -132,7 +152,26 @@ export const flowchartRouter = router({
 
         let result;
 
-        if (options.mode === "smart") {
+        if (options.mode === "clinical" || options.format === "clinical") {
+          // Generate clinical format flowchart
+          const { generateClinicalFlowchartModular } = await import(
+            "@/lib/flowchart/flowchart-generator-modular"
+          );
+
+          result = await generateClinicalFlowchartModular(content as any, {
+            protocolId,
+          });
+
+          // Add metadata
+          result = {
+            ...result,
+            metadata: {
+              mode: "clinical",
+              format: "clinical",
+              generatedAt: new Date().toISOString(),
+            },
+          };
+        } else if (options.mode === "smart") {
           result = await generateSmartFlowchart(
             protocolId,
             content as any,
@@ -352,6 +391,64 @@ export const flowchartRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: `Falha na análise do protocolo: ${
+            error instanceof Error ? error.message : "Erro desconhecido"
+          }`,
+          cause: error,
+        });
+      }
+    }),
+
+  generateClinical: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+        condition: z.string().min(1),
+        content: ProtocolFullContentSchema,
+        includeLayout: z.boolean().default(true),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { protocolId, condition, content, includeLayout } = input;
+
+      try {
+        console.log(
+          `[TRPC /flowchart.generateClinical] Generating clinical flowchart for protocol ${protocolId}`,
+        );
+
+        // Generate clinical format flowchart directly
+        const { generateClinicalFlowchartModular } = await import(
+          "@/lib/flowchart/flowchart-generator-modular"
+        );
+
+        const clinicalResult = await generateClinicalFlowchartModular(
+          content as any,
+          {
+            protocolId,
+          },
+        );
+
+        console.log(
+          `[TRPC /flowchart.generateClinical] Generated clinical flowchart with ${clinicalResult.nodes.length} nodes, ${clinicalResult.edges.length} edges`,
+        );
+
+        return {
+          success: true,
+          flowchart: clinicalResult,
+          metadata: {
+            mode: "clinical",
+            format: "clinical",
+            generatedAt: new Date().toISOString(),
+          },
+        };
+      } catch (error) {
+        console.error(
+          `[TRPC /flowchart.generateClinical] Error generating clinical flowchart:`,
+          error,
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Falha na geração do fluxograma clínico: ${
             error instanceof Error ? error.message : "Erro desconhecido"
           }`,
           cause: error,

@@ -7,6 +7,15 @@ import { Handle, Position, type NodeProps } from "reactflow";
 import type { StartNodeData } from "@/types/flowchart";
 import { Play } from "lucide-react";
 
+// Helper to decode HTML entities for display
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
 export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data }) => {
   return (
     <div className="relative rounded-lg border-2 border-green-500 bg-green-50 px-4 py-3 shadow-md transition-shadow hover:shadow-lg">
@@ -14,10 +23,12 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data }) => {
         <Play className="h-5 w-5 text-green-600" />
         <div>
           <div className="text-sm font-semibold text-gray-800">
-            {data.title}
+            {decodeHtmlEntities(data.title)}
           </div>
           {data.description && (
-            <div className="mt-1 text-xs text-gray-600">{data.description}</div>
+            <div className="mt-1 text-xs text-gray-600">
+              {decodeHtmlEntities(data.description)}
+            </div>
           )}
         </div>
       </div>

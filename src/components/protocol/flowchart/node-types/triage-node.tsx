@@ -8,6 +8,15 @@ import type { TriageNodeData } from "@/types/flowchart";
 import { cn } from "@/lib/utils";
 import { Activity } from "lucide-react";
 
+// Helper to decode HTML entities for display
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
 export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
   data,
   isConnectable,
@@ -25,9 +34,11 @@ export const TriageNode: React.FC<NodeProps<TriageNodeData>> = ({
       <Activity className="medical-node-icon" />
 
       <div className="medical-node-content">
-        <div className="medical-node-title">{title}</div>
+        <div className="medical-node-title">{decodeHtmlEntities(title)}</div>
         {description && (
-          <div className="medical-node-subtitle">{description}</div>
+          <div className="medical-node-subtitle">
+            {decodeHtmlEntities(description)}
+          </div>
         )}
       </div>
 
