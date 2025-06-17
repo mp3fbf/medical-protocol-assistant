@@ -24,16 +24,6 @@ const prismaClientSingleton = () => {
         url: process.env.DATABASE_URL,
       },
     },
-    // Connection pool configuration
-    datasourceUrl: process.env.DATABASE_URL,
-    // @ts-ignore - Undocumented but works
-    __internal: {
-      engine: {
-        connectionTimeout: 604800000, // 7 days
-        requestTimeout: 604800000, // 7 days
-        poolTimeout: 604800000, // 7 days
-      },
-    },
   });
 };
 
