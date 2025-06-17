@@ -160,7 +160,7 @@ export class OpenAIProvider implements AIProvider {
         role: msg.role,
         content: msg.content,
       })),
-      stream: true, // ENABLE STREAMING FOR O3
+      stream: model === "o3" ? false : true, // DISABLE STREAMING FOR O3 DUE TO TIMEOUT ISSUES
     };
 
     // Check if it's an O-series model (o3, o3-mini, o4-mini)
@@ -235,61 +235,98 @@ export class OpenAIProvider implements AIProvider {
           `[OpenAI] Created client for ${requestId} with ${TIMEOUT_CONFIGS.o3 / 1000 / 60 / 60 / 24} DAYS timeout`,
         );
 
-        // Create streaming completion
-        const streamResponse =
-          await requestClient.beta.chat.completions.stream(completionParams);
-
-        // Collect all chunks
         let fullContent = "";
-        let lastChunkTime = Date.now();
-        let chunkCount = 0;
+        let usage = undefined;
 
-        console.log(`[OpenAI] Stream started for ${requestId}`);
+        if (completionParams.stream) {
+          // STREAMING MODE (for non-O3 models)
+          const streamResponse =
+            await requestClient.beta.chat.completions.stream(completionParams);
 
-        for await (const chunk of streamResponse) {
-          const currentTime = Date.now();
-          const timeSinceLastChunk = currentTime - lastChunkTime;
-          lastChunkTime = currentTime;
+          let lastChunkTime = Date.now();
+          let chunkCount = 0;
 
-          chunkCount++;
+          console.log(`[OpenAI] Stream started for ${requestId}`);
 
-          // Log EVERY SINGLE CHUNK for O3 debugging
-          if (model === "o3" || chunkCount % 10 === 0) {
+          for await (const chunk of streamResponse) {
+            const currentTime = Date.now();
+            const timeSinceLastChunk = currentTime - lastChunkTime;
+            lastChunkTime = currentTime;
+
+            chunkCount++;
+
+            // Log EVERY SINGLE CHUNK for O3 debugging
+            if (model === "o3" || chunkCount % 10 === 0) {
+              console.log(
+                `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
+              );
+            }
+
+            // Alert if we're approaching any timeout
+            const elapsed = Date.now() - startTime;
+            if (elapsed > 50000 && elapsed < 70000) {
+              // Near 60 seconds
+              console.warn(
+                `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
+              );
+            }
+
+            const delta = chunk.choices[0]?.delta?.content;
+            if (delta) {
+              fullContent += delta;
+            }
+          }
+
+          console.log(
+            `[OpenAI] Stream completed for ${requestId} from ${model} after ${Date.now() - startTime}ms (${chunkCount} chunks)`,
+          );
+        } else {
+          // NON-STREAMING MODE (for O3 model)
+          console.log(
+            `[OpenAI] Non-streaming request for O3 model - waiting for complete response...`,
+          );
+
+          // Log progress every 10 seconds
+          const progressInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            console.log(`[OpenAI] O3 processing... ${elapsed} seconds elapsed`);
+
+            if (elapsed > 60) {
+              console.log(
+                "✅ [OpenAI] O3 passed 60-second mark without timeout!",
+              );
+            }
+          }, 10000);
+
+          try {
+            const completion =
+              await requestClient.chat.completions.create(completionParams);
+            clearInterval(progressInterval);
+
+            fullContent = completion.choices[0]?.message?.content || "";
+            usage = completion.usage;
+
             console.log(
-              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
+              `[OpenAI] Non-streaming completion for ${requestId} from ${model} after ${Date.now() - startTime}ms`,
             );
-          }
-
-          // Alert if we're approaching any timeout
-          const elapsed = Date.now() - startTime;
-          if (elapsed > 50000 && elapsed < 70000) {
-            // Near 60 seconds
-            console.warn(
-              `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
-            );
-          }
-
-          const delta = chunk.choices[0]?.delta?.content;
-          if (delta) {
-            fullContent += delta;
+          } catch (error) {
+            clearInterval(progressInterval);
+            throw error;
           }
         }
 
         const duration = Date.now() - startTime;
-        console.log(
-          `[OpenAI] Stream completed for ${requestId} from ${model} after ${duration}ms (${chunkCount} chunks)`,
-        );
 
         // Clear retry delay on success
         this.retryDelays.delete(requestId);
 
         if (!fullContent) {
-          throw new Error("OpenAI returned empty response from stream");
+          throw new Error("OpenAI returned empty response");
         }
 
         return {
           content: fullContent,
-          usage: undefined, // Streaming doesn't provide usage info for O3
+          usage: usage,
           model: model,
           finish_reason: "stop",
         };
