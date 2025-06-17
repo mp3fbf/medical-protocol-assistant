@@ -152,6 +152,12 @@ Critérios:
   const model = "o3";
   const temperature = getModelTemperature(model, 0.3);
   const provider = getAIProvider();
+
+  console.log(
+    `[FlowchartModular] Step 1: Starting protocol analysis with ${model}`,
+  );
+  const startTime = Date.now();
+
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
@@ -159,6 +165,10 @@ Critérios:
       temperature,
       // NO LIMITS - let O3 work freely
     },
+  );
+
+  console.log(
+    `[FlowchartModular] Step 1 completed in ${Date.now() - startTime}ms`,
   );
 
   const cleanedResponse = completion.content
@@ -234,6 +244,12 @@ Regras IMPORTANTES:
     const model = "o3";
     const temperature = getModelTemperature(model, 0.3);
     const provider = getAIProvider();
+
+    console.log(
+      `[FlowchartModular] Step 2: Extracting decisions from section ${sectionNum} with ${model}`,
+    );
+    const stepStartTime = Date.now();
+
     const completion = await provider.createCompletion(
       [{ role: "user", content: prompt }],
       {
@@ -241,6 +257,10 @@ Regras IMPORTANTES:
         temperature,
         // NO LIMITS - let O3 work freely
       },
+    );
+
+    console.log(
+      `[FlowchartModular] Step 2 section ${sectionNum} completed in ${Date.now() - stepStartTime}ms`,
     );
 
     try {
@@ -351,6 +371,10 @@ Regras importantes:
   const model = "o3";
   const temperature = getModelTemperature(model, 0.3);
   const provider = getAIProvider();
+
+  console.log(`[FlowchartModular] Step 3: Creating flow mapping with ${model}`);
+  const startTime = Date.now();
+
   const completion = await provider.createCompletion(
     [{ role: "user", content: prompt }],
     {
@@ -358,6 +382,10 @@ Regras importantes:
       temperature,
       // NO LIMITS - let O3 work freely
     },
+  );
+
+  console.log(
+    `[FlowchartModular] Step 3 completed in ${Date.now() - startTime}ms`,
   );
 
   const cleanedResponse = completion.content
@@ -513,31 +541,66 @@ export async function generateFlowchartModular(
   };
 
   try {
-    // Step 1: Analyze protocol
+    // Step 1: Analyze protocol (with retry)
     updateProgress(1, "Analisando estrutura do protocolo...");
-    const analysis = await analyzeProtocol(protocolContent, (msg) =>
-      updateProgress(1, msg),
-    );
-    session.analysis = analysis;
+    let analysis;
+    try {
+      analysis = await analyzeProtocol(protocolContent, (msg) =>
+        updateProgress(1, msg),
+      );
+      session.analysis = analysis;
+    } catch (error) {
+      console.error("[FlowchartModular] Step 1 failed, retrying...", error);
+      updateProgress(1, "Tentando novamente análise do protocolo...");
+      analysis = await analyzeProtocol(protocolContent, (msg) =>
+        updateProgress(1, msg),
+      );
+      session.analysis = analysis;
+    }
 
-    // Step 2: Extract decision points
+    // Step 2: Extract decision points (with retry)
     updateProgress(2, "Extraindo pontos de decisão...");
-    const decisions = await extractDecisionPoints(
-      protocolContent,
-      analysis,
-      (msg) => updateProgress(2, msg),
-    );
-    session.decisions = decisions;
+    let decisions;
+    try {
+      decisions = await extractDecisionPoints(
+        protocolContent,
+        analysis,
+        (msg) => updateProgress(2, msg),
+      );
+      session.decisions = decisions;
+    } catch (error) {
+      console.error("[FlowchartModular] Step 2 failed, retrying...", error);
+      updateProgress(2, "Tentando novamente extração de decisões...");
+      decisions = await extractDecisionPoints(
+        protocolContent,
+        analysis,
+        (msg) => updateProgress(2, msg),
+      );
+      session.decisions = decisions;
+    }
 
-    // Step 3: Create flow mapping
+    // Step 3: Create flow mapping (with retry)
     updateProgress(3, "Mapeando fluxo do protocolo...");
-    const mapping = await createFlowMapping(
-      protocolContent,
-      analysis,
-      decisions,
-      (msg) => updateProgress(3, msg),
-    );
-    session.mapping = mapping;
+    let mapping;
+    try {
+      mapping = await createFlowMapping(
+        protocolContent,
+        analysis,
+        decisions,
+        (msg) => updateProgress(3, msg),
+      );
+      session.mapping = mapping;
+    } catch (error) {
+      console.error("[FlowchartModular] Step 3 failed, retrying...", error);
+      updateProgress(3, "Tentando novamente mapeamento do fluxo...");
+      mapping = await createFlowMapping(
+        protocolContent,
+        analysis,
+        decisions,
+        (msg) => updateProgress(3, msg),
+      );
+      session.mapping = mapping;
+    }
 
     // Step 4: Convert to final format
     updateProgress(4, "Finalizando fluxograma...");
@@ -604,95 +667,17 @@ export async function generateClinicalFlowchartModular(
     }) => void;
   },
 ): Promise<any> {
-  // Import clinical generator
-  const { generateClinicalFlowchart } = await import("./clinical-generator");
+  // For O3 model, use the regular modular approach to avoid timeouts
+  // This will break the generation into 4 smaller steps instead of one large request
+  console.log(
+    "[FlowchartModular] Using modular approach for O3 model to avoid timeouts",
+  );
 
-  const sessionId = `clinical-flowchart-${Date.now()}`;
-  // Extract condition from section 1 or use default
-  const section1Content = protocolContent["1"];
-  const protocolCondition =
-    typeof section1Content?.content === "string"
-      ? section1Content.content
-      : section1Content?.title || "Protocolo Médico";
+  // Use the existing modular generation which breaks into 4 steps
+  const flowchart = await generateFlowchartModular(protocolContent, options);
 
-  const updateProgress = (message: string) => {
-    options?.progressCallback?.({
-      step: 1,
-      totalSteps: 1,
-      message,
-    });
-
-    if (options?.protocolId) {
-      flowchartProgressEmitter.emitProgress(
-        options.protocolId,
-        sessionId,
-        1,
-        1,
-        message,
-      );
-    }
-  };
-
-  try {
-    updateProgress("🏥 Gerando fluxograma clínico detalhado...");
-
-    // Use clinical generator directly
-    const clinicalFlowchart = await generateClinicalFlowchart(
-      protocolCondition,
-      protocolContent,
-      {
-        model: "o3",
-        temperature: 0.3,
-        progressCallback: updateProgress,
-      },
-    );
-
-    // Apply layout to the clinical flowchart
-    // Since the layout function expects standard nodes, we'll cast the types
-    const { applyDagreLayout } = await import("./layout");
-    const layoutedNodes = applyDagreLayout(
-      clinicalFlowchart.nodes as any,
-      clinicalFlowchart.edges as any,
-      {
-        rankdir: "TB",
-        nodesep: 800, // MÁXIMO - espaço horizontal entre nós do mesmo nível
-        ranksep: 600, // MÁXIMO - espaço vertical entre níveis
-        marginx: 200, // Margem lateral gigante
-        marginy: 200, // Margem vertical gigante
-        edgesep: 100, // Espaço entre edges
-      },
-    );
-
-    const layoutedFlowchart = {
-      ...clinicalFlowchart,
-      nodes: layoutedNodes,
-    };
-
-    updateProgress("✅ Fluxograma clínico gerado com sucesso!");
-
-    if (options?.protocolId) {
-      flowchartProgressEmitter.emitComplete(
-        options.protocolId,
-        sessionId,
-        layoutedFlowchart,
-      );
-    }
-
-    return layoutedFlowchart;
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Erro desconhecido";
-
-    if (options?.protocolId) {
-      flowchartProgressEmitter.emitError(
-        options.protocolId,
-        sessionId,
-        errorMessage,
-      );
-    }
-
-    throw error;
-  }
+  // The modular approach already includes layout, so just return it
+  return flowchart;
 }
 
 /**
