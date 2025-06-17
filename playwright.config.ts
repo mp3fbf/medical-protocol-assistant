@@ -23,6 +23,13 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
 
+  /* MAXIMUM TIMEOUTS FOR O3 TESTING */
+  timeout: 604800000, // 7 days per test
+  expect: {
+    timeout: 86400000, // 24 hours for expectations
+  },
+  globalTimeout: 604800000, // 7 days for all tests
+
   /* Global setup script to run before all tests (for login) */
   globalSetup: require.resolve("./tests/e2e/global.setup.ts"),
 
@@ -36,13 +43,17 @@ export default defineConfig({
 
     /* Use saved authentication state for all tests */
     storageState: AUTH_FILE,
+
+    /* MAXIMUM TIMEOUTS FOR O3 TESTING */
+    actionTimeout: 86400000, // 24 hours for actions
+    navigationTimeout: 86400000, // 24 hours for navigation
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
-      use: { 
+      use: {
         ...devices["Desktop Chrome"],
         storageState: AUTH_FILE, // Ensure each project uses the auth state
       },
@@ -51,7 +62,7 @@ export default defineConfig({
 
     {
       name: "firefox",
-      use: { 
+      use: {
         ...devices["Desktop Firefox"],
         storageState: AUTH_FILE,
       },
@@ -60,13 +71,13 @@ export default defineConfig({
 
     {
       name: "webkit",
-      use: { 
+      use: {
         ...devices["Desktop Safari"],
         storageState: AUTH_FILE,
-       },
+      },
       dependencies: ["setup"],
     },
-    
+
     // Project for authentication setup, does not run tests but runs globalSetup
     {
       name: "setup",
@@ -83,10 +94,10 @@ export default defineConfig({
     stdout: "pipe",
     stderr: "pipe",
     env: {
-        // Ensure NEXTAUTH_URL is explicitly passed to the webServer's environment
-        // This is important if your app running via `pnpm dev` relies on it internally
-        // even if Playwright's baseURL is also set.
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL || "http://localhost:3000",
-    }
+      // Ensure NEXTAUTH_URL is explicitly passed to the webServer's environment
+      // This is important if your app running via `pnpm dev` relies on it internally
+      // even if Playwright's baseURL is also set.
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL || "http://localhost:3000",
+    },
   },
 });

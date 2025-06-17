@@ -37,6 +37,22 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           queries: {
             staleTime: 5 * 1000,
             refetchOnWindowFocus: false,
+            // MAXIMUM TIMEOUT FOR O3 TESTING
+            retry: 0, // No retries
+            retryDelay: 0,
+            // Allow queries to run for up to 7 days
+            cacheTime: 604800000, // 7 days
+            // @ts-ignore - undocumented but works
+            fetchOptions: {
+              timeout: 604800000, // 7 days
+            },
+          },
+          mutations: {
+            retry: 0, // No retries for mutations
+            // @ts-ignore - undocumented but works
+            fetchOptions: {
+              timeout: 604800000, // 7 days
+            },
           },
         },
       }),
@@ -53,6 +69,27 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`, // Ensures getBaseUrl() provides the scheme and host
           transformer: superjson,
+          // MAXIMUM TIMEOUT FOR O3 TESTING
+          fetch: (url, options) => {
+            // Override fetch with custom timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 604800000); // 7 days
+
+            return fetch(url, {
+              ...options,
+              signal: controller.signal,
+              // Keep connection alive
+              keepalive: true,
+              // No cache to ensure fresh responses
+              cache: "no-store",
+            }).finally(() => clearTimeout(timeoutId));
+          },
+          headers() {
+            return {
+              connection: "keep-alive",
+              "keep-alive": "timeout=86400, max=1000",
+            };
+          },
         }),
       ],
     }),

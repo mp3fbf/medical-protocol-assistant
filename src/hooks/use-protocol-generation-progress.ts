@@ -160,7 +160,7 @@ export function useProtocolGenerationProgress(
         eventSourceRef.current = null;
       });
     },
-    [options, updateEstimatedTime, handleGenerationError],
+    [options, updateEstimatedTime, handleGenerationError, progress],
   );
 
   // tRPC mutations

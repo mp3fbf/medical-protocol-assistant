@@ -24,6 +24,20 @@ export class AnthropicProvider implements AIProvider {
   constructor(apiKey?: string) {
     this.client = new Anthropic({
       apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+      // MAXIMUM TIMEOUT FOR O3-LIKE TESTING
+      timeout: 604800000, // 7 days
+      maxRetries: 0, // No retries
+      // Custom fetch with maximum timeout
+      fetch: (url: any, init: any) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 604800000); // 7 days
+
+        return fetch(url, {
+          ...init,
+          signal: controller.signal,
+          keepalive: true,
+        }).finally(() => clearTimeout(timeoutId));
+      },
     });
   }
 

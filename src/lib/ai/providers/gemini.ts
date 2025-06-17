@@ -24,7 +24,16 @@ export class GeminiProvider implements AIProvider {
     if (!key) {
       throw new Error("Google AI API key is required");
     }
-    this.client = new GoogleGenerativeAI(key);
+    this.client = new GoogleGenerativeAI(key, {
+      // MAXIMUM TIMEOUT FOR O3-LIKE TESTING
+      // Note: Google AI SDK doesn't expose timeout directly, but we can configure fetch
+      apiVersion: "v1beta",
+      // @ts-ignore - Custom fetch configuration
+      fetchOptions: {
+        timeout: 604800000, // 7 days
+        keepalive: true,
+      },
+    } as any);
   }
 
   async createCompletion(

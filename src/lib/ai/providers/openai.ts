@@ -10,21 +10,28 @@ import type {
   AICompletionResponse,
 } from "./types";
 
-// Timeout configurations for different request types
+// ABSOLUTELY MASSIVE TIMEOUT CONFIGURATIONS - NO LIMITS WHATSOEVER!
 const TIMEOUT_CONFIGS = {
-  standard: 3600000, // 1 hour for standard requests
-  large: 7200000, // 2 hours for large context requests
-  o3: 86400000, // 24 HOURS for O3 model requests
-  research: 3600000, // 1 hour for research requests
+  standard: 604800000, // 7 DAYS for standard requests (why not?)
+  large: 1209600000, // 14 DAYS for large context requests
+  o3: 2592000000, // 30 DAYS for O3 model requests (ONE MONTH!)
+  research: 604800000, // 7 DAYS for research requests
 };
 
-// Retry configuration - DISABLED FOR O3 TESTING
+// NO RETRIES AT ALL - Let it run forever
 const RETRY_CONFIG = {
-  maxRetries: 1, // NO RETRIES - let it run once forever
-  initialDelay: 1000, // 1 second
-  maxDelay: 32000, // 32 seconds
-  backoffMultiplier: 2,
+  maxRetries: 0, // ZERO RETRIES
+  initialDelay: 0,
+  maxDelay: 0,
+  backoffMultiplier: 1,
 };
+
+console.log("[OpenAI Provider] MASSIVE TIMEOUTS CONFIGURED:", {
+  standard: `${TIMEOUT_CONFIGS.standard / 1000 / 60 / 60 / 24} days`,
+  large: `${TIMEOUT_CONFIGS.large / 1000 / 60 / 60 / 24} days`,
+  o3: `${TIMEOUT_CONFIGS.o3 / 1000 / 60 / 60 / 24} days`,
+  research: `${TIMEOUT_CONFIGS.research / 1000 / 60 / 60 / 24} days`,
+});
 
 export class OpenAIProvider implements AIProvider {
   name = "openai";
@@ -54,9 +61,14 @@ export class OpenAIProvider implements AIProvider {
     this.client = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY,
       baseURL: baseUrl,
-      timeout: 86400000, // 24 HOURS default for O3 testing
+      timeout: 604800000, // 7 DAYS default timeout for O3 testing
       maxRetries: 0, // We'll handle retries ourselves
       httpAgent: httpAgent,
+      dangerouslyAllowBrowser: false,
+      defaultHeaders: {
+        Connection: "keep-alive",
+        "Keep-Alive": "timeout=86400, max=1000",
+      },
     });
   }
 
@@ -100,7 +112,7 @@ export class OpenAIProvider implements AIProvider {
   /**
    * Check if error is retryable - DISABLED FOR O3 TESTING
    */
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(_error: any): boolean {
     // FOR O3 TESTING - NO RETRIES AT ALL
     return false;
 
@@ -171,7 +183,8 @@ export class OpenAIProvider implements AIProvider {
       completionParams.response_format = options?.response_format;
     }
 
-    const timeout = this.getRequestTimeout(model, options);
+    // timeout variable is created but not used, we're using TIMEOUT_CONFIGS.o3 directly
+    // const timeout = this.getRequestTimeout(model, options);
     const requestId = `${model}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     console.log(
@@ -186,26 +199,41 @@ export class OpenAIProvider implements AIProvider {
 
     let lastError: any;
 
-    // Retry loop with exponential backoff
-    for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    // NO RETRY LOOP - Just run once with MASSIVE timeout
+    const maxAttempts = Math.max(1, RETRY_CONFIG.maxRetries);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(
+        `[OpenAI] Starting attempt ${attempt}/${maxAttempts} for ${requestId}`,
+      );
       const startTime = Date.now();
 
       try {
-        // Create a new HTTPS agent with aggressive keep-alive
+        // Create a new HTTPS agent with ULTRA AGGRESSIVE keep-alive
         const requestAgent = new https.Agent({
           keepAlive: true,
-          keepAliveMsecs: 10000, // Send keep-alive every 10 seconds
-          // NO TIMEOUT - let the request run as long as needed
+          keepAliveMsecs: 5000, // Send keep-alive every 5 seconds!
+          timeout: TIMEOUT_CONFIGS.o3, // 30 DAYS timeout
+          maxSockets: Infinity,
+          maxFreeSockets: 256,
         });
 
-        // Create a new client instance with INFINITE timeout
+        // Create a new client instance with ABSOLUTELY MASSIVE timeout
         const requestClient = new OpenAI({
           apiKey: this.client.apiKey,
           baseURL: this.client.baseURL,
-          timeout: 86400000, // 24 HOURS - maximum timeout for O3
+          timeout: TIMEOUT_CONFIGS.o3, // 30 DAYS - ONE MONTH timeout for O3!
           maxRetries: 0,
           httpAgent: requestAgent,
+          dangerouslyAllowBrowser: false,
+          defaultHeaders: {
+            Connection: "keep-alive",
+            "Keep-Alive": "timeout=2592000, max=10000", // 30 days keep-alive!
+          },
         });
+
+        console.log(
+          `[OpenAI] Created client for ${requestId} with ${TIMEOUT_CONFIGS.o3 / 1000 / 60 / 60 / 24} DAYS timeout`,
+        );
 
         // Create streaming completion
         const streamResponse =
@@ -225,10 +253,19 @@ export class OpenAIProvider implements AIProvider {
 
           chunkCount++;
 
-          // Log every 10th chunk to show progress
-          if (chunkCount % 10 === 0) {
+          // Log EVERY SINGLE CHUNK for O3 debugging
+          if (model === "o3" || chunkCount % 10 === 0) {
             console.log(
-              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk`,
+              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
+            );
+          }
+
+          // Alert if we're approaching any timeout
+          const elapsed = Date.now() - startTime;
+          if (elapsed > 50000 && elapsed < 70000) {
+            // Near 60 seconds
+            console.warn(
+              `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
             );
           }
 

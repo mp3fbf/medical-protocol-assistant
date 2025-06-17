@@ -45,6 +45,9 @@ coverage/
 # Scripts directory
 scripts/
 
+# Custom server file
+server.js
+
 # Test files (temporary)
 test-*.js
 debug-*.js

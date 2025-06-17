@@ -10,6 +10,9 @@ import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { prisma } from "@/lib/db/client";
 import { authOptions } from "@/lib/auth/config";
 
+// Import timeout configurations for O3 testing
+import "@/server/config/timeouts";
+
 /**
  * Creates context for an incoming request
  * @link https://trpc.io/docs/v11/context

@@ -46,7 +46,17 @@ export function getOpenAIClient(): OpenAI {
     openaiInstance = new OpenAI({
       apiKey: apiKey || "sk-test-key-if-not-set-for-constructor", // Provide a dummy key for constructor if testing and not set
       organization: organizationId,
-      timeout: OPENAI_API_TIMEOUT_MS,
+      timeout: OPENAI_API_TIMEOUT_MS, // Now 7 DAYS from config
+      maxRetries: 0, // NO RETRIES for O3 testing
+      httpAgent: new (require("https").Agent)({
+        keepAlive: true,
+        keepAliveMsecs: 30000,
+        timeout: 604800000, // 7 DAYS
+      }),
+      defaultHeaders: {
+        Connection: "keep-alive",
+        "Keep-Alive": "timeout=86400, max=1000",
+      },
     });
     return openaiInstance;
   } catch (error) {

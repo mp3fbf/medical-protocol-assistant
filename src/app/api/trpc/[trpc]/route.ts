@@ -11,9 +11,40 @@ import { type NextRequest } from "next/server";
 import { createContext } from "@/server/api/context";
 import { appRouter } from "@/server/api/root";
 
-// REMOVE ALL TIMEOUTS FOR O3 TESTING
-export const maxDuration = 300; // 5 minutes max on Vercel (maximum allowed)
+// MAXIMUM TIMEOUTS FOR O3 - NO LIMITS!
+export const maxDuration = 300; // 5 minutes max on Vercel Pro (maximum allowed)
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = false;
+export const runtime = "nodejs";
+export const preferredRegion = "auto";
+
+// Log configuration
+console.log(
+  "[tRPC Route] Configured with maxDuration:",
+  maxDuration,
+  "seconds",
+);
+
+// Node.js server configuration for maximum timeout
+if (
+  typeof process !== "undefined" &&
+  process.versions &&
+  process.versions.node
+) {
+  // Set maximum server timeout (24 hours)
+  const http = require("http");
+  const https = require("https");
+
+  // Set global agent timeouts
+  http.globalAgent.keepAlive = true;
+  http.globalAgent.keepAliveMsecs = 30000;
+  http.globalAgent.timeout = 86400000; // 24 hours
+
+  https.globalAgent.keepAlive = true;
+  https.globalAgent.keepAliveMsecs = 30000;
+  https.globalAgent.timeout = 86400000; // 24 hours
+}
 
 /**
  * @see https://trpc.io/docs/v11/server/adapters/fetch#used-with-nextjs-app-router

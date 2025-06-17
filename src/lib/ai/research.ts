@@ -24,7 +24,6 @@ import {
   DEFAULT_CHAT_MODEL,
   JSON_RESPONSE_FORMAT,
   getModelTemperature,
-  // DEEPRESEARCH_API_TIMEOUT_MS, // Marked as unused
 } from "./config";
 import { /* DeepResearchError, */ OpenAIError } from "./errors"; // DeepResearchError marked as unused
 
