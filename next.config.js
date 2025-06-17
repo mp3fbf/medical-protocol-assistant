@@ -30,7 +30,6 @@ const nextConfig = {
 
   // MAXIMUM TIMEOUTS FOR EVERYTHING
   staticPageGenerationTimeout: 86400, // 24 HOURS
-  outputFileTracingTimeout: 86400, // 24 HOURS
 
   // Fix CSS loading issues in Next.js 15
   webpack: (config, { isServer }) => {
@@ -53,31 +52,22 @@ const nextConfig = {
   // Next.js 15 performance optimizations
   experimental: {
     optimizeCss: false,
-    // MAXIMUM TIMEOUTS FOR O3 TESTING
-    serverComponentsExternalPackages: ["openai"],
     // Increase worker timeout
     workerThreads: false,
     cpus: 1,
   },
 
+  // Server external packages (moved from experimental)
+  serverExternalPackages: ["openai"],
+
   // MAXIMUM SERVER TIMEOUTS
   httpAgentOptions: {
     keepAlive: true,
-    keepAliveMsecs: 30000, // 30 seconds
-    timeout: 604800000, // 7 DAYS
-  },
-
-  // Serverless function configuration
-  functions: {
-    "app/api/trpc/[trpc]/route.ts": {
-      maxDuration: 300, // 5 minutes (Vercel Pro max)
-      memory: 3008, // 3GB RAM (max)
-    },
   },
 
   // Development server configuration
   devIndicators: {
-    buildActivityPosition: "bottom-right",
+    position: "bottom-right",
   },
 
   // Increase all possible timeouts

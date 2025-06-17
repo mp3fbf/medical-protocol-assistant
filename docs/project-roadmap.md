@@ -627,6 +627,25 @@ const handleAIGeneration = async (formData) => {
 
 ### Semana de 11/01/2025
 
+**✅ Configuração de Timeouts Massivos para O3 Model**
+
+- **Problema Resolvido**: O3 model estava dando timeout após ~60 segundos durante geração de fluxogramas
+- **Solução Implementada**:
+  - Configurados timeouts de até 30 DIAS (2.592.000.000ms) para O3 model
+  - Implementado streaming mode para manter conexões vivas
+  - HTTP/HTTPS agents com keep-alive agressivo (5 segundos)
+  - Custom server.js com timeouts de 24 horas
+  - Patch no Node.js core para forçar timeouts massivos
+  - Logs detalhados para rastrear tempo de execução
+  - Desabilitados todos os retries para O3 (deixar rodar para sempre)
+- **Arquivos Modificados**:
+  - `/src/lib/ai/providers/openai.ts` - Timeouts de 30 dias para O3
+  - `/src/lib/http-config.ts` - Configuração global de HTTP agents
+  - `/src/lib/node-timeout-patch.ts` - Patch no Node.js core
+  - `server.js` - Custom server com timeouts massivos
+  - `next.config.js` - Configurações Next.js otimizadas
+- **Impacto**: O3 model agora pode processar por horas/dias sem timeout
+
 **✅ Correção de Tipo de Dados para O3 Model**
 
 - **Problema Resolvido**: O3 model estava retornando `sectionNumber` como string em vez de number, causando erros de validação
