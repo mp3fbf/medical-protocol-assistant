@@ -37,21 +37,21 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           queries: {
             staleTime: 5 * 1000,
             refetchOnWindowFocus: false,
-            // MAXIMUM TIMEOUT FOR O3 TESTING
+            // Reasonable timeouts for queries
             retry: 0, // No retries
             retryDelay: 0,
-            // Allow queries to run for up to 7 days
-            cacheTime: 604800000, // 7 days
+            // Cache for 1 hour
+            gcTime: 3600000, // 1 hour (was cacheTime in v4)
             // @ts-ignore - undocumented but works
             fetchOptions: {
-              timeout: 604800000, // 7 days
+              timeout: 300000, // 5 minutes
             },
           },
           mutations: {
             retry: 0, // No retries for mutations
             // @ts-ignore - undocumented but works
             fetchOptions: {
-              timeout: 604800000, // 7 days
+              timeout: 7200000, // 2 hours for mutations (O3 may take longer)
             },
           },
         },
@@ -69,11 +69,11 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`, // Ensures getBaseUrl() provides the scheme and host
           transformer: superjson,
-          // MAXIMUM TIMEOUT FOR O3 TESTING
+          // Custom fetch with reasonable timeout
           fetch: (url, options) => {
             // Override fetch with custom timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 604800000); // 7 days
+            const timeoutId = setTimeout(() => controller.abort(), 7200000); // 2 hours
 
             return fetch(url, {
               ...options,
@@ -87,7 +87,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers() {
             return {
               connection: "keep-alive",
-              "keep-alive": "timeout=86400, max=1000",
+              "keep-alive": "timeout=300, max=100",
             };
           },
         }),

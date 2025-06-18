@@ -30,12 +30,12 @@ export const DEFAULT_MAX_TOKENS_RESEARCH_SUMMARY = 4000; // Max tokens for resea
 // Response Format
 export const JSON_RESPONSE_FORMAT = { type: "json_object" } as const;
 
-// MAXIMUM API TIMEOUTS FOR O3 TESTING (in milliseconds)
-export const OPENAI_API_TIMEOUT_MS = 604800000; // 7 DAYS - ABSOLUTE MAXIMUM
-export const DEEPRESEARCH_API_TIMEOUT_MS = 86400000; // 24 HOURS
+// API Timeouts (in milliseconds)
+export const OPENAI_API_TIMEOUT_MS = 7200000; // 2 hours - sufficient for O3
+export const DEEPRESEARCH_API_TIMEOUT_MS = 600000; // 10 minutes
 
-// Retry Configuration - DISABLED FOR O3 TESTING
-export const DEFAULT_API_RETRY_ATTEMPTS = 0; // NO RETRIES
+// Retry Configuration
+export const DEFAULT_API_RETRY_ATTEMPTS = 0; // No retries for O3
 export const DEFAULT_API_RETRY_DELAY_MS = 1000;
 
 // Token limits per model (approximate)

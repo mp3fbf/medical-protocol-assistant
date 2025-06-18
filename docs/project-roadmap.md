@@ -1,5 +1,17 @@
 # Medical Protocol Assistant - Roadmap & Pendências
 
+## 🚨 DIRETRIZ FUNDAMENTAL DO PROJETO 🚨
+
+**QUALIDADE SOBRE VELOCIDADE - SEM EXCEÇÕES**
+
+1. **NUNCA ECONOMIZAR**: Tokens, tempo de processamento ou recursos computacionais
+2. **COMPLEXIDADE É ESPERADA**: Protocolos médicos são extensos e detalhados por natureza
+3. **PROIBIDO IMPLEMENTAR ATALHOS**: Qualquer otimização que reduza qualidade é inaceitável
+4. **TEMPO DE GERAÇÃO**: 5-15 minutos com O3 é NORMAL e ESPERADO
+5. **INTEGRAÇÃO COMPLETA**: Todas as etapas de validação e integração devem ser executadas
+
+**⚠️ AVISO**: Qualquer tentativa de "otimizar" removendo etapas ou simplificando conteúdo será considerada um BUG CRÍTICO.
+
 ## 📋 Status Atual do Projeto
 
 **Data:** 11 de janeiro de 2025  
@@ -624,6 +636,30 @@ const handleAIGeneration = async (formData) => {
 ---
 
 ## 🎉 **CONQUISTAS RECENTES**
+
+### Semana de 18/01/2025
+
+**✅ UI para Retomada de Geração e Correção de Fluxograma O3**
+
+- **Implementação Completa de UI de Retomada**:
+
+  - Adicionado campo `generationStatus` ao estado do editor de protocolo
+  - Detecção automática de status: NOT_STARTED, IN_PROGRESS, COMPLETED, FAILED
+  - Interface condicional mostra botões apropriados baseado no status
+  - "Iniciar Geração com IA" para protocolos novos
+  - "Tentar Novamente" para protocolos com falha
+  - Toast notifications para feedback visual
+
+- **Correção do Fluxograma com O3**:
+
+  - **Problema**: Fluxograma falhava com "Connection error" após 60s, mas protocolo funcionava
+  - **Causa**: Usando abordagem diferente do protocolo (provider.createCompletion vs createAICompletion)
+  - **Solução**: Unificada para usar `createAICompletion` como o protocolo
+  - Removidos retries manuais desnecessários
+  - Removidas importações não utilizadas
+  - **Resultado**: Tanto protocolo quanto fluxograma agora funcionam perfeitamente com O3
+
+- **Princípio Aplicado**: "Não reinvente a roda" - usar a mesma solução que já funciona
 
 ### Semana de 11/01/2025
 

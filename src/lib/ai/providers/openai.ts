@@ -2,7 +2,6 @@
  * OpenAI Provider Implementation
  */
 import OpenAI from "openai";
-import https from "https";
 import type {
   AIProvider,
   AIMessage,
@@ -10,12 +9,12 @@ import type {
   AICompletionResponse,
 } from "./types";
 
-// ABSOLUTELY MASSIVE TIMEOUT CONFIGURATIONS - NO LIMITS WHATSOEVER!
+// Reasonable timeout configurations that work with Node.js
 const TIMEOUT_CONFIGS = {
-  standard: 604800000, // 7 DAYS for standard requests (why not?)
-  large: 1209600000, // 14 DAYS for large context requests
-  o3: 2592000000, // 30 DAYS for O3 model requests (ONE MONTH!)
-  research: 604800000, // 7 DAYS for research requests
+  standard: 300000, // 5 minutes for standard requests
+  large: 600000, // 10 minutes for large context requests
+  o3: 7200000, // 2 hours for O3 model requests
+  research: 600000, // 10 minutes for research requests
 };
 
 // NO RETRIES AT ALL - Let it run forever
@@ -26,11 +25,11 @@ const RETRY_CONFIG = {
   backoffMultiplier: 1,
 };
 
-console.log("[OpenAI Provider] MASSIVE TIMEOUTS CONFIGURED:", {
-  standard: `${TIMEOUT_CONFIGS.standard / 1000 / 60 / 60 / 24} days`,
-  large: `${TIMEOUT_CONFIGS.large / 1000 / 60 / 60 / 24} days`,
-  o3: `${TIMEOUT_CONFIGS.o3 / 1000 / 60 / 60 / 24} days`,
-  research: `${TIMEOUT_CONFIGS.research / 1000 / 60 / 60 / 24} days`,
+console.log("[OpenAI Provider] Timeout configurations:", {
+  standard: `${TIMEOUT_CONFIGS.standard / 1000 / 60} minutes`,
+  large: `${TIMEOUT_CONFIGS.large / 1000 / 60} minutes`,
+  o3: `${TIMEOUT_CONFIGS.o3 / 1000 / 60} minutes`,
+  research: `${TIMEOUT_CONFIGS.research / 1000 / 60} minutes`,
 });
 
 export class OpenAIProvider implements AIProvider {
@@ -50,24 +49,19 @@ export class OpenAIProvider implements AIProvider {
   private retryDelays = new Map<string, number>();
 
   constructor(apiKey?: string, baseUrl?: string) {
-    // Create HTTPS agent with keep-alive for better connection stability
-    // Note: Don't set timeout here as it will be set per request
-    const httpAgent = new https.Agent({
-      keepAlive: true,
-      keepAliveMsecs: 30000, // 30 seconds
-      // timeout removed - will be set dynamically per request
-    });
+    // Import global HTTPS agent with massive timeouts
+    const { httpsAgent } = require("@/lib/http-config");
 
     this.client = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY,
       baseURL: baseUrl,
-      timeout: 604800000, // 7 DAYS default timeout for O3 testing
+      timeout: TIMEOUT_CONFIGS.standard, // Use standard timeout by default
       maxRetries: 0, // We'll handle retries ourselves
-      httpAgent: httpAgent,
+      httpAgent: httpsAgent, // Use global agent with 30-day timeout
       dangerouslyAllowBrowser: false,
       defaultHeaders: {
         Connection: "keep-alive",
-        "Keep-Alive": "timeout=86400, max=1000",
+        "Keep-Alive": "timeout=2592000, max=10000", // 30 days
       },
     });
   }
@@ -160,7 +154,7 @@ export class OpenAIProvider implements AIProvider {
         role: msg.role,
         content: msg.content,
       })),
-      stream: model === "o3" ? false : true, // DISABLE STREAMING FOR O3 DUE TO TIMEOUT ISSUES
+      stream: true, // Enable streaming for all models including O3
     };
 
     // Check if it's an O-series model (o3, o3-mini, o4-mini)
@@ -208,112 +202,71 @@ export class OpenAIProvider implements AIProvider {
       const startTime = Date.now();
 
       try {
-        // Create a new HTTPS agent with ULTRA AGGRESSIVE keep-alive
-        const requestAgent = new https.Agent({
-          keepAlive: true,
-          keepAliveMsecs: 5000, // Send keep-alive every 5 seconds!
-          timeout: TIMEOUT_CONFIGS.o3, // 30 DAYS timeout
-          maxSockets: Infinity,
-          maxFreeSockets: 256,
-        });
+        // Create a new client with appropriate timeout for the model
+        const timeout = this.getRequestTimeout(model, options);
+        const { httpsAgent } = require("@/lib/http-config");
 
-        // Create a new client instance with ABSOLUTELY MASSIVE timeout
         const requestClient = new OpenAI({
           apiKey: this.client.apiKey,
           baseURL: this.client.baseURL,
-          timeout: TIMEOUT_CONFIGS.o3, // 30 DAYS - ONE MONTH timeout for O3!
+          timeout: timeout,
           maxRetries: 0,
-          httpAgent: requestAgent,
+          httpAgent: httpsAgent, // Use global agent with 30-day timeout
           dangerouslyAllowBrowser: false,
           defaultHeaders: {
             Connection: "keep-alive",
-            "Keep-Alive": "timeout=2592000, max=10000", // 30 days keep-alive!
+            "Keep-Alive": "timeout=86400, max=1000", // 24 hours
           },
         });
 
         console.log(
-          `[OpenAI] Created client for ${requestId} with ${TIMEOUT_CONFIGS.o3 / 1000 / 60 / 60 / 24} DAYS timeout`,
+          `[OpenAI] Created client for ${requestId} with ${timeout / 1000 / 60} minutes timeout`,
         );
 
         let fullContent = "";
         let usage = undefined;
 
-        if (completionParams.stream) {
-          // STREAMING MODE (for non-O3 models)
-          const streamResponse =
-            await requestClient.beta.chat.completions.stream(completionParams);
+        // STREAMING MODE for all models including O3
+        const streamResponse =
+          await requestClient.beta.chat.completions.stream(completionParams);
 
-          let lastChunkTime = Date.now();
-          let chunkCount = 0;
+        let lastChunkTime = Date.now();
+        let chunkCount = 0;
 
-          console.log(`[OpenAI] Stream started for ${requestId}`);
+        console.log(`[OpenAI] Stream started for ${requestId}`);
 
-          for await (const chunk of streamResponse) {
-            const currentTime = Date.now();
-            const timeSinceLastChunk = currentTime - lastChunkTime;
-            lastChunkTime = currentTime;
+        for await (const chunk of streamResponse) {
+          const currentTime = Date.now();
+          const timeSinceLastChunk = currentTime - lastChunkTime;
+          lastChunkTime = currentTime;
 
-            chunkCount++;
+          chunkCount++;
 
-            // Log EVERY SINGLE CHUNK for O3 debugging
-            if (model === "o3" || chunkCount % 10 === 0) {
-              console.log(
-                `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
-              );
-            }
-
-            // Alert if we're approaching any timeout
-            const elapsed = Date.now() - startTime;
-            if (elapsed > 50000 && elapsed < 70000) {
-              // Near 60 seconds
-              console.warn(
-                `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
-              );
-            }
-
-            const delta = chunk.choices[0]?.delta?.content;
-            if (delta) {
-              fullContent += delta;
-            }
+          // Log EVERY SINGLE CHUNK for O3 debugging
+          if (model === "o3" || chunkCount % 10 === 0) {
+            console.log(
+              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
+            );
           }
 
-          console.log(
-            `[OpenAI] Stream completed for ${requestId} from ${model} after ${Date.now() - startTime}ms (${chunkCount} chunks)`,
-          );
-        } else {
-          // NON-STREAMING MODE (for O3 model)
-          console.log(
-            `[OpenAI] Non-streaming request for O3 model - waiting for complete response...`,
-          );
-
-          // Log progress every 10 seconds
-          const progressInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            console.log(`[OpenAI] O3 processing... ${elapsed} seconds elapsed`);
-
-            if (elapsed > 60) {
-              console.log(
-                "✅ [OpenAI] O3 passed 60-second mark without timeout!",
-              );
-            }
-          }, 10000);
-
-          try {
-            const completion =
-              await requestClient.chat.completions.create(completionParams);
-            clearInterval(progressInterval);
-
-            fullContent = completion.choices[0]?.message?.content || "";
-            usage = completion.usage;
-
-            console.log(
-              `[OpenAI] Non-streaming completion for ${requestId} from ${model} after ${Date.now() - startTime}ms`,
+          // Alert if we're approaching any timeout
+          const elapsed = Date.now() - startTime;
+          if (elapsed > 50000 && elapsed < 70000) {
+            // Near 60 seconds
+            console.warn(
+              `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
             );
-          } catch (error) {
-            clearInterval(progressInterval);
-            throw error;
+          }
+
+          const delta = chunk.choices[0]?.delta?.content;
+          if (delta) {
+            fullContent += delta;
           }
         }
+
+        console.log(
+          `[OpenAI] Stream completed for ${requestId} from ${model} after ${Date.now() - startTime}ms (${chunkCount} chunks)`,
+        );
 
         const duration = Date.now() - startTime;
 

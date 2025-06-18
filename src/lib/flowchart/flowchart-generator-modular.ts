@@ -10,9 +10,14 @@ import type {
   CustomFlowEdge as FlowEdge,
 } from "@/types/flowchart";
 import type { ProtocolFullContent } from "@/types/protocol";
-import { getAIProvider } from "@/lib/ai/providers";
+import { createAICompletion } from "@/lib/ai/providers";
 import { getModelTemperature } from "@/lib/ai/config";
 import { flowchartProgressEmitter } from "@/lib/events/flowchart-progress";
+
+// Configure which model to use for flowchart generation
+// Default to O3 for best quality flowcharts
+const FLOWCHART_MODEL = process.env.FLOWCHART_MODEL || "o3";
+const USE_O3_FOR_FLOWCHARTS = process.env.USE_O3_FOR_FLOWCHARTS !== "false"; // Default to true
 
 // Types for each generation step
 interface FlowchartAnalysis {
@@ -149,16 +154,15 @@ Critérios:
 - keyMedications: Medicamentos principais mencionados
 - estimatedNodes: Estimativa do número total de nós necessários`;
 
-  const model = "o3";
+  const model = "o3"; // Always use O3 for flowcharts
   const temperature = getModelTemperature(model, 0.3);
-  const provider = getAIProvider();
 
   console.log(
     `[FlowchartModular] Step 1: Starting protocol analysis with ${model}`,
   );
   const startTime = Date.now();
 
-  const completion = await provider.createCompletion(
+  const completion = await createAICompletion(
     [{ role: "user", content: prompt }],
     {
       model,
@@ -241,16 +245,15 @@ Regras IMPORTANTES:
 - Use linguagem médica clara e precisa
 - IDs únicos no formato decision_N`;
 
-    const model = "o3";
+    const model = "o3"; // Always use O3 for flowcharts
     const temperature = getModelTemperature(model, 0.3);
-    const provider = getAIProvider();
 
     console.log(
       `[FlowchartModular] Step 2: Extracting decisions from section ${sectionNum} with ${model}`,
     );
     const stepStartTime = Date.now();
 
-    const completion = await provider.createCompletion(
+    const completion = await createAICompletion(
       [{ role: "user", content: prompt }],
       {
         model,
@@ -368,14 +371,14 @@ Regras importantes:
 - Mantenha labels concisos mas claros
 - Mínimo de 15 nós para protocolos complexos`;
 
-  const model = "o3";
+  const model = "o3"; // Always use O3 for flowcharts
   const temperature = getModelTemperature(model, 0.3);
-  const provider = getAIProvider();
 
   console.log(`[FlowchartModular] Step 3: Creating flow mapping with ${model}`);
   const startTime = Date.now();
 
-  const completion = await provider.createCompletion(
+  // Use the same approach as protocol generation - let createAICompletion handle everything
+  const completion = await createAICompletion(
     [{ role: "user", content: prompt }],
     {
       model,
@@ -579,28 +582,15 @@ export async function generateFlowchartModular(
       session.decisions = decisions;
     }
 
-    // Step 3: Create flow mapping (with retry)
+    // Step 3: Create flow mapping (with internal retry)
     updateProgress(3, "Mapeando fluxo do protocolo...");
-    let mapping;
-    try {
-      mapping = await createFlowMapping(
-        protocolContent,
-        analysis,
-        decisions,
-        (msg) => updateProgress(3, msg),
-      );
-      session.mapping = mapping;
-    } catch (error) {
-      console.error("[FlowchartModular] Step 3 failed, retrying...", error);
-      updateProgress(3, "Tentando novamente mapeamento do fluxo...");
-      mapping = await createFlowMapping(
-        protocolContent,
-        analysis,
-        decisions,
-        (msg) => updateProgress(3, msg),
-      );
-      session.mapping = mapping;
-    }
+    const mapping = await createFlowMapping(
+      protocolContent,
+      analysis,
+      decisions,
+      (msg) => updateProgress(3, msg),
+    );
+    session.mapping = mapping;
 
     // Step 4: Convert to final format
     updateProgress(4, "Finalizando fluxograma...");

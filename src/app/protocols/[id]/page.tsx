@@ -16,6 +16,7 @@ import { SkeletonEditor } from "@/components/ui/skeleton";
 import { GenerationStatusDisplay } from "@/components/protocol/generation/generation-status-display";
 import { trpc } from "@/lib/api/client";
 import { RealProgressBar } from "@/components/protocol/generation/real-progress-bar";
+import { toast } from "sonner";
 
 export default function ProtocolEditPage() {
   const params = useParams();
@@ -41,6 +42,7 @@ export default function ProtocolEditPage() {
     validation,
     protocolStatus,
     protocolCreatorId,
+    generationStatus,
   } = useProtocolEditorState(protocolId);
 
   const { userId, userRole } = useCurrentUser();
@@ -48,6 +50,7 @@ export default function ProtocolEditPage() {
   // Mutation to start generation
   const startGenerationMutation = trpc.generation.startGeneration.useMutation({
     onSuccess: () => {
+      toast.success("Geração iniciada com sucesso!");
       // Refresh the protocol data to get updated generation status
       if (protocolId) {
         fetchProtocolData(protocolId);
@@ -55,6 +58,7 @@ export default function ProtocolEditPage() {
     },
     onError: (error) => {
       console.error("[ProtocolEditPage] Failed to start generation:", error);
+      toast.error(`Erro ao iniciar geração: ${error.message}`);
     },
   });
 
@@ -66,10 +70,34 @@ export default function ProtocolEditPage() {
     }
   };
 
+  // Mutation to resume failed generation
+  const resumeGenerationMutation =
+    trpc.generation.resumeFailedGeneration.useMutation({
+      onSuccess: () => {
+        console.log("[ProtocolEditPage] Resume generation successful");
+        toast.success("Geração retomada com sucesso!");
+        // Refresh the protocol data to get updated generation status
+        if (protocolId) {
+          fetchProtocolData(protocolId);
+        }
+      },
+      onError: (error) => {
+        console.error("[ProtocolEditPage] Failed to resume generation:", error);
+        toast.error(`Erro ao retomar geração: ${error.message}`);
+      },
+    });
+
   const handleResumeGeneration = () => {
-    // For now, resume just restarts the generation
-    // Later we can implement proper session resumption
-    handleStartGeneration();
+    if (protocolId) {
+      console.log(
+        "[ProtocolEditPage] Resuming failed generation for:",
+        protocolId,
+      );
+      console.log("[ProtocolEditPage] Generation status:", generationStatus);
+      resumeGenerationMutation.mutate({
+        protocolId,
+      });
+    }
   };
 
   useEffect(() => {
@@ -131,49 +159,62 @@ export default function ProtocolEditPage() {
   }
 
   // Check if protocol needs generation
-  // TODO: Re-enable when generationStatus is added to the schema
-  // if (
-  //   generationStatus &&
-  //   generationStatus !== "COMPLETED" &&
-  //   protocolId &&
-  //   !isLoading
-  // ) {
-  //   return (
-  //     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-  //       <div className="mx-auto max-w-4xl">
-  //         {/* Show real-time progress when generation is in progress */}
-  //         {generationStatus === "IN_PROGRESS" && (
-  //           <RealProgressBar
-  //             protocolId={protocolId}
-  //             sessionId={`gen-${Date.now()}`}
-  //             onComplete={() => {
-  //               // Refresh protocol data to load the generated content
-  //               fetchProtocolData(protocolId);
-  //             }}
-  //             onError={(error) => {
-  //               console.error("[ProtocolEditPage] Generation error:", error);
-  //               // Refresh to update status to FAILED
-  //               fetchProtocolData(protocolId);
-  //             }}
-  //           />
-  //         )}
+  console.log("[ProtocolEditPage] Generation status check:", {
+    generationStatus,
+    protocolId,
+    isLoading,
+    shouldShowGenerationUI:
+      generationStatus &&
+      generationStatus !== "COMPLETED" &&
+      protocolId &&
+      !isLoading,
+  });
 
-  //         {/* Show status display for NOT_STARTED or FAILED states */}
-  //         {(generationStatus === "NOT_STARTED" ||
-  //           generationStatus === "FAILED") && (
-  //           <GenerationStatusDisplay
-  //             generationStatus={generationStatus}
-  //             protocolId={protocolId}
-  //             protocolTitle={protocolTitle}
-  //             onStartGeneration={handleStartGeneration}
-  //             onResumeGeneration={handleResumeGeneration}
-  //             isGenerating={startGenerationMutation.isPending}
-  //           />
-  //         )}
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (
+    generationStatus &&
+    generationStatus !== "COMPLETED" &&
+    protocolId &&
+    !isLoading
+  ) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="mx-auto max-w-4xl">
+          {/* Show real-time progress when generation is in progress */}
+          {generationStatus === "IN_PROGRESS" && (
+            <RealProgressBar
+              protocolId={protocolId}
+              sessionId={`gen-${Date.now()}`}
+              onComplete={() => {
+                // Refresh protocol data to load the generated content
+                fetchProtocolData(protocolId);
+              }}
+              onError={(error) => {
+                console.error("[ProtocolEditPage] Generation error:", error);
+                // Refresh to update status to FAILED
+                fetchProtocolData(protocolId);
+              }}
+            />
+          )}
+
+          {/* Show status display for NOT_STARTED or FAILED states */}
+          {(generationStatus === "NOT_STARTED" ||
+            generationStatus === "FAILED") && (
+            <GenerationStatusDisplay
+              generationStatus={generationStatus}
+              protocolId={protocolId}
+              protocolTitle={protocolTitle}
+              onStartGeneration={handleStartGeneration}
+              onResumeGeneration={handleResumeGeneration}
+              isGenerating={
+                startGenerationMutation.isPending ||
+                resumeGenerationMutation.isPending
+              }
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ProtocolEditorLayout

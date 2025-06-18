@@ -90,15 +90,18 @@ export const generationRouter = router({
 
       // Check if already has content
       const latestVersion = protocol.ProtocolVersion[0];
-      if (
-        latestVersion &&
-        latestVersion.content &&
-        Object.keys(latestVersion.content as any).length > 0
-      ) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Este protocolo já tem conteúdo gerado",
-        });
+      if (latestVersion?.content) {
+        const content = latestVersion.content as any;
+        const hasActualContent = Object.values(content).some(
+          (section: any) => section?.content && section.content.trim() !== "",
+        );
+
+        if (hasActualContent) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Este protocolo já tem conteúdo gerado",
+          });
+        }
       }
 
       // Get generation parameters from audit log
@@ -356,5 +359,181 @@ export const generationRouter = router({
           : undefined,
       };
       return generateProtocolSectionAI(typedInput);
+    }),
+
+  resumeFailedGeneration: protectedProcedure
+    .input(
+      z.object({
+        protocolId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(
+        `[ResumeGeneration] Starting resume for protocol ${input.protocolId}`,
+      );
+
+      // Get protocol and its last session
+      const protocol = await ctx.db.protocol.findUnique({
+        where: { id: input.protocolId },
+        include: {
+          ProtocolVersion: {
+            orderBy: { versionNumber: "desc" },
+            take: 1,
+          },
+        },
+      });
+
+      if (!protocol) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Protocolo não encontrado",
+        });
+      }
+
+      // Check ownership
+      if (protocol.createdById !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Você só pode retomar seus próprios protocolos",
+        });
+      }
+
+      // Get generation parameters from audit log
+      const auditLog = await ctx.db.auditLog.findFirst({
+        where: {
+          resourceId: input.protocolId,
+          action: "PROTOCOL_CREATED",
+        },
+        orderBy: { timestamp: "desc" },
+      });
+
+      if (!auditLog?.details) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Parâmetros de geração não encontrados",
+        });
+      }
+
+      const generationParams = auditLog.details as any;
+
+      // Import necessary modules
+      const { generationProgressEmitter } = await import(
+        "@/lib/events/generation-progress"
+      );
+
+      try {
+        // Check if there's a saved session
+        const { listGenerationSessions } = await import(
+          "@/lib/ai/generator-modular"
+        );
+        const savedSessions = listGenerationSessions();
+        const lastSession = Object.entries(savedSessions)
+          .filter(([_, session]) => {
+            // Find sessions for this protocol (you might need to store protocolId in session)
+            return true; // For now, we'll take the most recent
+          })
+          .sort(([a], [b]) => b.localeCompare(a))[0];
+
+        if (!lastSession) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Nenhuma sessão salva encontrada para retomar",
+          });
+        }
+
+        const [sessionId, sessionData] = lastSession;
+        console.log(
+          `[ResumeGeneration] Found session ${sessionId} with ${
+            Object.keys(sessionData.sections).length
+          } sections completed`,
+        );
+
+        // Perform research again (or retrieve from cache)
+        const { performMedicalResearch } = await import("@/lib/ai/research");
+        const researchData = await performMedicalResearch({
+          condition: protocol.condition,
+          sources: generationParams.researchSources,
+          yearRange: generationParams.yearRange,
+          keywords: generationParams.targetPopulation
+            ? [generationParams.targetPopulation]
+            : undefined,
+        });
+
+        // Resume generation from saved session
+        const { resumeGenerationSession } = await import(
+          "@/lib/ai/generator-modular"
+        );
+        const result = await resumeGenerationSession(
+          sessionId,
+          {
+            medicalCondition: protocol.condition,
+            researchData,
+            specificInstructions: generationParams.targetPopulation
+              ? `População alvo: ${generationParams.targetPopulation}`
+              : undefined,
+          },
+          {
+            protocolId: input.protocolId,
+            progressCallback: (progress) => {
+              console.log(`[ResumeGeneration] Progress: ${progress.message}`);
+            },
+          },
+        );
+
+        // Save the completed protocol
+        if (result.protocolContent) {
+          const latestVersion = protocol.ProtocolVersion[0];
+          await ctx.db.protocolVersion.create({
+            data: {
+              protocolId: input.protocolId,
+              versionNumber: (latestVersion?.versionNumber || 0) + 1,
+              content: result.protocolContent as any,
+              flowchart:
+                latestVersion?.flowchart || ({ nodes: [], edges: [] } as any),
+              changelogNotes: `Geração retomada da sessão ${sessionId} e concluída com sucesso.`,
+              createdById: ctx.session.user.id,
+            },
+          });
+
+          // Update protocol status
+          await ctx.db.protocol.update({
+            where: { id: input.protocolId },
+            data: {
+              updatedAt: new Date(),
+            },
+          });
+
+          // Emit completion event
+          generationProgressEmitter.emitComplete(
+            input.protocolId,
+            sessionId,
+            Array.from({ length: 13 }, (_, i) => i + 1),
+          );
+        }
+
+        return {
+          success: true,
+          protocolId: input.protocolId,
+          sessionId,
+          message: `Protocolo retomado e concluído com sucesso! ${
+            Object.keys(result.protocolContent || {}).length
+          } seções geradas.`,
+        };
+      } catch (error: any) {
+        console.error("[ResumeGeneration] Error:", error);
+
+        // Emit error event
+        generationProgressEmitter.emitError(
+          input.protocolId,
+          `resume-${Date.now()}`,
+          error.message || "Erro desconhecido ao retomar geração",
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Falha ao retomar geração do protocolo",
+          cause: error,
+        });
+      }
     }),
 });

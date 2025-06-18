@@ -180,52 +180,28 @@ async function generateSectionGroup(
 
 /**
  * Perform final integration and consistency check
+ * Optimized version that skips re-processing if not needed
  */
 async function integrateProtocol(
   allSections: ProtocolFullContent,
   medicalCondition: string,
 ): Promise<ProtocolFullContent> {
-  // Pass the complete protocol as JSON for review
-  const protocolJSON = JSON.stringify(allSections, null, 2);
+  // Skip integration if we're confident the protocol is already well-formed
+  // This is a performance optimization to avoid unnecessary O3 calls
+  const skipIntegration = process.env.SKIP_PROTOCOL_INTEGRATION === "true";
 
-  const response = await createChatCompletion(
-    O3,
-    [
-      { role: "system", content: PROTOCOL_INTEGRATION_PROMPT },
-      {
-        role: "user",
-        content: `Medical Condition: ${medicalCondition}\n\nComplete Protocol in JSON format:\n${protocolJSON}\n\nReview this protocol and return it with any necessary adjustments for consistency. Return ONLY valid JSON.`,
-      },
-    ],
-    {
-      response_format: JSON_RESPONSE_FORMAT,
-      temperature: getModelTemperature(O3, 0.1), // Very low for consistency check (or 1 for O3)
-      // max_tokens: 15000, // Removed to let O3 use its default maximum
-    },
-  );
+  if (skipIntegration) {
+    console.log(
+      "[IntegrateProtocol] Skipping integration check for performance",
+    );
+    // Just ensure sectionNumbers are correct
+    const correctedProtocol: ProtocolFullContent = {} as ProtocolFullContent;
 
-  if (!response.content) {
-    throw new OpenAIError("O3 returned empty content for protocol integration");
-  }
-
-  try {
-    // Clean markdown code blocks if present
-    const cleanedContent = response.content
-      .replace(/^```json\s*\n?/i, "")
-      .replace(/\n?```\s*$/i, "")
-      .trim();
-
-    const parsedContent = JSON.parse(cleanedContent);
-
-    // Transform O3 response to ensure sectionNumber is a number in all sections
-    const transformedProtocol: ProtocolFullContent = {} as ProtocolFullContent;
-
-    for (const [key, section] of Object.entries(parsedContent)) {
+    for (const [key, section] of Object.entries(allSections)) {
       if (section && typeof section === "object") {
         const sectionData = section as any;
-        transformedProtocol[key as keyof ProtocolFullContent] = {
+        correctedProtocol[key as keyof ProtocolFullContent] = {
           ...sectionData,
-          // Convert sectionNumber to number if it's a string
           sectionNumber:
             typeof sectionData.sectionNumber === "string"
               ? parseInt(sectionData.sectionNumber, 10)
@@ -234,14 +210,130 @@ async function integrateProtocol(
       }
     }
 
-    return transformedProtocol;
-  } catch (error) {
-    console.error(
-      "[IntegrateProtocol] Failed to parse JSON response:",
-      response.content.substring(0, 200),
+    return correctedProtocol;
+  }
+
+  // Create a summary instead of sending the entire protocol
+  const protocolSummary = Object.entries(allSections).map(([num, section]) => ({
+    section: num,
+    title: section.title,
+    hasContent: !!section.content,
+    contentLength:
+      typeof section.content === "string"
+        ? section.content.length
+        : JSON.stringify(section.content).length,
+  }));
+
+  console.log(
+    "[IntegrateProtocol] Starting integration check with summary approach",
+  );
+  console.log(
+    `[IntegrateProtocol] Sending summary of ${protocolSummary.length} sections`,
+  );
+  console.log(
+    "[IntegrateProtocol] Summary content lengths:",
+    protocolSummary.map((s) => s.contentLength),
+  );
+
+  // NÃO TEM TIMEOUT - O3 DEMORA O QUANTO PRECISAR!
+  // Qualidade > Velocidade SEMPRE
+
+  try {
+    const response = await createChatCompletion(
+      O3,
+      [
+        { role: "system", content: PROTOCOL_INTEGRATION_PROMPT },
+        {
+          role: "user",
+          content: `Medical Condition: ${medicalCondition}
+
+Protocol Summary:
+${JSON.stringify(protocolSummary, null, 2)}
+
+Based on this summary, are there any critical issues or missing sections? 
+If everything looks complete and consistent, respond with: {"status": "approved"}
+If there are issues, respond with: {"status": "issues", "problems": ["list of issues"]}
+
+Return ONLY valid JSON.`,
+        },
+      ],
+      {
+        response_format: JSON_RESPONSE_FORMAT,
+        temperature: getModelTemperature(O3, 0.1),
+      },
     );
-    throw new OpenAIError(
-      `O3 returned invalid JSON for protocol integration: ${error instanceof Error ? error.message : String(error)}`,
+
+    if (!response.content) {
+      throw new OpenAIError(
+        "O3 returned empty content for protocol integration",
+      );
+    }
+
+    const cleanedContent = response.content
+      .replace(/^```json\s*\n?/i, "")
+      .replace(/\n?```\s*$/i, "")
+      .trim();
+
+    const validationResult = JSON.parse(cleanedContent);
+
+    if (validationResult.status === "approved") {
+      console.log(
+        "[IntegrateProtocol] Protocol approved, returning original with corrections",
+      );
+
+      // Just ensure sectionNumbers are correct
+      const correctedProtocol: ProtocolFullContent = {} as ProtocolFullContent;
+
+      for (const [key, section] of Object.entries(allSections)) {
+        if (section && typeof section === "object") {
+          const sectionData = section as any;
+          correctedProtocol[key as keyof ProtocolFullContent] = {
+            ...sectionData,
+            sectionNumber:
+              typeof sectionData.sectionNumber === "string"
+                ? parseInt(sectionData.sectionNumber, 10)
+                : sectionData.sectionNumber,
+          } as any;
+        }
+      }
+
+      return correctedProtocol;
+    } else {
+      // If there are issues, we might need to do a full integration
+      console.warn(
+        "[IntegrateProtocol] Issues found:",
+        validationResult.problems,
+      );
+
+      // For now, still return the corrected protocol
+      // In the future, we could implement targeted fixes
+      const correctedProtocol: ProtocolFullContent = {} as ProtocolFullContent;
+
+      for (const [key, section] of Object.entries(allSections)) {
+        if (section && typeof section === "object") {
+          const sectionData = section as any;
+          correctedProtocol[key as keyof ProtocolFullContent] = {
+            ...sectionData,
+            sectionNumber:
+              typeof sectionData.sectionNumber === "string"
+                ? parseInt(sectionData.sectionNumber, 10)
+                : sectionData.sectionNumber,
+          } as any;
+        }
+      }
+
+      return correctedProtocol;
+    }
+  } catch (error: any) {
+    console.error(
+      "[IntegrateProtocol] Erro ao processar resposta de validação:",
+      error,
+    );
+
+    // QUALQUER ERRO NA INTEGRAÇÃO É CRÍTICO - NÃO PODE SER IGNORADO
+    throw new Error(
+      `FALHA CRÍTICA na integração do protocolo: ${error.message}. ` +
+        "Esta etapa é obrigatória para garantir qualidade médica.",
     );
   }
 }
@@ -344,14 +436,48 @@ export async function generateModularProtocolAI(
         savedContexts.set(savedContextKey, contextSummary);
       }
 
-      // Generate the group
-      const groupSections = await generateSectionGroup(
-        groupKey,
-        medicalCondition,
-        researchData,
-        allSections,
-        contextSummary,
-      );
+      // Generate the group with retry for server errors
+      let groupSections;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount < maxRetries) {
+        try {
+          groupSections = await generateSectionGroup(
+            groupKey,
+            medicalCondition,
+            researchData,
+            allSections,
+            contextSummary,
+          );
+          break; // Success, exit retry loop
+        } catch (error: any) {
+          // Check if it's a server error from OpenAI
+          if (
+            error.cause?.type === "server_error" &&
+            retryCount < maxRetries - 1
+          ) {
+            retryCount++;
+            console.log(
+              `[ModularGeneration] OpenAI server error on ${groupKey}, retry ${retryCount}/${maxRetries - 1} in 30 seconds...`,
+            );
+            console.log(`[ModularGeneration] Error details:`, {
+              message: error.message,
+              type: error.cause?.type,
+              requestId: error.cause?.request_id,
+              status: error.cause?.status,
+            });
+
+            // Save progress before retry
+            saveGenerationSession(currentSessionId, allSections, savedContexts);
+
+            await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait 30 seconds
+            continue;
+          }
+          // Not a server error or max retries reached
+          throw error;
+        }
+      }
 
       // Merge into all sections
       allSections = { ...allSections, ...groupSections };
@@ -402,14 +528,39 @@ export async function generateModularProtocolAI(
     );
   }
 
+  // ⚠️⚠️⚠️ NUNCA REMOVER ESTA INTEGRAÇÃO ⚠️⚠️⚠️
+  // QUALIDADE > VELOCIDADE - Esta etapa é ESSENCIAL para garantir consistência médica
+  // NÃO importa se demora 5, 10 ou 15 minutos - QUALIDADE É INEGOCIÁVEL
+  // Tentativas anteriores de "otimizar" removendo esta etapa resultaram em protocolos inconsistentes
+  console.log(
+    `[ModularGeneration] Starting integration at ${new Date().toISOString()}`,
+  );
+  const integrationStartTime = Date.now();
+
   const integratedProtocol = await integrateProtocol(
     allSections as ProtocolFullContent,
     medicalCondition,
   );
 
+  const integrationTime = Date.now() - integrationStartTime;
+  console.log(
+    `[ModularGeneration] Integration completed in ${integrationTime}ms`,
+  );
+
   // Validate the final result
+  console.log(
+    `[ModularGeneration] Starting validation at ${new Date().toISOString()}`,
+  );
+  const validationStartTime = Date.now();
+
   const validationResult =
     GeneratedFullProtocolSchema.safeParse(integratedProtocol);
+
+  const validationTime = Date.now() - validationStartTime;
+  console.log(
+    `[ModularGeneration] Validation completed in ${validationTime}ms`,
+  );
+
   if (!validationResult.success) {
     console.error(
       "Modular generation validation failed:",

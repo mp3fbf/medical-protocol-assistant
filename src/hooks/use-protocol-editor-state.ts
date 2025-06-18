@@ -46,6 +46,7 @@ interface ProtocolEditorState {
   validationIssues: import("@/types/validation").ValidationIssue[];
   protocolStatus?: import("@prisma/client").ProtocolStatus;
   protocolCreatorId?: string;
+  generationStatus?: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
 }
 
 // Basic CUID check (starts with 'c', typically 25 chars long)
@@ -102,6 +103,40 @@ export function useProtocolEditorState(initialProtocolId?: string) {
             return acc;
           }, {} as ProtocolFullContent)
         : generateMockProtocolData(data.title);
+      // Determine generation status based on content
+      let generationStatus:
+        | "NOT_STARTED"
+        | "IN_PROGRESS"
+        | "COMPLETED"
+        | "FAILED" = "NOT_STARTED";
+
+      if (protocolContent) {
+        const sectionsWithContent = Object.values(protocolContent).filter(
+          (section) => section?.content && section.content !== "",
+        );
+
+        console.log("[useProtocolEditorState] Checking generation status:");
+        console.log("- Total sections:", Object.keys(protocolContent).length);
+        console.log("- Sections with content:", sectionsWithContent.length);
+
+        if (sectionsWithContent.length > 0) {
+          // Check if all sections have content
+          const allSectionsHaveContent =
+            Object.keys(protocolContent).length === 13 &&
+            sectionsWithContent.length === 13;
+
+          generationStatus = allSectionsHaveContent ? "COMPLETED" : "FAILED";
+          console.log("- Generation status determined:", generationStatus);
+        } else {
+          console.log("- No content found, status: NOT_STARTED");
+        }
+      }
+
+      console.log(
+        "[useProtocolEditorState] Setting state with generationStatus:",
+        generationStatus,
+      );
+
       setState((s) => ({
         ...s,
         protocolId: data.id,
@@ -116,6 +151,7 @@ export function useProtocolEditorState(initialProtocolId?: string) {
         error: null,
         protocolStatus: data.status,
         protocolCreatorId: data.createdById,
+        generationStatus,
       }));
     }
   }, [protocolQuery.isSuccess, protocolQuery.data]); // Dependencies
