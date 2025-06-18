@@ -55,8 +55,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - **Manual Validation**: Click-to-validate with detailed error reporting and categorization
   - **Professional UI**: Error count badges, scrollable issue list, and improvement suggestions
 - **Smart Flowchart Generation**: AI-powered flowchart creation with medical intelligence
+  - **Clinical Format (Default)**: Rich format compatible with Daktus/Prevent Senior standards
+    - **Coleta Nodes**: Questionnaire/collection nodes for patient assessment and data gathering
+    - **Resumo Nodes**: Summary/triage nodes for classification and protocol overviews
+    - **Conduta Nodes**: Medical conduct nodes with medications, exams, orientations, and referrals
+  - **Standard Format (Secondary)**: Simple ReactFlow format for basic visualization (may be deprecated)
+  - **Format Converters**: Available in code but not yet exposed in UI (see `/src/lib/utils/flowchart-converter.ts`)
   - **Protocol Type Detection**: Automatic classification (Emergency, Diagnostic, Therapeutic, Monitoring)
-  - **Intelligent Layouts**: Type-specific node arrangements and priorities
+  - **Intelligent Layouts**: Type-specific node arrangements optimized for medical workflows
   - **Medical Optimization**: Focus on critical decision points and safety protocols
 - **Document Export**: Generate DOCX/PDF with ABNT medical formatting standards
 
@@ -74,9 +80,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `completeness.ts` - Protocol completeness validation
   - `cross-validation.ts` - Cross-section consistency checks
 - `/src/lib/flowchart/` - Smart flowchart generation system
+  - `clinical-generator.ts` - Clinical format generator (default) with coleta/resumo/conduta nodes
+  - `flowchart-generator-modular.ts` - Modular generator supporting both formats
   - `smart-generator.ts` - AI-powered flowchart generation with medical intelligence
-  - `generator.ts` - Basic flowchart generation
+  - `generator.ts` - Basic flowchart generation (standard format)
   - `layout.ts` - Layout algorithms for different protocol types
+- `/src/lib/utils/flowchart-converter.ts` - Converters between clinical and standard formats
 - `/src/server/api/routers/` - tRPC API endpoints
 - `/tests/e2e/` - Playwright tests with authentication setup
 

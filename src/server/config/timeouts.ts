@@ -32,13 +32,8 @@ if (
   https.globalAgent.maxSockets = Infinity;
   https.globalAgent.maxFreeSockets = 256;
 
-  // Set server timeouts if running in a server context
-  if (global.server) {
-    global.server.timeout = MAX_TIMEOUT;
-    global.server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT;
-    global.server.headersTimeout = KEEP_ALIVE_TIMEOUT + 5000; // Slightly higher than keepAlive
-    global.server.requestTimeout = MAX_TIMEOUT;
-  }
+  // Server timeouts are configured in server.js at runtime
+  // This file only configures the HTTP/HTTPS global agents
 
   console.log("[TIMEOUT CONFIG] Maximum timeouts configured:");
   console.log(`- HTTP/HTTPS timeout: ${MAX_TIMEOUT}ms (7 days)`);

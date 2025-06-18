@@ -2,18 +2,20 @@
 
 ## Visão Geral
 
-O sistema agora suporta geração de fluxogramas em dois formatos:
+O sistema suporta geração de fluxogramas em dois formatos:
 
-1. **Formato Padrão (Standard)**: Fluxograma simplificado com tipos básicos de nós
-2. **Formato Clínico (Clinical)**: Fluxograma rico com questionários, condutas detalhadas e lógica condicional
+1. **Formato Clínico (Clinical) - PADRÃO**: Fluxograma rico compatível com Daktus/Prevent Senior, com questionários, condutas detalhadas e lógica condicional
+2. **Formato Padrão (Standard) - SECUNDÁRIO**: Fluxograma simplificado com tipos básicos de nós (pode ser descontinuado no futuro)
 
-## Formato Clínico
+## Formato Clínico (PADRÃO)
 
 ### Estrutura de Dados
 
 O formato clínico oferece três tipos principais de nós:
 
-#### 1. Nós Custom (Questionários)
+#### 1. Nós Custom (Coleta/Questionários)
+
+**Terminologia**: No código usa-se "custom", mas o termo médico correto é "coleta" (nós de coleta de dados)
 
 ```typescript
 {
@@ -34,7 +36,9 @@ O formato clínico oferece três tipos principais de nós:
 }
 ```
 
-#### 2. Nós Summary (Triagem/Resumo)
+#### 2. Nós Summary (Resumo/Triagem)
+
+**Terminologia**: "summary" no código = "resumo" em terminologia médica
 
 ```typescript
 {
@@ -46,7 +50,9 @@ O formato clínico oferece três tipos principais de nós:
 }
 ```
 
-#### 3. Nós Conduct (Condutas Médicas)
+#### 3. Nós Conduct (Conduta Médica)
+
+**Terminologia**: "conduct" no código = "conduta" em terminologia médica
 
 ```typescript
 {
@@ -196,27 +202,31 @@ const jsonString = JSON.stringify(exportData, null, 2);
 
 ## Diferenças Entre Formatos
 
-| Aspecto         | Formato Padrão  | Formato Clínico            |
-| --------------- | --------------- | -------------------------- |
-| Tipos de nós    | 6 tipos básicos | 3 tipos ricos              |
-| Questionários   | Não suporta     | Múltiplas perguntas por nó |
-| Medicamentos    | Lista simples   | Posologia completa em HTML |
-| Condicionais    | Não suporta     | Expressões complexas       |
-| Orientações     | Texto simples   | HTML formatado             |
-| Tamanho do JSON | Menor           | Maior (3-5x)               |
-| Complexidade IA | Baixa           | Alta                       |
+| Aspecto         | Formato Clínico (PADRÃO)                | Formato Padrão (Secundário) |
+| --------------- | --------------------------------------- | --------------------------- |
+| Tipos de nós    | 3 tipos ricos (coleta, resumo, conduta) | 6 tipos básicos             |
+| Questionários   | Múltiplas perguntas por nó              | Não suporta                 |
+| Medicamentos    | Posologia completa em HTML              | Lista simples               |
+| Condicionais    | Expressões complexas                    | Não suporta                 |
+| Orientações     | HTML formatado                          | Texto simples               |
+| Tamanho do JSON | Maior (mais detalhado)                  | Menor                       |
+| Compatibilidade | Daktus/Prevent Senior                   | ReactFlow genérico          |
 
-## Limitações
+## Conversores Entre Formatos
 
-- Conversão de clínico → padrão perde detalhes (questionários viram decisões simples)
-- Conversão de padrão → clínico gera estruturas mínimas
-- Formato clínico requer mais tokens da IA (usar modelo O3)
-- Visualização atual converte para formato padrão (perda visual de detalhes)
+O sistema possui conversores implementados em `/src/lib/utils/flowchart-converter.ts`, mas ainda não estão expostos na interface do usuário.
+
+### Limitações das Conversões
+
+- **Clínico → Padrão**: Perde detalhes (coleta vira decision, resumo vira triage, conduta vira action)
+- **Padrão → Clínico**: Gera estruturas mínimas sem riqueza de conteúdo
+- **Formato clínico é preferido**: Maior fidelidade às necessidades médicas
+- **Visualização**: Atualmente usa componentes ReactFlow que entendem ambos os formatos
 
 ## Roadmap Futuro
 
-1. **Visualização nativa**: Componentes específicos para formato clínico
-2. **Editor visual**: Criar/editar questionários e condutas visualmente
-3. **Validação avançada**: Validar expressões condicionais
-4. **Simulação**: Executar fluxograma com dados de teste
-5. **Exportação BPMN**: Converter para padrão BPMN 2.0
+1. **Interface de conversão**: Expor conversores na UI para import/export
+2. **Visualização nativa aprimorada**: Componentes específicos para nós de coleta/resumo/conduta
+3. **Editor visual avançado**: Criar/editar questionários e condutas com formulários dedicados
+4. **Deprecação do formato padrão**: Migrar completamente para formato clínico
+5. **Integração Daktus**: Exportação direta para sistema Prevent Senior

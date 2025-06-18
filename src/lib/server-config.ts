@@ -9,17 +9,8 @@ import https from "https";
 // 30 DAYS timeout for EVERYTHING
 const MASSIVE_TIMEOUT = 2592000000; // 30 days in milliseconds
 
-// Configure Node.js server timeouts
-if (typeof process !== "undefined" && process.server) {
-  // @ts-ignore
-  process.server.setTimeout(MASSIVE_TIMEOUT);
-  // @ts-ignore
-  process.server.keepAliveTimeout = MASSIVE_TIMEOUT;
-  // @ts-ignore
-  process.server.headersTimeout = MASSIVE_TIMEOUT;
-  // @ts-ignore
-  process.server.requestTimeout = MASSIVE_TIMEOUT;
-}
+// Note: Server timeouts are configured in server.js at runtime
+// This file only configures global HTTP/HTTPS agents
 
 // Override global HTTP/HTTPS agents
 http.globalAgent = new http.Agent({

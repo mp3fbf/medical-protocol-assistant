@@ -15,7 +15,8 @@ console.log("[NODE PATCH] Patching Node.js core with MASSIVE timeouts...");
 const originalHttpRequest = http.request;
 // @ts-ignore
 http.request = function (...args: any[]) {
-  const req = originalHttpRequest.apply(this, args);
+  // @ts-ignore - applying args array to original function
+  const req = originalHttpRequest.apply(this, args as any);
   req.setTimeout(MASSIVE_TIMEOUT);
   req.socket?.setTimeout(MASSIVE_TIMEOUT);
   return req;
@@ -25,7 +26,8 @@ http.request = function (...args: any[]) {
 const originalHttpsRequest = https.request;
 // @ts-ignore
 https.request = function (...args: any[]) {
-  const req = originalHttpsRequest.apply(this, args);
+  // @ts-ignore - applying args array to original function
+  const req = originalHttpsRequest.apply(this, args as any);
   req.setTimeout(MASSIVE_TIMEOUT);
   req.socket?.setTimeout(MASSIVE_TIMEOUT);
   return req;
@@ -48,7 +50,8 @@ net.Socket.prototype.setTimeout = function (
 const originalCreateServer = http.createServer;
 // @ts-ignore
 http.createServer = function (...args: any[]) {
-  const server = originalCreateServer.apply(this, args);
+  // @ts-ignore - applying args array to original function
+  const server = originalCreateServer.apply(this, args as any);
   server.timeout = MASSIVE_TIMEOUT;
   server.keepAliveTimeout = MASSIVE_TIMEOUT;
   server.headersTimeout = MASSIVE_TIMEOUT;
@@ -60,7 +63,8 @@ http.createServer = function (...args: any[]) {
 const originalCreateHttpsServer = https.createServer;
 // @ts-ignore
 https.createServer = function (...args: any[]) {
-  const server = originalCreateHttpsServer.apply(this, args);
+  // @ts-ignore - applying args array to original function
+  const server = originalCreateHttpsServer.apply(this, args as any);
   server.timeout = MASSIVE_TIMEOUT;
   server.keepAliveTimeout = MASSIVE_TIMEOUT;
   server.headersTimeout = MASSIVE_TIMEOUT;

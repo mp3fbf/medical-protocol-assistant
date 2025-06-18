@@ -1,6 +1,13 @@
 /**
  * Clinical flowchart generator that produces rich format flowcharts
  * with questionnaires, detailed medical conducts, and complex logic.
+ *
+ * This is the DEFAULT flowchart format, compatible with Daktus/Prevent Senior standards.
+ *
+ * Node type mapping:
+ * - "custom" (code) = "coleta" (medical term) - Collection/questionnaire nodes
+ * - "summary" = "resumo" - Summary/triage nodes
+ * - "conduct" = "conduta" - Medical conduct nodes
  */
 import { getAIProvider } from "@/lib/ai/providers";
 import { getModelTemperature } from "@/lib/ai/config";

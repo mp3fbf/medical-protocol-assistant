@@ -1,5 +1,11 @@
 /**
  * Converter between standard flowchart format and clinical flowchart format
+ *
+ * IMPORTANT: Clinical format is the DEFAULT and preferred format.
+ * Standard format is secondary and may be deprecated in the future.
+ *
+ * These converters are implemented but not yet exposed in the UI.
+ * Future UI updates may add import/export functionality using these converters.
  */
 
 import type {
@@ -22,6 +28,11 @@ import type {
 /**
  * Convert clinical flowchart format to standard flowchart format
  * This allows clinical flowcharts to be displayed in the standard viewer
+ *
+ * Node type mapping:
+ * - "custom" (coleta) → "decision"
+ * - "summary" (resumo) → "triage"
+ * - "conduct" (conduta) → "action"
  */
 export function clinicalToStandard(
   clinical: ClinicalFlowchart,
@@ -34,17 +45,17 @@ export function clinicalToStandard(
 
     switch (clinicalNode.type) {
       case "custom":
-        // Custom nodes with questions map to decision nodes
+        // Custom (coleta) nodes with questions map to decision nodes
         standardType = "decision";
         standardData = {
           type: "decision",
           title: clinicalNode.data.label,
-          criteria: clinicalNode.data.descricao || "Questionário",
+          criteria: clinicalNode.data.descricao || "Questionário de Coleta",
         };
         break;
 
       case "summary":
-        // Summary nodes map to triage nodes
+        // Summary (resumo) nodes map to triage nodes
         standardType = "triage";
         standardData = {
           type: "triage",
@@ -54,7 +65,7 @@ export function clinicalToStandard(
         break;
 
       case "conduct":
-        // Conduct nodes map to action nodes
+        // Conduct (conduta) nodes map to action nodes
         standardType = "action";
         const conductData = clinicalNode.data as any;
         const actions: string[] = [];
@@ -129,6 +140,11 @@ export function clinicalToStandard(
 /**
  * Convert standard flowchart format to clinical flowchart format
  * This is a lossy conversion as standard format has less information
+ *
+ * Reverse mapping:
+ * - "decision" → "custom" (coleta)
+ * - "triage" → "summary" (resumo)
+ * - "action" → "conduct" (conduta)
  */
 export function standardToClinical(
   standard: FlowchartDefinition,

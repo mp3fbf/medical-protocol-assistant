@@ -1,6 +1,14 @@
 /**
  * Prompts for AI-powered flowchart generation in clinical format (rich format).
  * This format supports questionnaires, detailed medical conducts, and complex conditional logic.
+ *
+ * IMPORTANT: Clinical format is the DEFAULT format for flowchart generation.
+ * Standard format is secondary and may be deprecated in the future.
+ *
+ * Node type terminology:
+ * - "custom" in code = "coleta" (collection/questionnaire nodes) in medical terminology
+ * - "summary" = "resumo" (summary/triage nodes)
+ * - "conduct" = "conduta" (medical conduct nodes)
  */
 import type { ProtocolFullContent } from "@/types/protocol";
 
@@ -13,15 +21,15 @@ Output Format:
 The output MUST be a single JSON object with two main keys: "nodes" and "edges".
 
 Node Types:
-1. "custom" - Questionnaire nodes with multiple questions
-2. "summary" - Summary/triage nodes with detailed descriptions
-3. "conduct" - Medical conduct nodes with medications, exams, orientations
+1. "custom" - Questionnaire/collection nodes ("coleta" in medical terminology) with multiple questions
+2. "summary" - Summary/triage nodes ("resumo" in medical terminology) with detailed descriptions
+3. "conduct" - Medical conduct nodes ("conduta" in medical terminology) with medications, exams, orientations
 4. "start" - Start node
 5. "end" - End node
 
 Node Structure:
 
-For "custom" (Questionnaire) nodes:
+For "custom" (Questionnaire/Coleta) nodes:
 {
   "id": "unique-id",
   "type": "custom",
@@ -246,8 +254,8 @@ export function createClinicalFlowchartGenerationUserPrompt(
   
   The flowchart should include:
   
-  1. QUESTIONNAIRE NODES ("custom" type):
-     - Create comprehensive questionnaires for patient assessment
+  1. QUESTIONNAIRE/COLLECTION NODES ("custom" type - "coleta" in medical terminology):
+     - Create comprehensive questionnaires for patient assessment and data collection
      - Include multiple related questions in each questionnaire
      - Use appropriate input types (radio, checkbox, text)
      - Add UIDs that represent medical concepts (e.g., "DOR_TORACICA", "DISPNEIA", "FEBRE")
@@ -259,7 +267,7 @@ export function createClinicalFlowchartGenerationUserPrompt(
      - Include orientations and warnings
      - Use conditional logic based on questionnaire responses
   
-  3. SUMMARY NODES ("summary" type):
+  3. SUMMARY NODES ("summary" type - "resumo" in medical terminology):
      - Use for triage systems (Manchester, ESI)
      - Protocol overviews or key decision summaries
      - Include HTML-formatted descriptions

@@ -116,6 +116,11 @@ Funcionalidades core implementadas, mas com dados mock em áreas críticas:
 #### 📊 Flowcharts & Visualização
 
 - **Status**: ✅ **FUNCIONAL**
+- **Formato Clínico (PADRÃO)**: Compatível com Daktus/Prevent Senior ✅
+  - **Nós de Coleta**: Questionários para avaliação de pacientes
+  - **Nós de Resumo**: Triagem e classificação (Manchester, ESI)
+  - **Nós de Conduta**: Medicamentos, exames, orientações detalhadas
+- **Formato Standard (Secundário)**: ReactFlow básico (pode ser descontinuado)
 - Smart flowchart generator com IA médica ✅
 - Detecção automática de tipo de protocolo ✅
 - Layout inteligente baseado em tipo médico ✅
@@ -125,6 +130,7 @@ Funcionalidades core implementadas, mas com dados mock em áreas críticas:
 - Controles customizados com melhor UX ✅
 - Edição manual de flowcharts ✅ **[IMPLEMENTADO]**
 - Sistema de onboarding com "Não mostrar novamente" ✅ **[NOVO]**
+- Conversores entre formatos implementados mas não expostos na UI ⚠️
 
 ### ❌ **NÃO IMPLEMENTADO** (Crítico para MVP)
 

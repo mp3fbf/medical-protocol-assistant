@@ -444,7 +444,7 @@ export const generationRouter = router({
         const [sessionId, sessionData] = lastSession;
         console.log(
           `[ResumeGeneration] Found session ${sessionId} with ${
-            Object.keys(sessionData.sections).length
+            sessionData.sectionsCount
           } sections completed`,
         );
 
@@ -472,11 +472,8 @@ export const generationRouter = router({
               ? `População alvo: ${generationParams.targetPopulation}`
               : undefined,
           },
-          {
-            protocolId: input.protocolId,
-            progressCallback: (progress) => {
-              console.log(`[ResumeGeneration] Progress: ${progress.message}`);
-            },
+          (progress) => {
+            console.log(`[ResumeGeneration] Progress: ${progress.message}`);
           },
         );
 
