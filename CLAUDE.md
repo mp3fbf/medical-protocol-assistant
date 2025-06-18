@@ -110,10 +110,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Performance Requirements
 
-- AI protocol generation: <30 seconds
-- Document export: <5 seconds
+**⚠️ IMPORTANTE: QUALIDADE SOBRE VELOCIDADE ⚠️**
+
+- **PRIORIDADE ABSOLUTA**: Qualidade e completude do conteúdo médico
+- **SEM ECONOMIA**: Não economizar tokens ou tempo se comprometer qualidade
+- **COMPLEXIDADE ESPERADA**: Protocolos são obrigatoriamente complexos e extensos
+- **NUNCA IMPLEMENTAR ATALHOS** que reduzam qualidade para ganhar performance
+
+Tempos aceitáveis (mas NÃO são limitantes):
+
+- AI protocol generation: 5-15 minutos (O3 pode levar o tempo necessário)
+- Document export: <30 seconds
 - Page load times: <3 seconds for authenticated routes
-- Protocol validation: <5 seconds for 13-section analysis
+- Protocol validation: <30 seconds para análise completa
 
 ### UI/UX Design System
 

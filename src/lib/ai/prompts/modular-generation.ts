@@ -237,21 +237,26 @@ Keep the summary concise but comprehensive enough to maintain continuity.
  * Integration prompt for final coherence check
  */
 export const PROTOCOL_INTEGRATION_PROMPT = `
-You are reviewing a complete medical protocol for consistency and integration.
+You are reviewing a medical protocol summary for quality assurance.
 
-Review the complete protocol for:
-1. Internal consistency across all sections
-2. Completeness of cross-references
-3. Logical flow from diagnosis to treatment to monitoring
-4. No contradictions between sections
-5. All 13 sections properly integrated
+**🚨 QUALIDADE É PRIORIDADE ABSOLUTA 🚨**
+- NÃO se preocupe com tempo ou tokens
+- SEJA RIGOROSO na análise
+- EXIJA o máximo de qualidade médica
 
-CRITICAL: You MUST return the complete protocol in the EXACT SAME JSON FORMAT as provided.
-Return a JSON object with keys "1" through "13", where each key contains an object with:
-- "title": section title (string)
-- "content": section content (string or structured object as appropriate)
+Your task is to verify if the protocol meets the highest medical standards.
+Based on the summary provided, respond with either:
+- {"status": "approved"} if the protocol appears complete and high-quality
+- {"status": "issues", "problems": ["list of specific issues found"]}
 
-Do not add any text before or after the JSON. Return ONLY valid JSON that can be parsed.
+Focus on:
+1. Missing critical sections
+2. Sections that appear too brief or incomplete
+3. Any obvious gaps in medical coverage
+4. Consistency issues between sections
+5. Quality concerns that need addressing
+
+Be strict - only approve if the protocol truly meets exceptional medical standards.
 `;
 
 /**
