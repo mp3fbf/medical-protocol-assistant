@@ -73,3 +73,6 @@ playwright/.auth/
 
 # Design References (uncomment if you don't want to version these files)
 # /docs/design-references/
+log.txt
+scripts/check-protocol.ts
+scripts/check-raw-content.ts
