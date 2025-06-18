@@ -7,10 +7,7 @@ import { GlobalProviders } from "@/components/providers/global-providers";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/config";
 
-// Import global HTTP configuration for maximum timeouts (O3 testing)
-import "@/lib/http-config";
-// Import Node.js core patches for MASSIVE timeouts
-import "@/lib/node-timeout-patch";
+// Removed aggressive timeout patches that were causing issues
 
 const inter = Inter({ subsets: ["latin"] });
 
