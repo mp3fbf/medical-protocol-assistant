@@ -1,0 +1,60 @@
+# Generated database types that cause ESLint issues
+src/types/database.ts
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env*
+.env.*.local
+.env.local
+
+# Configuration files not typically linted
+tailwind.config.js
+postcss.config.js
+playwright.config.ts
+vitest.config.ts
+next.config.js
+lint-staged.config.js
+components.json
+vercel.json
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Coverage reports
+coverage/
+
+# Husky internal directory (if it causes issues, though typically not needed)
+# .husky/_/
+
+# VSCode specific
+.vscode/
+
+# Other common ignores
+*.log
+*.tsbuildinfo
+
+# Scripts directory
+scripts/
+
+# Custom server file
+server.js
+
+# Test files (temporary)
+test-*.js
+debug-*.js
+create-test-protocol.js
+test-manual-final.html
+test-screenshots-*/
+test-visual-confirmation-screenshots/
+playwright-simple.config.ts
+debug-simple.spec.ts
+test-simple-playwright.spec.ts

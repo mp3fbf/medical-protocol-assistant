@@ -1,0 +1,323 @@
+{
+  "nodes": [
+    {
+      "id": "start-1",
+      "type": "start",
+      "position": {
+        "x": 520,
+        "y": 40
+      },
+      "data": {
+        "type": "start",
+        "title": "Início do Protocolo TVP (≥14 anos)",
+        "label": "Início do Protocolo TVP (≥14 anos)"
+      }
+    },
+    {
+      "id": "custom-1",
+      "type": "custom",
+      "position": {
+        "x": 520,
+        "y": 310
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-redflag",
+      "type": "custom",
+      "position": {
+        "x": 680,
+        "y": 1660
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "custom-2",
+      "type": "custom",
+      "position": {
+        "x": 360,
+        "y": 580
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "custom-3",
+      "type": "custom",
+      "position": {
+        "x": 430,
+        "y": 850
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-low-negative",
+      "type": "custom",
+      "position": {
+        "x": 1000,
+        "y": 1660
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-high-prob",
+      "type": "custom",
+      "position": {
+        "x": 360,
+        "y": 1120
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "custom-4",
+      "type": "custom",
+      "position": {
+        "x": 360,
+        "y": 1390
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-imagem-negativa",
+      "type": "custom",
+      "position": {
+        "x": 1320,
+        "y": 1660
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-repetir-imagem",
+      "type": "custom",
+      "position": {
+        "x": 360,
+        "y": 1660
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "conduct-tvp-confirmada",
+      "type": "custom",
+      "position": {
+        "x": 40,
+        "y": 1660
+      },
+      "data": {
+        "label": "Nó",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": []
+      }
+    },
+    {
+      "id": "end-discharge",
+      "type": "end",
+      "position": {
+        "x": 1180,
+        "y": 1930
+      },
+      "data": {
+        "type": "end",
+        "title": "Fim do Protocolo – Alta Ambulatorial",
+        "label": "Fim do Protocolo – Alta Ambulatorial"
+      }
+    },
+    {
+      "id": "end-internacao",
+      "type": "end",
+      "position": {
+        "x": 360,
+        "y": 1930
+      },
+      "data": {
+        "type": "end",
+        "title": "Fim do Protocolo – Internação / Tratamento Hospitalar",
+        "label": "Fim do Protocolo – Internação / Tratamento Hospitalar"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-start-custom1",
+      "source": "start-1",
+      "target": "custom-1",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "e-custom1-redflag",
+      "source": "custom-1",
+      "target": "conduct-redflag",
+      "data": {
+        "rule": "Red Flags"
+      }
+    },
+    {
+      "id": "e-custom1-wells",
+      "source": "custom-1",
+      "target": "custom-2",
+      "data": {
+        "rule": "Sem Red Flags"
+      }
+    },
+    {
+      "id": "e-wells-ddimer",
+      "source": "custom-2",
+      "target": "custom-3",
+      "data": {
+        "rule": "Wells Baixa"
+      }
+    },
+    {
+      "id": "e-wells-highprob",
+      "source": "custom-2",
+      "target": "conduct-high-prob",
+      "data": {
+        "rule": "Wells Alta"
+      }
+    },
+    {
+      "id": "e-ddimer-lowneg",
+      "source": "custom-3",
+      "target": "conduct-low-negative",
+      "data": {
+        "rule": "D-Dímero Negativo"
+      }
+    },
+    {
+      "id": "e-ddimer-highprob",
+      "source": "custom-3",
+      "target": "conduct-high-prob",
+      "data": {
+        "rule": "D-Dímero Positivo"
+      }
+    },
+    {
+      "id": "e-highprob-imagem",
+      "source": "conduct-high-prob",
+      "target": "custom-4",
+      "data": {
+        "rule": "Solicitar US-DV"
+      }
+    },
+    {
+      "id": "e-img-confirm",
+      "source": "custom-4",
+      "target": "conduct-tvp-confirmada",
+      "data": {
+        "rule": "TVP Confirmada"
+      }
+    },
+    {
+      "id": "e-img-neg",
+      "source": "custom-4",
+      "target": "conduct-imagem-negativa",
+      "data": {
+        "rule": "Sem TVP"
+      }
+    },
+    {
+      "id": "e-img-inconclusivo",
+      "source": "custom-4",
+      "target": "conduct-repetir-imagem",
+      "data": {
+        "rule": "Exame Inconclusivo"
+      }
+    },
+    {
+      "id": "e-lowneg-end",
+      "source": "conduct-low-negative",
+      "target": "end-discharge",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "e-imgneg-end",
+      "source": "conduct-imagem-negativa",
+      "target": "end-discharge",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "e-confirm-end",
+      "source": "conduct-tvp-confirmada",
+      "target": "end-internacao",
+      "data": {
+        "rule": "Internação/Tratamento"
+      }
+    },
+    {
+      "id": "e-repetir-end",
+      "source": "conduct-repetir-imagem",
+      "target": "end-internacao",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "e-redflag-end",
+      "source": "conduct-redflag",
+      "target": "end-internacao",
+      "data": {
+        "rule": "Regra nova"
+      }
+    }
+  ]
+}

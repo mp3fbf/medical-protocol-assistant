@@ -1,0 +1,13 @@
+packages:
+  - .
+ignoredBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@vercel/speed-insights'
+  - bcrypt
+  - esbuild
+  - prisma
+  - unrs-resolver
+overrides:
+  dompurify@<3.2.4: '>=3.2.4'
+  next@>=13.0 <15.2.2: '>=15.2.2'

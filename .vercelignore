@@ -1,0 +1,22 @@
+# Vercel ignore file
+# Files and directories to ignore during deployment
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+tests/
+playwright-report/
+test-results/
+
+# Development files
+.env.local.example
+CLAUDE.md
+docs/
+Opus 4/
+
+# Build artifacts that Vercel generates
+.next/
+out/
