@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?mso-application progid="Word.Document"?>
+<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+    <pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">
+        <pkg:xmlData>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+                <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/core-properties" Target="docProps/core.xml"/>
+                <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+            </Relationships>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="256">
+        <pkg:xmlData>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+                <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+                <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+            </Relationships>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">
+        <pkg:xmlData>
+            <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex wne">
+                <w:body>
+                    <w:p>
+                        <w:pPr><w:pStyle w:val="NormalWeb"/></w:pPr>
+                        <w:r><w:t>Este é um template placeholder. Substitua este arquivo por um template Word (.docx) formatado conforme as normas ABNT, contendo todos os estilos referenciados em src/lib/generators/templates.ts (ex: Heading1, NormalWeb, ListBullet, etc.).</w:t></w:r>
+                    </w:p>
+                    <w:p>
+                        <w:pPr><w:pStyle w:val="Heading1"/></w:pPr>
+                        <w:r><w:t>Título de Seção Nível 1 (Estilo: Heading1)</w:t></w:r>
+                    </w:p>
+                    <w:p>
+                        <w:pPr><w:pStyle w:val="NormalWeb"/></w:pPr>
+                        <w:r><w:t>Texto normal do protocolo...</w:t></w:r>
+                    </w:p>
+                    <w:sectPr>
+                        <w:pgSz w:w="11906" w:h="16838"/> <!-- A4 size -->
+                        <w:pgMar w:top="1701" w:right="1134" w:bottom="1134" w:left="1701" w:header="708" w:footer="708" w:gutter="0"/> <!-- Margens ABNT: Sup/Esq 3cm, Inf/Dir 2cm -->
+                        <w:cols w:space="708"/>
+                        <w:docGrid w:linePitch="360"/>
+                    </w:sectPr>
+                </w:body>
+            </w:document>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/styles.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml">
+        <pkg:xmlData>
+            <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                <w:docDefaults>
+                    <w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="24"/></w:rPr></w:rPrDefault>
+                    <w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="360" w:lineRule="auto"/></w:pPr></w:pPrDefault>
+                </w:docDefaults>
+                <w:style w:type="paragraph" w:styleId="NormalWeb" w:default="1">
+                    <w:name w:val="Normal Web"/>
+                    <w:pPr><w:spacing w:after="120" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/><w:ind w:firstLine="709"/></w:pPr> <!-- 1.25cm first line indent -->
+                    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="24"/></w:rPr>
+                </w:style>
+                <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="NormalWeb"/><w:next w:val="NormalWeb"/><w:pPr><w:keepNext/><w:spacing w:before="480" w:after="240"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>
+                <w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="NormalWeb"/><w:next w:val="NormalWeb"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/></w:rPr></w:style>
+                <w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="NormalWeb"/><w:next w:val="NormalWeb"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/></w:rPr></w:style>
+                <w:style w:type="paragraph" w:styleId="ListBullet"><w:name w:val="List Bullet"/><w:basedOn w:val="NormalWeb"/><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:style>
+                <w:style w:type="paragraph" w:styleId="ListNumber"><w:name w:val="List Number"/><w:basedOn w:val="NormalWeb"/><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="2"/></w:numPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:style>
+                <w:style w:type="character" w:styleId="FootnoteReference" w:default="1"><w:name w:val="footnote reference"/><w:rPr><w:vertAlign w:val="superscript"/></w:rPr></w:style>
+                <w:style w:type="paragraph" w:styleId="FootnoteText"><w:name w:val="footnote text"/><w:basedOn w:val="NormalWeb"/><w:link w:val="FootnoteReference"/><w:rPr><w:sz w:val="20"/></w:rPr></w:style>
+                <w:style w:type="paragraph" w:styleId="TableCaption"><w:name w:val="Table Caption"/><w:basedOn w:val="NormalWeb"/><w:pPr><w:spacing w:before="120" w:after="120"/><w:jc w:val="center"/></w:pPr><w:rPr><w:sz w:val="20"/></w:rPr></w:style>
+                 <w:style w:type="paragraph" w:styleId="ReferenceItem"><w:name w:val="Reference Item"/><w:basedOn w:val="NormalWeb"/><w:pPr><w:ind w:hanging="360" w:left="360"/> <w:spacing w:after="60"/></w:pPr><w:rPr><w:sz w:val="20"/></w:rPr></w:style>
+            </w:styles>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/numbering.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml">
+        <pkg:xmlData>
+            <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                <w:abstractNum w:abstractNumId="0"><w:nsid w:val="12345678"/><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>
+                <w:abstractNum w:abstractNumId="1"><w:nsid w:val="ABCDEF01"/><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>
+                <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+                <w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>
+            </w:numbering>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
+        <pkg:xmlData>
+            <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                <w:defaultTabStop w:val="708"/><w:characterSpacingControl w:val="doNotCompress"/>
+                 <w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat>
+            </w:settings>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/docProps/core.xml" pkg:contentType="application/vnd.openxmlformats-package.core-properties+xml" pkg:padding="256">
+        <pkg:xmlData>
+            <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <dc:title>Protocol Template Placeholder</dc:title>
+                <dcterms:created xsi:type="dcterms:W3CDTF">2024-01-01T00:00:00Z</dcterms:created>
+                <dcterms:modified xsi:type="dcterms:W3CDTF">2024-01-01T00:00:00Z</dcterms:modified>
+            </cp:coreProperties>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/docProps/app.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.extended-properties+xml" pkg:padding="256">
+        <pkg:xmlData>
+            <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+                <Application>Microsoft Office Word</Application>
+                <AppVersion>16.0000</AppVersion>
+            </Properties>
+        </pkg:xmlData>
+    </pkg:part>
+</pkg:package>

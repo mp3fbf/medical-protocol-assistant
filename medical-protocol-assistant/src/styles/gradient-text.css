@@ -1,0 +1,20 @@
+/* Gradient text utility classes */
+.gradient-text {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+/* Fallback for browsers that don't support gradient text */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .gradient-text {
+    color: #2563eb;
+  }
+}
+
+/* Fix for Safari */
+.text-transparent {
+  -webkit-text-fill-color: transparent;
+}

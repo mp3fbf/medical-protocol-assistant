@@ -1,0 +1,417 @@
+{
+  "nodes": [
+    {
+      "id": "node-1749434751857",
+      "type": "custom",
+      "position": {
+        "x": -921.8598585048662,
+        "y": -160.30913722382957
+      },
+      "data": {
+        "label": "História clínica",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Pe54da0fa-a4e5-49bb-a65a-cbe2fac28f58",
+            "uid": "P1",
+            "titulo": "Queixa Principal",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "id": "",
+                "label": "Sensação de obstrução nasal (uni/bilateral) ",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Rinossinusite frequente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Epistaxe frequente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Dor facial",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Respiração ruidosa durante o sono",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Respiração bucal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Hiposmia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "História de trauma facial",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Outros",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "id": "",
+                "label": "Paciente assintomático",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "P634d038f-60b2-4a7e-8ff9-9a51da7dd63f",
+            "uid": "P2",
+            "titulo": "Queixa principal pode ser explicada pelas condições a seguir:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "id": "",
+                "label": "Hipertrofia da adenoide",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Infecção viral / bacteriana",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Tumores nasais",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Corpo estranho",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Uso crônico de vasoconstritor tópico nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Nenhuma das condições citadas",
+                "preselected": true,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "P86a88e4d-b1ba-41f1-b6dd-83dbe3103ea3",
+            "uid": "",
+            "titulo": "Complemento de anamnese",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "B",
+            "options": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-1749436794248",
+      "type": "custom",
+      "position": {
+        "x": 591.2802904380961,
+        "y": 348.6975795368061
+      },
+      "data": {
+        "label": "Exame Físico",
+        "condicao": "Cond: [ ] Nenhuma das condições citadas EM P2",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P31f330e2-5ba2-42c2-8ef1-7a8caa878c98",
+            "uid": "P3",
+            "titulo": "Presença de desvio septal na rinoscopia anterior?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Desvio septal anterior",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "    Ausência de desvio septal",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "id": "",
+                "label": "Suspeita de desvio septal posterior",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P123b0528-5d47-4bc6-be71-b7ed4f7f2516",
+            "uid": "P4",
+            "titulo": "Há desvio septal clinicamente significativo, sintomático e REFRATÁRIO ao tratamento clínico otimizado?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": true,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary-a4824d1f-993a-4c81-8e0c-f9c9e063d110",
+      "type": "summary",
+      "position": {
+        "x": 1529.2476721656258,
+        "y": 614.297577554036
+      },
+      "data": {
+        "label": "Resumo de atendimento",
+        "condicao": "",
+        "descricao": "<p><em>Paciente de X anos, sexo X</em></p><p>*Respostas na ordem de preenchimento.</p><p>+ campos abertos SE preenchidos.*</p>",
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "conduta-1749437198174",
+      "type": "conduct",
+      "position": {
+        "x": 2262.9448166718767,
+        "y": 272.5781010052591
+      },
+      "data": {
+        "label": "Conduta",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [
+            {
+              "id": "1749439567420",
+              "nome": "Definição de desvio de septo",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "SEMPRE",
+              "conteudo": "<p><strong>O que é um desvio de septo?</strong></p><p>O septo nasal é a parede que separa as duas narinas do nariz. É composto por osso e um material elástico chamado \"cartilagem\". Quando o septo nasal está torto, é chamado de \"desvio de septo\".</p><p>O septo nasal é frágil. Mesmo uma leve pancada ou lesão no nariz pode deixá-lo torto. Em bebês, ele pode ser danificado durante o parto.</p><p></p><p><strong>Quais são os sintomas de um desvio de septo?</strong></p><p>Os sintomas incluem:</p><p>●Nariz entupido, especialmente de um lado</p><p>●Problemas para dormir</p><p>●Dificuldade para respirar pelo nariz</p><p></p><p>Muitas pessoas têm um septo ligeiramente torto que não causa problemas.</p><p></p><p><strong>Devo consultar um médico?</strong></p><p>Se você sente o nariz constantemente entupido e tem dificuldade para respirar, consulte seu médico. Há muitas coisas que podem causar esses sintomas, e é importante descobrir o que é.</p><p></p><p><strong>Precisarei fazer exames?</strong></p><p>Talvez. Seu médico ou enfermeiro conversará com você sobre seus sintomas e fará um exame. Eles examinarão seu nariz usando um instrumento com luz.</p><p>Eles também podem sugerir que você faça exames, como:</p><p>●Endoscopia nasal – O médico usa um tubo flexível chamado \"endoscópio\" para examinar profundamente o seu nariz e verificar se há algum problema.</p><p></p><p><strong>Como é tratado um desvio de septo?</strong></p><p>Muitas pessoas não precisam de tratamento. Mas se você tiver um desvio de septo grave, seu médico pode sugerir uma cirurgia chamada \"septoplastia\". Isso endireita o septo torto.</p>"
+            }
+          ],
+          "exame": [
+            {
+              "id": "1749438613128",
+              "nome": "Endoscopia nasal",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Suspeita de desvio septal posterior EM P3",
+              "condicionalExame": "domiciliar",
+              "codigo": "40201210",
+              "cid": "J34.2",
+              "indicacao": "Investigação desvio de septo nasal",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "1749440381656",
+              "nome": "Septoplastia",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Sim EM P4 ",
+              "condicionalExame": "domiciliar",
+              "codigo": "30501369",
+              "cid": "J34.2",
+              "indicacao": "Desvio de septo clinicamente significativo e refratário ao tratamento clínico otimizado.",
+              "alerta": "Considerar o procedimento em pacientes com refratariedade terapeutica",
+              "material": ""
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "1749508944112",
+              "nome": "Budesonida 32mcg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Budesonida 32mcg",
+              "posologia": "<p>Aplicar via nasal 2 jatos 12/12 horas.</p>",
+              "mensagemMedico": "",
+              "via": ""
+            },
+            {
+              "id": "1749509114515",
+              "nome": "Budesonida 64mcg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Budesonida 64mcg",
+              "posologia": "<p>Aplicar via nasal 2 jatos 12/12 horas.</p>",
+              "mensagemMedico": "",
+              "via": ""
+            },
+            {
+              "id": "1749509150100",
+              "nome": "Soro fisiológico",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Soro fisiológico",
+              "posologia": "<p>Incline a cabeça para o lado, aplique de 5 a 10 ml de soro fisiológico 0,9% em uma narina usando uma seringa apropriada, deixe o líquido sair pela outra narina ou boca, e repita o processo do outro lado. Pode ser realizado 2 a 4 vezes ao dia.</p>",
+              "mensagemMedico": "",
+              "via": ""
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "1749438599112",
+              "nome": "Desvio de septo confirmado",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Desvio septal anterior EM P3",
+              "conteudo": "<p>Seu paciente apresenta desvio de septo confirmado pela história clínica e exame físico.</p><p></p><p>Não é recomendado a solicitação de exames complementares adicionais para o diagnóstico definitivo de desvio de septo.</p><p></p><p>Recomenda-se uso de sintomáticos para alívio de sintomas associados. </p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "1749438616648",
+              "nome": "Suspeita de desvio septal posterior",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Suspeita de desvio septal posterior EM P3",
+              "conteudo": "<p>A condição de desvio de septo ainda não pode ser descartada. </p><p></p><p>Recomenda-se a realização de endoscopia nasal como exame complementar adicional, para elucidação diagnóstica. </p>",
+              "observacao": ""
+            },
+            {
+              "id": "1749438970911",
+              "nome": "Desvio de septo descartado",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Ausência de desvio septal EM P3",
+              "conteudo": "<p>Seu paciente não apresenta desvio de septo ao exame clínico, não sendo necessário a realização de exames complementares adicionais.</p>",
+              "observacao": ""
+            },
+            {
+              "id": "1749440153298",
+              "nome": "Indicação septoplastia",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "Cond_APARECE: [ ] Sim EM P4",
+              "conteudo": "<p>Seu paciente apresenta desvio de septo clinicamente significativo e refratário ao tratamento clínico otimizado, sendo recomendado a realização de septoplastia.</p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "conduta-1749509304769",
+      "type": "conduct",
+      "position": {
+        "x": 560.4067963477328,
+        "y": 2852.4787915058596
+      },
+      "data": {
+        "label": "Protocolo encerrado",
+        "condicao": "(\"Paciente assintomático\" in P1) and (\"Nenhuma das condições citadas\" in P2)",
+        "descricao": "<p><em>Esse protocolo se destina a pacientes com sintomas nos quais a suspeita etiológica principal seja o desvio de septo.</em></p><p></p><p><em>Utilizar outro protocolo institucional correspondente.</em></p>",
+        "condicional": "visivel",
+        "conduta": "conclusao"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "enode-1749434751857-node-1749436794248",
+      "source": "node-1749434751857",
+      "target": "node-1749436794248",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "enode-1749436794248-summary-a4824d1f-993a-4c81-8e0c-f9c9e063d110",
+      "source": "node-1749436794248",
+      "target": "summary-a4824d1f-993a-4c81-8e0c-f9c9e063d110",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "esummary-a4824d1f-993a-4c81-8e0c-f9c9e063d110-conduta-1749437198174",
+      "source": "summary-a4824d1f-993a-4c81-8e0c-f9c9e063d110",
+      "target": "conduta-1749437198174",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "enode-1749434751857-conduta-1749509304769",
+      "source": "node-1749434751857",
+      "target": "conduta-1749509304769",
+      "data": {
+        "rule": "Regra nova"
+      }
+    }
+  ]
+};

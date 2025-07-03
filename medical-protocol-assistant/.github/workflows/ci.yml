@@ -1,0 +1,131 @@
+# .github/workflows/ci.yml
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop # Or your primary development branch
+
+env:
+  # Set environment variables for all jobs/steps
+  # These are placeholders for tests; actual values should be set as secrets for real external services
+  # For DATABASE_URL, we use a service container for tests.
+  OPENAI_API_KEY: "sk-test-key-for-ci" # Mock key, actual calls should be mocked
+  NEXTAUTH_SECRET: "ci-nextauth-secret-placeholder"
+  NEXTAUTH_URL: "http://localhost:3000" # Default for local testing, Playwright webServer uses this
+  # DATABASE_URL will be set by the PostgreSQL service container
+  SUPABASE_URL: "http://localhost:54321" # Mock, Supabase not used in CI tests directly
+  SUPABASE_SERVICE_ROLE_KEY: "mock.supabase.key" # Mock
+
+jobs:
+  lint-and-test:
+    name: Lint & Unit/Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432 # Expose Postgres port to the host (runner)
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest # Or specify your pnpm version
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+
+      - name: Run Database Migrations (if applicable for tests)
+        run: pnpm prisma migrate deploy # Use deploy for non-interactive environments
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+
+      - name: Lint code
+        run: pnpm lint
+
+      - name: Run unit and integration tests
+        run: pnpm test --run # Use --run for non-interactive CI
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb?schema=public"
+          # OPENAI_API_KEY and NEXTAUTH_SECRET are already in job env
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: lint-and-test # Ensure tests pass before trying to build
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        env:
+          DATABASE_URL: "postgresql://placeholder_user:placeholder_password@placeholder_host:5432/placeholder_db" # Build doesn't need real DB
+
+      - name: Build Next.js application
+        run: pnpm build
+        env:
+          DATABASE_URL: "postgresql://placeholder_user:placeholder_password@placeholder_host:5432/placeholder_db"
+          # OPENAI_API_KEY and NEXTAUTH_SECRET are already in job env
+          # NEXTAUTH_URL is also in job env

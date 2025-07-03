@@ -1,0 +1,69 @@
+/* Custom styles for flowchart nodes */
+
+/* Make handles larger and more visible */
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+/* Hover effect for handles */
+.react-flow__handle:hover {
+  width: 16px !important;
+  height: 16px !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Active/connecting state */
+.react-flow__handle-connecting {
+  width: 20px !important;
+  height: 20px !important;
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.4);
+}
+
+/* Valid connection target (magnetic effect) */
+.react-flow__handle-valid {
+  width: 20px !important;
+  height: 20px !important;
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.4);
+  background-color: #22c55e !important;
+}
+
+/* Different colors for different handle types */
+.react-flow__handle-bottom {
+  background-color: #3b82f6;
+}
+
+.react-flow__handle-top {
+  background-color: #8b5cf6;
+}
+
+.react-flow__handle-left {
+  background-color: #ef4444;
+}
+
+.react-flow__handle-right {
+  background-color: #10b981;
+}
+
+/* Decision node specific handles */
+.decision-handle-yes {
+  background-color: #22c55e !important;
+}
+
+.decision-handle-no {
+  background-color: #ef4444 !important;
+}
+
+/* Increase handle hit area for easier connection */
+.react-flow__handle::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+}
