@@ -1,0 +1,30 @@
+{
+  "pdf_file": "DAK-10 - Delirium/[Prevent] Delirium_PS.pdf",
+  "extraction_date": "2025-07-04T15:00:25.958534",
+  "base_dpi": 300,
+  "max_level": 3,
+  "total_quadrants": 16,
+  "quadrants_with_content": 16,
+  "files": {
+    "hierarchical_view": "DAK-10 - Delirium/miro_progressive/00_hierarchical_view.png",
+    "navigation": "DAK-10 - Delirium/miro_progressive/index.html"
+  },
+  "level_statistics": {
+    "0": {
+      "count": 1,
+      "avg_density": 0.04304947662268345
+    },
+    "1": {
+      "count": 3,
+      "avg_density": 0.05739405875550715
+    },
+    "2": {
+      "count": 11,
+      "avg_density": 0.04475095765042594
+    },
+    "3": {
+      "count": 1,
+      "avg_density": 0.030846273476570995
+    }
+  }
+}

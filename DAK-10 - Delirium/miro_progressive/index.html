@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Miro Progressive Extraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .tree-panel {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 80vh;
+            overflow-y: auto;
+        }
+        .viewer-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .tree-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+        .tree-item:hover {
+            background: #e0e0e0;
+        }
+        .tree-item.selected {
+            background: #007bff;
+            color: white;
+        }
+        .level-0 { margin-left: 0px; }
+        .level-1 { margin-left: 20px; }
+        .level-2 { margin-left: 40px; }
+        .level-3 { margin-left: 60px; }
+        .density {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .selected .density {
+            color: #ccc;
+        }
+        #viewer {
+            max-width: 100%;
+            border: 2px solid #333;
+        }
+        .info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #333;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Miro Progressive Extraction - Navegação Hierárquica</h1>
+    
+    <div class="container">
+        <div class="tree-panel">
+            <h3>Estrutura de Quadrantes</h3>
+            <div id="tree">
+
+                <div class="tree-item level-0" 
+                     onclick="showQuadrant('root', 'L0_root.png')"
+                     id="item-root">
+                    <strong>root</strong>
+                    <span class="density">(4.3%)</span>
+                </div>
+
+                <div class="tree-item level-1" 
+                     onclick="showQuadrant('root_TL', 'L1_root_TL.png')"
+                     id="item-root_TL">
+                    <strong>root_TL</strong>
+                    <span class="density">(6.5%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TL_TL', 'L2_root_TL_TL.png')"
+                     id="item-root_TL_TL">
+                    <strong>root_TL_TL</strong>
+                    <span class="density">(6.4%)</span>
+                </div>
+
+                <div class="tree-item level-3" 
+                     onclick="showQuadrant('root_TL_TL_TL', 'L3_root_TL_TL_TL.png')"
+                     id="item-root_TL_TL_TL">
+                    <strong>root_TL_TL_TL</strong>
+                    <span class="density">(3.1%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TL_TR', 'L2_root_TL_TR.png')"
+                     id="item-root_TL_TR">
+                    <strong>root_TL_TR</strong>
+                    <span class="density">(4.4%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TL_BL', 'L2_root_TL_BL.png')"
+                     id="item-root_TL_BL">
+                    <strong>root_TL_BL</strong>
+                    <span class="density">(6.8%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TL_BR', 'L2_root_TL_BR.png')"
+                     id="item-root_TL_BR">
+                    <strong>root_TL_BR</strong>
+                    <span class="density">(4.2%)</span>
+                </div>
+
+                <div class="tree-item level-1" 
+                     onclick="showQuadrant('root_TR', 'L1_root_TR.png')"
+                     id="item-root_TR">
+                    <strong>root_TR</strong>
+                    <span class="density">(6.9%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TR_TL', 'L2_root_TR_TL.png')"
+                     id="item-root_TR_TL">
+                    <strong>root_TR_TL</strong>
+                    <span class="density">(7.7%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TR_TR', 'L2_root_TR_TR.png')"
+                     id="item-root_TR_TR">
+                    <strong>root_TR_TR</strong>
+                    <span class="density">(9.4%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TR_BL', 'L2_root_TR_BL.png')"
+                     id="item-root_TR_BL">
+                    <strong>root_TR_BL</strong>
+                    <span class="density">(3.9%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_TR_BR', 'L2_root_TR_BR.png')"
+                     id="item-root_TR_BR">
+                    <strong>root_TR_BR</strong>
+                    <span class="density">(0.3%)</span>
+                </div>
+
+                <div class="tree-item level-1" 
+                     onclick="showQuadrant('root_BR', 'L1_root_BR.png')"
+                     id="item-root_BR">
+                    <strong>root_BR</strong>
+                    <span class="density">(3.7%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_BR_TL', 'L2_root_BR_TL.png')"
+                     id="item-root_BR_TL">
+                    <strong>root_BR_TL</strong>
+                    <span class="density">(3.4%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_BR_TR', 'L2_root_BR_TR.png')"
+                     id="item-root_BR_TR">
+                    <strong>root_BR_TR</strong>
+                    <span class="density">(2.6%)</span>
+                </div>
+
+                <div class="tree-item level-2" 
+                     onclick="showQuadrant('root_BR_BL', 'L2_root_BR_BL.png')"
+                     id="item-root_BR_BL">
+                    <strong>root_BR_BL</strong>
+                    <span class="density">(0.2%)</span>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="viewer-panel">
+            <h3>Visualização</h3>
+            <div class="controls">
+                <button onclick="showOverview()">Visão Hierárquica</button>
+                <button onclick="showFullPage()">Página Completa</button>
+            </div>
+            
+            <div class="info">
+                <div id="current-info">Selecione um quadrante para visualizar</div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <img id="viewer" src="00_hierarchical_view.png" style="width: 100%;">
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <strong>Total de Quadrantes:</strong> 16
+                </div>
+                <div class="stat-box">
+                    <strong>Níveis Máximos:</strong> 3
+                </div>
+                <div class="stat-box">
+                    <strong>DPI Base:</strong> 300
+                </div>
+                <div class="stat-box">
+                    <strong>DPI Máximo:</strong> 2400
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentSelected = null;
+        
+        function showQuadrant(id, filename) {
+            // Atualizar seleção
+            if (currentSelected) {
+                document.getElementById('item-' + currentSelected).classList.remove('selected');
+            }
+            document.getElementById('item-' + id).classList.add('selected');
+            currentSelected = id;
+            
+            // Atualizar viewer
+            document.getElementById('viewer').src = filename;
+            document.getElementById('current-info').innerHTML = 
+                '<strong>Visualizando:</strong> ' + id + ' - ' + filename;
+        }
+        
+        function showOverview() {
+            document.getElementById('viewer').src = '00_hierarchical_view.png';
+            document.getElementById('current-info').innerHTML = 
+                '<strong>Visualizando:</strong> Visão Hierárquica Completa';
+                
+            if (currentSelected) {
+                document.getElementById('item-' + currentSelected).classList.remove('selected');
+                currentSelected = null;
+            }
+        }
+        
+        function showFullPage() {
+            document.getElementById('viewer').src = 'L0_root.png';
+            document.getElementById('current-info').innerHTML = 
+                '<strong>Visualizando:</strong> Página Completa';
+                
+            if (currentSelected) {
+                document.getElementById('item-' + currentSelected).classList.remove('selected');
+                currentSelected = null;
+            }
+        }
+    </script>
+</body>
+</html>

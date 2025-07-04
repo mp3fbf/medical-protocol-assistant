@@ -37,8 +37,14 @@
       "Bash(pnpm tsc:*)",
       "Bash(npx tsc:*)",
       "Bash(pnpm prisma migrate:*)",
-      "Bash(pnpm prisma generate:*)"
+      "Bash(pnpm prisma generate:*)",
+      "Bash(python:*)",
+      "mcp__playwright__browser_screen_click",
+      "mcp__playwright__browser_screen_capture"
     ]
   },
-  "enableAllProjectMcpServers": false
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
 }

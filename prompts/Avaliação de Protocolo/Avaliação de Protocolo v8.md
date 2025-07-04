@@ -51,6 +51,21 @@ Muitos protocolos médicos contêm elementos visuais fundamentais que se perdem 
    - Descrever cores, símbolos e layouts observados
    - Mencionar arquivos de imagem específicos quando relevante
 
+### Identificação de Fluxogramas Profissionais (Miro/PDF)
+
+**Como identificar:**
+- Arquivo PDF específico do Miro (ex: `miro-delirium-flowchart.pdf`)
+- Visual profissional com design consistente
+- Uso sistemático de cores e formas padronizadas
+- Elementos interativos ou layers complexos
+- Menção no protocolo sobre modelagem pela equipe Daktus
+
+**Quando encontrar fluxogramas Miro:**
+- Use APENAS os critérios 1.5-A (funcionalidade, não estética)
+- Foque em completude e adequação para implementação
+- Não penalize por escolhas visuais (já validadas pela equipe de design)
+- Avalie correspondência com o conteúdo textual do protocolo
+
 ## Processo Colaborativo de Avaliação
 
 Você realizará uma análise em duas etapas:
@@ -152,6 +167,22 @@ Subtotal: __/35 (Multiplicar por 0,43 para 15% do peso)
 ### 1.5 Representação Visual e Fluxograma (10% do peso)
 
 **NOTA: Esta dimensão requer análise visual obrigatória dos PDFs**
+
+**IMPORTANTE: Identifique o tipo de fluxograma antes de avaliar:**
+- **Tipo A - Fluxograma Profissional (Miro/PDF)**: Use os critérios da Seção 1.5-A
+- **Tipo B - Fluxograma em Desenvolvimento**: Use os critérios da Seção 1.5-B
+
+#### 1.5-A: Critérios para Fluxogramas Profissionais (Miro/PDF modelados pela equipe Daktus)
+
+| Critério | Pontuação (0-5) | Comentários | Trechos Adequados | Trechos para Ajuste |
+|----------|-----------------|-------------|-------------------|---------------------|
+| Completude funcional (cobre todos os cenários clínicos do texto) | | | | |
+| Mapeamento de dados (todas as variáveis necessárias estão identificadas) | | | | |
+| Pontos de integração (momentos de interface com outros sistemas/protocolos) | | | | |
+| Rastreabilidade de decisões (possibilidade de auditar o caminho percorrido) | | | | |
+| Gestão de exceções (contempla situações de erro ou casos especiais) | | | | |
+
+#### 1.5-B: Critérios para Fluxogramas em Desenvolvimento
 
 | Critério | Pontuação (0-5) | Comentários | Trechos Adequados | Trechos para Ajuste |
 |----------|-----------------|-------------|-------------------|---------------------|
@@ -520,8 +551,23 @@ Para cada ponto identificado com pontuação abaixo de 5, sugerir melhorias estr
 
 ### 3.5 Representação Visual
 
-**NOTA: Sugestões visuais devem ser baseadas na análise das imagens extraídas**
+**NOTA: Sugestões visuais devem ser adaptadas ao tipo de fluxograma**
 
+#### Para Fluxogramas Profissionais (Miro/PDF):
+1. **Sugestões Funcionais**
+   - Adicionar IDs únicos para cada nó de decisão (rastreabilidade)
+   - Mapear variáveis de entrada/saída em cada ponto
+   - Indicar pontos de logging/auditoria necessários
+   - Marcar interfaces com sistemas externos
+   - Identificar loops ou recursões no fluxo
+
+2. **Gestão de Dados**
+   - Listar variáveis necessárias em cada etapa
+   - Definir formato de dados esperado
+   - Indicar validações necessárias
+   - Mapear transformações de dados
+
+#### Para Fluxogramas em Desenvolvimento:
 1. **Padronização de símbolos**
    - Usar consistentemente:
      - ◊ (losango) para pontos de decisão
