@@ -1,6 +1,7 @@
 /**
  * OpenAI Provider Implementation
  */
+import { randomBytes } from "crypto";
 import OpenAI from "openai";
 import type {
   AIProvider,
@@ -179,7 +180,7 @@ export class OpenAIProvider implements AIProvider {
 
     // timeout variable is created but not used, we're using TIMEOUT_CONFIGS.o3 directly
     // const timeout = this.getRequestTimeout(model, options);
-    const requestId = `${model}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const requestId = `${model}-${Date.now()}-${randomBytes(6).toString('base64url')}`;
 
     console.log(
       `[OpenAI] Starting STREAMING request ${requestId} to ${model} at ${new Date().toISOString()}`,
