@@ -19,6 +19,7 @@ import type {
 } from "@/types/ai-generation";
 import type { ProtocolFullContent } from "@/types/protocol";
 import { O3, JSON_RESPONSE_FORMAT, getModelTemperature } from "./config";
+import { randomBytes } from "crypto";
 import { OpenAIError } from "./errors";
 import { GeneratedFullProtocolSchema } from "../validators/generated-content";
 import { generationProgressEmitter } from "@/lib/events/generation-progress";
@@ -370,7 +371,7 @@ export async function generateModularProtocolAI(
 
   // Create new session ID if not provided
   const currentSessionId =
-    sessionId || `gen-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    sessionId || `gen-${Date.now()}-${randomBytes(6).toString('base64url')}`;
 
   const groupKeys = Object.keys(
     SECTION_GROUPS,
