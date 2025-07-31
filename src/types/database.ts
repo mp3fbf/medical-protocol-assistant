@@ -15,6 +15,18 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+// Re-export Prisma types
+export {
+  Protocol,
+  ProtocolVersion,
+  ProtocolStatus,
+  ProtocolContext,
+  User,
+  UserRole,
+  GenerationStatus,
+  AuditLog
+} from "@prisma/client";
+
 export type Database = {
   public: {
     Tables: {

@@ -20,6 +20,7 @@ import {
 } from "@/lib/validators/protocol-schema"; // AIResearchDataSchema is actually defined here
 import type { ProtocolFullContent } from "@/types/protocol";
 import { TRPCError } from "@trpc/server";
+import { ProtocolContext } from "@/types/database";
 
 const AIFullProtocolGenerationInputSchema = z.object({
   protocolId: z
@@ -28,6 +29,8 @@ const AIFullProtocolGenerationInputSchema = z.object({
     .optional(), // Changed from uuid()
   medicalCondition: z.string().min(1, "Condição médica é obrigatória."),
   researchData: AIResearchDataSchema,
+  context: z.nativeEnum(ProtocolContext).optional(),
+  targetPopulation: z.string().optional(),
   specificInstructions: z.string().optional(),
   useModularGeneration: z.boolean().optional(), // Enable modular generation
 });

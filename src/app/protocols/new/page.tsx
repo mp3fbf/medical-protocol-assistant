@@ -93,6 +93,7 @@ export default function NewProtocolPage() {
         title: data.title,
         condition: data.condition,
         generationMode: data.generationMode,
+        context: data.context,
         targetPopulation: data.targetPopulation,
         researchSources: data.researchSources,
         yearRange: data.yearRange,

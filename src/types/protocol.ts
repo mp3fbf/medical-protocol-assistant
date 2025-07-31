@@ -9,6 +9,7 @@ import type {
   ProtocolStatus,
   ProtocolVersion,
   User,
+  ProtocolContext,
   // JsonValue, // JsonValue can be used if direct JSON manipulation is needed outside Prisma types
 } from "./database";
 import type { FlowchartDefinition } from "./flowchart"; // Import the specific type
@@ -50,6 +51,8 @@ export interface ProtocolWithDetails extends Protocol {
 export interface CreateProtocolPayload {
   title: string;
   condition: string;
+  context?: ProtocolContext;
+  targetPopulation?: string;
   // Optional initial content for the first version
   initialContent?: ProtocolFullContent;
   initialFlowchart?: FlowchartData;

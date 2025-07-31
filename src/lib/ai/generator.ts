@@ -12,13 +12,17 @@ import {
   createSingleSectionUserPrompt,
 } from "./prompts/protocol-generation";
 import { SECTION_DEFINITIONS } from "./prompts/section-specific";
+import { CONTEXT_SYSTEM_PROMPTS } from "./prompts/context-specific-prompts";
+import { getSectionContextInstructions } from "./prompts/section-context-instructions";
 import type {
   AIFullProtocolGenerationInput,
   AIFullProtocolGenerationOutput,
   AIProtocolSectionInput,
   AIProtocolSectionOutput,
-  StandardSectionDefinition as _StandardSectionDefinition, // Marked as unused
+  StandardSectionDefinition,
 } from "@/types/ai-generation";
+import type { AIResearchData } from "@/types/research";
+import { ProtocolContext } from "@/types/database";
 import type {} from // ProtocolFullContent as _ProtocolFullContent, // Marked as unused
 // ProtocolSectionData as _ProtocolSectionData, // Marked as unused
 "@/types/protocol";
@@ -57,7 +61,7 @@ export async function generateFullProtocolAI(
     sessionId?: string;
   },
 ): Promise<AIFullProtocolGenerationOutput> {
-  const { medicalCondition, researchData, specificInstructions } = input;
+  const { medicalCondition, researchData, context, targetPopulation, specificInstructions } = input;
 
   // Determine if we should use modular generation
   const useModular =
@@ -83,16 +87,24 @@ export async function generateFullProtocolAI(
   );
   // const openaiClient = _getOpenAIClient(); // Marked as unused
 
-  const userPrompt = createFullProtocolUserPrompt(
+  // Select appropriate system prompt based on context
+  const systemPrompt = context 
+    ? CONTEXT_SYSTEM_PROMPTS[context] || PROTOCOL_GENERATION_SYSTEM_PROMPT
+    : PROTOCOL_GENERATION_SYSTEM_PROMPT;
+
+  // Create user prompt with context-aware instructions
+  const userPrompt = createContextAwareUserPrompt(
     medicalCondition,
     researchData,
     SECTION_DEFINITIONS,
+    context,
+    targetPopulation,
     specificInstructions,
   );
 
   // Estimate token count (rough approximation: 1 token ≈ 4 characters)
   const estimatedTokens = Math.ceil(
-    (PROTOCOL_GENERATION_SYSTEM_PROMPT.length + userPrompt.length) / 4,
+    (systemPrompt.length + userPrompt.length) / 4,
   );
   const modelToUse =
     estimatedTokens > LARGE_DOCUMENT_THRESHOLD
@@ -107,7 +119,7 @@ export async function generateFullProtocolAI(
     const response = await createChatCompletion(
       modelToUse,
       [
-        { role: "system", content: PROTOCOL_GENERATION_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       {
@@ -174,6 +186,92 @@ export async function generateFullProtocolAI(
       },
     );
   }
+}
+
+/**
+ * Creates a context-aware user prompt for protocol generation
+ */
+function createContextAwareUserPrompt(
+  medicalCondition: string,
+  researchData: AIResearchData,
+  sectionDefinitions: StandardSectionDefinition[],
+  context?: ProtocolContext,
+  targetPopulation?: string,
+  additionalInstructions?: string
+): string {
+  // If no context, use default prompt creation
+  if (!context) {
+    return createFullProtocolUserPrompt(
+      medicalCondition,
+      researchData,
+      sectionDefinitions,
+      additionalInstructions
+    );
+  }
+
+  // Create section instructions with context-specific modifications
+  const sectionInstructions = sectionDefinitions.map(sd => {
+    const baseInstruction = `
+Seção ${sd.sectionNumber} - ${sd.titlePT}:
+Descrição: ${sd.description}
+Estrutura Esperada: ${sd.contentSchemaDescription}
+`;
+    
+    // Add context-specific instructions if available
+    const contextInstruction = getSectionContextInstructions(context, sd.sectionNumber);
+    
+    return contextInstruction 
+      ? `${baseInstruction}\nPARA O CONTEXTO ${context}:\n${contextInstruction}`
+      : baseInstruction;
+  }).join('\n---\n');
+
+  // Format research data
+  const researchSummary = `
+Evidências Científicas Encontradas:
+${researchData.findings.map(f => `- ${f.title}: ${f.summary}`).join('\n')}
+
+Estatísticas de Pesquisa:
+- Total de artigos: ${researchData.statistics.totalArticles}
+- Período coberto: ${researchData.statistics.yearRange}
+- Bases consultadas: ${researchData.sourcesCovered.join(', ')}
+`;
+
+  return `
+Condição Médica: ${medicalCondition}
+Contexto de Atendimento: ${context}
+${targetPopulation ? `\nDetalhes da População: ${targetPopulation}` : ''}
+${additionalInstructions ? `\nInstruções Adicionais: ${additionalInstructions}` : ''}
+
+IMPORTANTE: Este protocolo é específico para ${getContextLabel(context)}.
+Siga RIGOROSAMENTE as instruções do contexto fornecidas no system prompt.
+
+${researchSummary}
+
+Instruções por Seção:
+---
+${sectionInstructions}
+---
+
+Gere o protocolo completo com as 13 seções, adaptando TODO o conteúdo ao contexto especificado.
+Cada seção deve refletir as necessidades e limitações do ${getContextLabel(context)}.
+`;
+}
+
+/**
+ * Get context label for display
+ */
+function getContextLabel(context: ProtocolContext): string {
+  const labels: Record<ProtocolContext, string> = {
+    EMERGENCY_ROOM: "Pronto Atendimento",
+    AMBULATORY: "Ambulatório",
+    ICU: "Unidade de Terapia Intensiva",
+    WARD: "Enfermaria",
+    TELEMEDICINE: "Telemedicina",
+    TRANSPORT: "Transporte/Remoção",
+    HOME_CARE: "Atenção Domiciliar",
+    SURGICAL_CENTER: "Centro Cirúrgico"
+  };
+  return labels[context] || context;
 }
 
 export async function generateProtocolSectionAI(

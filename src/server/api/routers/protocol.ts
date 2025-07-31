@@ -16,7 +16,7 @@ import {
   UpdateProtocolVersionInputSchema,
 } from "@/lib/validators/protocol-schema";
 import type { ProtocolFullContent, FlowchartData } from "@/types/protocol";
-import { ProtocolStatus, UserRole } from "@prisma/client";
+import { ProtocolStatus, UserRole, ProtocolContext } from "@prisma/client";
 import { Permission } from "@/lib/auth/permissions";
 import { checkPermission } from "@/lib/auth/rbac";
 // import { randomUUID } from "crypto"; // No longer manually setting IDs
@@ -185,6 +185,8 @@ export const protocolRouter = router({
             title,
             condition,
             code: protocolCode,
+            context: input.context,
+            targetPopulation: input.targetPopulation,
             createdById: userId,
             status: ProtocolStatus.DRAFT,
             updatedAt: new Date(),

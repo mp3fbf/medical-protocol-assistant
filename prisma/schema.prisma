@@ -28,6 +28,8 @@ model Protocol {
   code            String            @unique
   title           String
   condition       String
+  context         ProtocolContext?  @default(AMBULATORY)
+  targetPopulation String?          // Mantido para detalhes adicionais
   status          ProtocolStatus    @default(DRAFT)
   generationStatus GenerationStatus @default(NOT_STARTED)
   createdById     String
@@ -40,6 +42,7 @@ model Protocol {
   @@index([createdById])
   @@index([status])
   @@index([generationStatus])
+  @@index([context])
 }
 
 model ProtocolVersion {
@@ -92,4 +95,15 @@ enum GenerationStatus {
   IN_PROGRESS
   COMPLETED
   FAILED
+}
+
+enum ProtocolContext {
+  EMERGENCY_ROOM    // Pronto Atendimento
+  AMBULATORY        // Ambulatório
+  ICU               // UTI
+  WARD              // Enfermaria
+  TELEMEDICINE      // Telemedicina
+  TRANSPORT         // Remoção/Transporte
+  HOME_CARE         // Atenção Domiciliar
+  SURGICAL_CENTER   // Centro Cirúrgico
 }

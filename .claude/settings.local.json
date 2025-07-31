@@ -42,7 +42,12 @@
       "mcp__playwright__browser_screen_click",
       "mcp__playwright__browser_screen_capture",
       "Bash(ln:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "mcp__supabase__apply_migration",
+      "Bash(npx prisma generate:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

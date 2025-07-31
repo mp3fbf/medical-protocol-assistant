@@ -21,6 +21,9 @@ import type { ProtocolFullContent } from "@/types/protocol";
 import { O3, JSON_RESPONSE_FORMAT, getModelTemperature } from "./config";
 import { OpenAIError } from "./errors";
 import { GeneratedFullProtocolSchema } from "../validators/generated-content";
+import { CONTEXT_SYSTEM_PROMPTS } from "./prompts/context-specific-prompts";
+import { getSectionContextInstructions } from "./prompts/section-context-instructions";
+import { ProtocolContext } from "@/types/database";
 import { generationProgressEmitter } from "@/lib/events/generation-progress";
 
 // Session management types
@@ -115,20 +118,42 @@ async function generateSectionGroup(
   researchData: AIFullProtocolGenerationInput["researchData"],
   previousSections: Partial<ProtocolFullContent>,
   contextSummary: string | undefined,
+  context?: ProtocolContext,
+  targetPopulation?: string,
+  specificInstructions?: string,
 ): Promise<Partial<ProtocolFullContent>> {
-  const prompt = createModularGroupPrompt(
+  // Select appropriate system prompt based on context
+  const systemPrompt = context 
+    ? CONTEXT_SYSTEM_PROMPTS[context] || MODULAR_GENERATION_SYSTEM_PROMPT
+    : MODULAR_GENERATION_SYSTEM_PROMPT;
+  
+  // Create modular prompt with context considerations
+  const basePrompt = createModularGroupPrompt(
     groupKey,
     medicalCondition,
     researchData,
     previousSections,
     contextSummary,
   );
+  
+  // Add context-specific instructions to the prompt
+  const contextualPrompt = context ? `
+CONTEXTO DE ATENDIMENTO: ${context}
+${targetPopulation ? `Detalhes da População: ${targetPopulation}` : ''}
+${specificInstructions ? `Instruções Adicionais: ${specificInstructions}` : ''}
+
+IMPORTANTE: Adapte TODO o conteúdo ao contexto de ${getContextLabel(context)}.
+
+${basePrompt}
+
+${getContextSpecificInstructionsForGroup(groupKey, context)}
+` : basePrompt;
 
   const response = await createChatCompletion(
     O3,
     [
-      { role: "system", content: MODULAR_GENERATION_SYSTEM_PROMPT },
-      { role: "user", content: prompt },
+      { role: "system", content: systemPrompt },
+      { role: "user", content: contextualPrompt },
     ],
     {
       response_format: JSON_RESPONSE_FORMAT,
@@ -347,7 +372,7 @@ export async function generateModularProtocolAI(
   sessionId?: string,
   protocolId?: string,
 ): Promise<AIFullProtocolGenerationOutput> {
-  const { medicalCondition, researchData } = input;
+  const { medicalCondition, researchData, context, targetPopulation, specificInstructions } = input;
 
   // Try to load existing session
   let allSections: Partial<ProtocolFullContent> = {};
@@ -449,6 +474,9 @@ export async function generateModularProtocolAI(
             researchData,
             allSections,
             contextSummary,
+            context,
+            targetPopulation,
+            specificInstructions,
           );
           break; // Success, exit retry loop
         } catch (error: any) {
@@ -595,6 +623,49 @@ export async function generateModularProtocolAI(
     warnings: [],
     confidenceScore: 0.95, // High confidence for modular generation with O3
   };
+}
+
+/**
+ * Get context label for display
+ */
+function getContextLabel(context: ProtocolContext): string {
+  const labels: Record<ProtocolContext, string> = {
+    EMERGENCY_ROOM: "Pronto Atendimento",
+    AMBULATORY: "Ambulatório",
+    ICU: "Unidade de Terapia Intensiva",
+    WARD: "Enfermaria",
+    TELEMEDICINE: "Telemedicina",
+    TRANSPORT: "Transporte/Remoção",
+    HOME_CARE: "Atenção Domiciliar",
+    SURGICAL_CENTER: "Centro Cirúrgico"
+  };
+  return labels[context] || context;
+}
+
+/**
+ * Get context-specific instructions for a section group
+ */
+function getContextSpecificInstructionsForGroup(
+  groupKey: keyof typeof SECTION_GROUPS,
+  context: ProtocolContext
+): string {
+  const group = SECTION_GROUPS[groupKey];
+  const instructions: string[] = [];
+  
+  // Add specific instructions for each section in the group
+  for (const sectionNum of group.sections) {
+    const sectionInstruction = getSectionContextInstructions(context, sectionNum);
+    if (sectionInstruction) {
+      instructions.push(`
+Seção ${sectionNum} - Instruções Específicas:
+${sectionInstruction}
+`);
+    }
+  }
+  
+  return instructions.length > 0 
+    ? `\nINSTRUÇÕES ESPECÍFICAS DO CONTEXTO:\n${instructions.join('\n')}`
+    : '';
 }
 
 /**

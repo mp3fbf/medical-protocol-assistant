@@ -27,6 +27,8 @@ import {
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/ui/file-upload";
 import { RealProgressBar } from "@/components/protocol/generation/real-progress-bar";
+import { ContextSelector } from "@/components/protocol/context-selector";
+import { ProtocolContext } from "@/types/database";
 
 // Enhanced schema with generation mode, research options, and material upload
 const createProtocolFormSchema = z.object({
@@ -40,6 +42,9 @@ const createProtocolFormSchema = z.object({
     .max(150, "A condição médica não pode exceder 150 caracteres."),
   generationMode: z.enum(["automatic", "manual", "material_based"], {
     required_error: "Selecione um modo de geração.",
+  }),
+  context: z.nativeEnum(ProtocolContext, {
+    required_error: "Selecione o contexto de atendimento.",
   }),
   targetPopulation: z
     .string()
@@ -147,6 +152,7 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
     resolver: zodResolver(createProtocolFormSchema),
     defaultValues: {
       generationMode: "automatic",
+      context: ProtocolContext.AMBULATORY,
       researchSources: ["pubmed", "scielo"],
       yearRange: 5,
       supplementWithResearch: false,
@@ -345,17 +351,27 @@ export const CreateProtocolFormUltra: React.FC<CreateProtocolFormProps> = ({
               )}
             </div>
 
-            <div>
+            {/* Context Selector */}
+            <div className="col-span-2">
+              <ContextSelector
+                value={watch("context")}
+                onChange={(context) => setValue("context", context)}
+                error={errors.context?.message}
+              />
+            </div>
+
+            {/* Optional Target Population Details */}
+            <div className="col-span-2">
               <label
                 htmlFor="targetPopulation"
                 className="mb-2 block text-sm font-medium"
               >
-                População Alvo <span className="text-gray-400">(Opcional)</span>
+                Detalhes da População <span className="text-gray-400">(Opcional)</span>
               </label>
               <input
                 id="targetPopulation"
                 type="text"
-                placeholder="Ex: Pacientes adultos em emergência"
+                placeholder="Ex: Pacientes com comorbidades, gestantes, idosos frágeis..."
                 {...register("targetPopulation")}
                 className={cn(
                   "w-full bg-white/50 px-4 py-3 backdrop-blur-sm dark:bg-gray-800/50",

@@ -6,6 +6,7 @@ import type {
   ProtocolFullContent,
   ProtocolSectionData,
 } from "@/types/protocol";
+import type { ProtocolContext } from "@/types/database";
 
 /**
  * Input for generating a single protocol section using AI.
@@ -40,6 +41,8 @@ export interface AIFullProtocolGenerationInput {
   protocolId?: string;
   medicalCondition: string;
   researchData: AIResearchData;
+  context?: ProtocolContext;
+  targetPopulation?: string;
   specificInstructions?: string;
 }
 

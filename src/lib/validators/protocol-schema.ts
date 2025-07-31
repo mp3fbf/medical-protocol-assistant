@@ -5,7 +5,7 @@
  * related to medical protocols.
  */
 import { z } from "zod";
-import { ProtocolStatus } from "@prisma/client";
+import { ProtocolStatus, ProtocolContext } from "@prisma/client";
 
 export const ProtocolIdInputSchema = z.object({
   protocolId: z.string().cuid("ID de protocolo inválido (esperado CUID)."),
@@ -30,6 +30,7 @@ export const CreateProtocolInputSchema = z.object({
     .enum(["automatic", "manual", "material_based"])
     .optional()
     .default("manual"),
+  context: z.nativeEnum(ProtocolContext).optional().default(ProtocolContext.AMBULATORY),
   targetPopulation: z.string().max(100).optional(),
   researchSources: z
     .array(z.enum(["pubmed", "scielo", "cfm", "mec"]))
