@@ -1,0 +1,1463 @@
+{
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "position": {
+        "x": 1372.5,
+        "y": 100
+      },
+      "data": {
+        "type": "start",
+        "title": "Início",
+        "label": "Início"
+      }
+    },
+    {
+      "id": "decision_redflags",
+      "type": "custom",
+      "position": {
+        "x": 1372.5,
+        "y": 580
+      },
+      "data": {
+        "label": "Red flags presentes?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_redflags",
+            "uid": "",
+            "titulo": "Red flags presentes?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_urgent_referral",
+      "type": "summary",
+      "position": {
+        "x": 100,
+        "y": 11620
+      },
+      "data": {
+        "label": "Encaminhar/colonoscopia urgente",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "action_primary_eval",
+      "type": "conduct",
+      "position": {
+        "x": 1732.5,
+        "y": 1060
+      },
+      "data": {
+        "label": "Anamnese + exame físico completos",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "exam-0",
+              "nome": "Hemograma completo",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "hospitalar",
+              "codigo": "",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "exam-1",
+              "nome": "Glicemia de jejum",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "hospitalar",
+              "codigo": "",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Colonoscopia",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Colonoscopia",
+              "posologia": "<p><strong>Colonoscopia</strong><br/>Dose: >50 anos ou sinais de alarme</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "med-1",
+              "nome": "Polietilenoglicol",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Polietilenoglicol",
+              "posologia": "<p><strong>Polietilenoglicol</strong><br/>Dose: PEG</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_romaIV",
+      "type": "custom",
+      "position": {
+        "x": 1732.5,
+        "y": 1540
+      },
+      "data": {
+        "label": "CIC cumpre ≥2 critérios Roma IV?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_romaIV",
+            "uid": "",
+            "titulo": "CIC cumpre ≥2 critérios Roma IV?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_alt_diag",
+      "type": "conduct",
+      "position": {
+        "x": 820,
+        "y": 11620
+      },
+      "data": {
+        "label": "Investigar outras causas de hábito intestinal",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "exam-0",
+              "nome": "TSH e T4 livre",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "hospitalar",
+              "codigo": "",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "exam-1",
+              "nome": "Eletrólitos (Na",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "hospitalar",
+              "codigo": "",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Dieta rica",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Dieta rica",
+              "posologia": "<p><strong>Dieta rica</strong><br/>Dose: 30g</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "med-1",
+              "nome": "Psyllium",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Psyllium",
+              "posologia": "<p><strong>Psyllium</strong><br/>Dose: 5g<br/>Via: VO<br/>Frequência: 3x/dia</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_SIIC",
+      "type": "custom",
+      "position": {
+        "x": 2092.5,
+        "y": 2020
+      },
+      "data": {
+        "label": "Critérios de SII-C presentes?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_SIIC",
+            "uid": "",
+            "titulo": "Critérios de SII-C presentes?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_SIIC_path",
+      "type": "conduct",
+      "position": {
+        "x": 1540,
+        "y": 11620
+      },
+      "data": {
+        "label": "Seguir protocolo de SII-C",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "exam-0",
+              "nome": "Ureia e creatinina",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "hospitalar",
+              "codigo": "",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Metilcelulose",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Metilcelulose",
+              "posologia": "<p><strong>Metilcelulose</strong><br/>Dose: 2g<br/>Via: VO<br/>Frequência: 3x/dia</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            },
+            {
+              "id": "med-1",
+              "nome": "Lactulose",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Lactulose",
+              "posologia": "<p><strong>Lactulose</strong><br/>Dose: 30ml<br/>Via: VO<br/>Frequência: 2x/dia</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "action_non_pharm",
+      "type": "conduct",
+      "position": {
+        "x": 2452.5,
+        "y": 2500
+      },
+      "data": {
+        "label": "Medidas não-farmacológicas 4 semanas",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Hidr",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Hidr",
+              "posologia": "<p><strong>Hidr</strong><br/>Dose: 60ml<br/>Via: VO</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            },
+            {
+              "id": "med-1",
+              "nome": "Bisacodil",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Bisacodil",
+              "posologia": "<p><strong>Bisacodil</strong><br/>Dose: 10mg<br/>Via: VO</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_resp4w",
+      "type": "custom",
+      "position": {
+        "x": 2452.5,
+        "y": 2980
+      },
+      "data": {
+        "label": "Melhora clínica após 4 semanas?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_resp4w",
+            "uid": "",
+            "titulo": "Melhora clínica após 4 semanas?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "monitoring_follow",
+      "type": "conduct",
+      "position": {
+        "x": 2260,
+        "y": 11620
+      },
+      "data": {
+        "label": "Manter medidas + seguimento",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Sene",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Sene",
+              "posologia": "<p><strong>Sene</strong><br/>Via: im</p>",
+              "mensagemMedico": "",
+              "via": "im"
+            },
+            {
+              "id": "med-1",
+              "nome": "Linaclotida",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Linaclotida",
+              "posologia": "<p><strong>Linaclotida</strong><br/>Dose: 145mcg<br/>Via: VO<br/>Frequência: 1x/dia</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "med_lax_first",
+      "type": "conduct",
+      "position": {
+        "x": 3532.5,
+        "y": 3460
+      },
+      "data": {
+        "label": "Introduzir laxante 1ª linha",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [
+            {
+              "id": "med-0",
+              "nome": "Prucaloprida",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "nomeMed": "Prucaloprida",
+              "posologia": "<p><strong>Prucaloprida</strong><br/>Dose: 2mg<br/>Via: VO<br/>Frequência: 1x/dia</p>",
+              "mensagemMedico": "",
+              "via": "VO"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_eGFR",
+      "type": "custom",
+      "position": {
+        "x": 2837.5,
+        "y": 3940
+      },
+      "data": {
+        "label": "eGFR < 30 mL/min/1,73 m²?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_eGFR",
+            "uid": "",
+            "titulo": "eGFR < 30 mL/min/1,73 m²?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "med_PEG_safe",
+      "type": "conduct",
+      "position": {
+        "x": 2837.5,
+        "y": 4420
+      },
+      "data": {
+        "label": "Usar PEG/fibra — evitar Mg/fosfato",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_fail_first",
+      "type": "custom",
+      "position": {
+        "x": 4135,
+        "y": 4900
+      },
+      "data": {
+        "label": "Falha ao laxante 1ª linha?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_fail_first",
+            "uid": "",
+            "titulo": "Falha ao laxante 1ª linha?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "med_stimulant",
+      "type": "conduct",
+      "position": {
+        "x": 4762.5,
+        "y": 5380
+      },
+      "data": {
+        "label": "Adicionar/trocar p/estimulante",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_overuse_stim",
+      "type": "custom",
+      "position": {
+        "x": 3800,
+        "y": 5860
+      },
+      "data": {
+        "label": "Estimulante >3×/sem contínuo?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_overuse_stim",
+            "uid": "",
+            "titulo": "Estimulante >3×/sem contínuo?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_reduce_stim",
+      "type": "conduct",
+      "position": {
+        "x": 3992.5,
+        "y": 6340
+      },
+      "data": {
+        "label": "Reduzir frequência ou mudar classe",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_fail_stim",
+      "type": "custom",
+      "position": {
+        "x": 3800,
+        "y": 6820
+      },
+      "data": {
+        "label": "Falha a estimulante ≥6 sem?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_fail_stim",
+            "uid": "",
+            "titulo": "Falha a estimulante ≥6 sem?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "med_secretagogue",
+      "type": "conduct",
+      "position": {
+        "x": 3415,
+        "y": 7300
+      },
+      "data": {
+        "label": "Iniciar secretagogo/procinético",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_resp_secret",
+      "type": "custom",
+      "position": {
+        "x": 3415,
+        "y": 7780
+      },
+      "data": {
+        "label": "Resposta ≥30 % em 4-8 sem?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_resp_secret",
+            "uid": "",
+            "titulo": "Resposta ≥30 % em 4-8 sem?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "monitoring_maintain",
+      "type": "conduct",
+      "position": {
+        "x": 2980,
+        "y": 11620
+      },
+      "data": {
+        "label": "Manter droga e monitorar",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "action_functional_tests",
+      "type": "conduct",
+      "position": {
+        "x": 4185,
+        "y": 8260
+      },
+      "data": {
+        "label": "Solicitar Sitz-marks + MAAR",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_sitz",
+      "type": "custom",
+      "position": {
+        "x": 4570,
+        "y": 8740
+      },
+      "data": {
+        "label": "Retenção >20 % aos 72 h?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_sitz",
+            "uid": "",
+            "titulo": "Retenção >20 % aos 72 h?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "decision_MAAR",
+      "type": "custom",
+      "position": {
+        "x": 4905,
+        "y": 9220
+      },
+      "data": {
+        "label": "Dissinergia anorretal presente?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_MAAR",
+            "uid": "",
+            "titulo": "Dissinergia anorretal presente?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_biofeedback",
+      "type": "conduct",
+      "position": {
+        "x": 4905,
+        "y": 9700
+      },
+      "data": {
+        "label": "Biofeedback anorretal (6 sessões)",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "decision_post_bio",
+      "type": "custom",
+      "position": {
+        "x": 4905,
+        "y": 10180
+      },
+      "data": {
+        "label": "Sintomas persistem após biofeedback?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_post_bio",
+            "uid": "",
+            "titulo": "Sintomas persistem após biofeedback?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "decision_consider_inv",
+      "type": "custom",
+      "position": {
+        "x": 4955,
+        "y": 10660
+      },
+      "data": {
+        "label": "Critérios p/ intervenção invasiva?",
+        "condicao": "SEMPRE",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Qdecision_consider_inv",
+            "uid": "",
+            "titulo": "Critérios p/ intervenção invasiva?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "id": "",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "",
+                "label": "Não",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "action_invasive",
+      "type": "conduct",
+      "position": {
+        "x": 4955,
+        "y": 11140
+      },
+      "data": {
+        "label": "Procedimento invasivo/internação",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "monitoring_long_term",
+      "type": "conduct",
+      "position": {
+        "x": 4017.5,
+        "y": 11620
+      },
+      "data": {
+        "label": "Educação + monitorização contínua",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": []
+        }
+      }
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "position": {
+        "x": 1900,
+        "y": 12100
+      },
+      "data": {
+        "type": "end",
+        "title": "Alta / Seguimento",
+        "label": "Alta / Seguimento"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-decision_redflags",
+      "source": "start",
+      "target": "decision_redflags",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_redflags-action_urgent_referral",
+      "source": "decision_redflags",
+      "target": "action_urgent_referral",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_redflags-action_primary_eval",
+      "source": "decision_redflags",
+      "target": "action_primary_eval",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "action_urgent_referral-end",
+      "source": "action_urgent_referral",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "action_primary_eval-decision_romaIV",
+      "source": "action_primary_eval",
+      "target": "decision_romaIV",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_romaIV-action_alt_diag",
+      "source": "decision_romaIV",
+      "target": "action_alt_diag",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "decision_romaIV-decision_SIIC",
+      "source": "decision_romaIV",
+      "target": "decision_SIIC",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "action_alt_diag-end",
+      "source": "action_alt_diag",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_SIIC-action_SIIC_path",
+      "source": "decision_SIIC",
+      "target": "action_SIIC_path",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_SIIC-action_non_pharm",
+      "source": "decision_SIIC",
+      "target": "action_non_pharm",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "action_SIIC_path-end",
+      "source": "action_SIIC_path",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "action_non_pharm-decision_resp4w",
+      "source": "action_non_pharm",
+      "target": "decision_resp4w",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_resp4w-monitoring_follow",
+      "source": "decision_resp4w",
+      "target": "monitoring_follow",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_resp4w-med_lax_first",
+      "source": "decision_resp4w",
+      "target": "med_lax_first",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "monitoring_follow-end",
+      "source": "monitoring_follow",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "med_lax_first-decision_eGFR",
+      "source": "med_lax_first",
+      "target": "decision_eGFR",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_eGFR-med_PEG_safe",
+      "source": "decision_eGFR",
+      "target": "med_PEG_safe",
+      "data": {
+        "rule": "<30"
+      }
+    },
+    {
+      "id": "decision_eGFR-med_lax_first",
+      "source": "decision_eGFR",
+      "target": "med_lax_first",
+      "data": {
+        "rule": "≥30"
+      }
+    },
+    {
+      "id": "med_PEG_safe-decision_fail_first",
+      "source": "med_PEG_safe",
+      "target": "decision_fail_first",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "med_lax_first-decision_fail_first",
+      "source": "med_lax_first",
+      "target": "decision_fail_first",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_fail_first-med_stimulant",
+      "source": "decision_fail_first",
+      "target": "med_stimulant",
+      "data": {
+        "rule": "Falha"
+      }
+    },
+    {
+      "id": "decision_fail_first-monitoring_long_term",
+      "source": "decision_fail_first",
+      "target": "monitoring_long_term",
+      "data": {
+        "rule": "Controle"
+      }
+    },
+    {
+      "id": "med_stimulant-decision_overuse_stim",
+      "source": "med_stimulant",
+      "target": "decision_overuse_stim",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_overuse_stim-action_reduce_stim",
+      "source": "decision_overuse_stim",
+      "target": "action_reduce_stim",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_overuse_stim-decision_fail_stim",
+      "source": "decision_overuse_stim",
+      "target": "decision_fail_stim",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "action_reduce_stim-decision_fail_stim",
+      "source": "action_reduce_stim",
+      "target": "decision_fail_stim",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_fail_stim-med_secretagogue",
+      "source": "decision_fail_stim",
+      "target": "med_secretagogue",
+      "data": {
+        "rule": "Falha"
+      }
+    },
+    {
+      "id": "decision_fail_stim-monitoring_long_term",
+      "source": "decision_fail_stim",
+      "target": "monitoring_long_term",
+      "data": {
+        "rule": "Controle"
+      }
+    },
+    {
+      "id": "med_secretagogue-decision_resp_secret",
+      "source": "med_secretagogue",
+      "target": "decision_resp_secret",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_resp_secret-monitoring_maintain",
+      "source": "decision_resp_secret",
+      "target": "monitoring_maintain",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_resp_secret-action_functional_tests",
+      "source": "decision_resp_secret",
+      "target": "action_functional_tests",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "monitoring_maintain-end",
+      "source": "monitoring_maintain",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "action_functional_tests-decision_sitz",
+      "source": "action_functional_tests",
+      "target": "decision_sitz",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_sitz-decision_MAAR",
+      "source": "decision_sitz",
+      "target": "decision_MAAR",
+      "data": {
+        "rule": "≤20 %"
+      }
+    },
+    {
+      "id": "decision_sitz-med_stimulant",
+      "source": "decision_sitz",
+      "target": "med_stimulant",
+      "data": {
+        "rule": ">20 %"
+      }
+    },
+    {
+      "id": "decision_MAAR-action_biofeedback",
+      "source": "decision_MAAR",
+      "target": "action_biofeedback",
+      "data": {
+        "rule": "Dissinergia"
+      }
+    },
+    {
+      "id": "decision_MAAR-med_stimulant",
+      "source": "decision_MAAR",
+      "target": "med_stimulant",
+      "data": {
+        "rule": "Normal"
+      }
+    },
+    {
+      "id": "action_biofeedback-decision_post_bio",
+      "source": "action_biofeedback",
+      "target": "decision_post_bio",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "decision_post_bio-monitoring_long_term",
+      "source": "decision_post_bio",
+      "target": "monitoring_long_term",
+      "data": {
+        "rule": "Resolvido"
+      }
+    },
+    {
+      "id": "decision_post_bio-decision_consider_inv",
+      "source": "decision_post_bio",
+      "target": "decision_consider_inv",
+      "data": {
+        "rule": "Persistente"
+      }
+    },
+    {
+      "id": "decision_consider_inv-action_invasive",
+      "source": "decision_consider_inv",
+      "target": "action_invasive",
+      "data": {
+        "rule": "Sim"
+      }
+    },
+    {
+      "id": "decision_consider_inv-monitoring_long_term",
+      "source": "decision_consider_inv",
+      "target": "monitoring_long_term",
+      "data": {
+        "rule": "Não"
+      }
+    },
+    {
+      "id": "action_invasive-monitoring_long_term",
+      "source": "action_invasive",
+      "target": "monitoring_long_term",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "monitoring_long_term-end",
+      "source": "monitoring_long_term",
+      "target": "end",
+      "data": {
+        "rule": "Regra nova"
+      }
+    }
+  ]
+}

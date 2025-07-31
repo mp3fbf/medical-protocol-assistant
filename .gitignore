@@ -40,6 +40,15 @@ next-env.d.ts
 # /prisma/generated
 # /prisma/migrations (Consider committing migrations if not using a separate migration management system)
 
+# Temporary files
+/temp/
+*.log
+
+# Test results
+/tests/playwright-report/
+/tests/results/
+/tests/screenshots/
+
 # IDEs and editors
 /.idea
 .project

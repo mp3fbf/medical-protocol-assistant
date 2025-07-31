@@ -40,11 +40,14 @@
       "Bash(pnpm prisma generate:*)",
       "Bash(python:*)",
       "mcp__playwright__browser_screen_click",
-      "mcp__playwright__browser_screen_capture"
+      "mcp__playwright__browser_screen_capture",
+      "Bash(ln:*)",
+      "Bash(mv:*)"
     ]
   },
-  "enableAllProjectMcpServers": false,
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "playwright"
+    "playwright",
+    "supabase"
   ]
 }

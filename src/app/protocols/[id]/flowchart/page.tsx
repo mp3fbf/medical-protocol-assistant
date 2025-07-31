@@ -21,6 +21,7 @@ import { generateFlowchartSvg } from "@/lib/generators/svg";
 import {
   standardToClinical,
   createFlowchartExport,
+  compactFlowchartForExport,
 } from "@/lib/utils/flowchart-converter";
 import {
   DropdownMenu,
@@ -130,7 +131,7 @@ export default function FlowchartPage() {
     }
   };
 
-  const handleExportJSON = (includeMetadata: boolean = false) => {
+  const handleExportJSON = (includeMetadata: boolean = false, useCompactFormat: boolean = false) => {
     if (!flowchartData) {
       toast.error("Nenhum fluxograma disponível para exportar");
       return;
@@ -167,13 +168,22 @@ export default function FlowchartPage() {
       console.log("Sample clinical node:", clinicalFlowchart.nodes[0]);
       console.log("=== END DEBUG ===");
 
-      // Export with or without metadata wrapper
-      const exportData = includeMetadata
-        ? createFlowchartExport(clinicalFlowchart, "clinical", {
-            id: protocolId!,
-            title: protocol?.title || "Protocolo Médico",
-          })
-        : clinicalFlowchart;
+      // Use compact format for partner systems
+      let exportData;
+      if (useCompactFormat) {
+        exportData = compactFlowchartForExport(clinicalFlowchart as any, {
+          id: protocolId!,
+          title: protocol?.title || "Protocolo Médico",
+        });
+      } else {
+        // Export with or without metadata wrapper
+        exportData = includeMetadata
+          ? createFlowchartExport(clinicalFlowchart, "clinical", {
+              id: protocolId!,
+              title: protocol?.title || "Protocolo Médico",
+            })
+          : clinicalFlowchart;
+      }
 
       // Create and download JSON file
       const jsonString = JSON.stringify(exportData, null, 2);
@@ -353,11 +363,15 @@ export default function FlowchartPage() {
                         <Download className="mr-2 h-4 w-4" />
                         Exportar como SVG
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExportJSON(false)}>
+                      <DropdownMenuItem onClick={() => handleExportJSON(false, true)}>
                         <Download className="mr-2 h-4 w-4" />
                         Exportar JSON (Sistema Parceiro)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExportJSON(true)}>
+                      <DropdownMenuItem onClick={() => handleExportJSON(false, false)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar JSON (Original)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportJSON(true, false)}>
                         <Download className="mr-2 h-4 w-4" />
                         Exportar JSON (Com Metadados)
                       </DropdownMenuItem>

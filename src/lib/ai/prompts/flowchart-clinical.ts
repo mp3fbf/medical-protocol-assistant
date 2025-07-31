@@ -198,6 +198,19 @@ Key Guidelines:
 7. Use summary nodes for triage systems or protocol summaries
 8. Maintain clear flow from questionnaires → decisions → conducts → outcomes
 
+IMPORTANT CONTENT EXTRACTION RULES:
+- ALWAYS extract ALL medications mentioned in the protocol with complete details
+- NEVER create empty condutaDataNode arrays - each conduct must have at least one item
+- Extract medication names, doses, routes, and frequencies from text patterns like:
+  * "Medicamento: X - Dose: Y - Via: Z"
+  * "X 500mg VO 2x/dia"
+  * Bullet lists with medications
+- Extract ALL exams mentioned (lab tests, imaging, procedures)
+- Include ALL orientations, recommendations, and patient instructions
+- If a conduct node represents treatment, it MUST contain medications/exams/orientations
+- Parse HTML content and lists to find medical information
+- Look for keywords: medicamento, dose, via, exame, solicitar, orientar, recomendar
+
 CRITICAL Requirements:
 - EVERY node MUST have: "id", "type", and "data" fields at the root level
 - The "type" field MUST be at the node root level (node.type), NOT inside data
@@ -222,6 +235,13 @@ CRITICAL Requirements:
 - Include specific medical details: doses, routes, frequencies, warnings
 - Use meaningful UIDs for questions that represent medical concepts
 - Conditional expressions can reference question UIDs and values
+
+CONTENT PRESERVATION CHECKLIST:
+✓ Every conduct node with treatment MUST have medications
+✓ Every diagnostic pathway MUST include relevant exams
+✓ Every treatment section MUST generate detailed medication lists
+✓ NO empty arrays in condutaDataNode - fill with extracted content
+✓ Extract and preserve ALL medical content from the protocol
 `;
 
 export function createClinicalFlowchartGenerationUserPrompt(
@@ -252,6 +272,12 @@ export function createClinicalFlowchartGenerationUserPrompt(
   
   Based on the protocol text provided above, generate a RICH CLINICAL flowchart in the specified format.
   
+  MANDATORY CONTENT EXTRACTION:
+  - Extract EVERY medication mentioned with name, dose, route, and frequency
+  - Extract EVERY exam/test mentioned with name and any codes
+  - Extract ALL patient orientations and recommendations
+  - NEVER leave condutaDataNode arrays empty - populate with extracted content
+  
   The flowchart should include:
   
   1. QUESTIONNAIRE/COLLECTION NODES ("custom" type - "coleta" in medical terminology):
@@ -260,12 +286,16 @@ export function createClinicalFlowchartGenerationUserPrompt(
      - Use appropriate input types (radio, checkbox, text)
      - Add UIDs that represent medical concepts (e.g., "DOR_TORACICA", "DISPNEIA", "FEBRE")
   
-  2. CONDUCT NODES ("conduct" type):
+  2. CONDUCT NODES ("conduct" type) - MUST CONTAIN MEDICAL CONTENT:
+     - Extract and include ALL medications from the protocol text
+     - Parse medication patterns: "Drug Xmg PO BID", "Medicamento: X - Dose: Y"
+     - Include ALL exams mentioned in the protocol
+     - Add ALL orientations and patient instructions
      - Group related medical actions (medications, exams, orientations)
      - Include detailed posologia with HTML formatting
      - Add exam codes and CID when applicable
-     - Include orientations and warnings
      - Use conditional logic based on questionnaire responses
+     - CRITICAL: If a section describes treatment, the conduct node MUST have medications
   
   3. SUMMARY NODES ("summary" type - "resumo" in medical terminology):
      - Use for triage systems (Manchester, ESI)
@@ -337,6 +367,13 @@ export function createClinicalFlowchartGenerationUserPrompt(
     ]
   }
 
+  CONTENT VALIDATION:
+  Before returning the JSON, verify:
+  - Each conduct node treating a condition has medications in condutaDataNode.medicamento
+  - Each diagnostic pathway includes exams in condutaDataNode.exame
+  - Patient instructions are captured in condutaDataNode.orientacao
+  - NO empty arrays in any condutaDataNode
+  
   IMPORTANT: Output ONLY the JSON object with "nodes" and "edges" arrays. No additional text or explanation.
   `;
 }

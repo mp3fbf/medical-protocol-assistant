@@ -1,0 +1,1090 @@
+{
+  "metadata": {
+    "company": "uvs",
+    "name": "itu_reavaliacao",
+    "version": "1"
+  },
+  "nodes": [
+    {
+      "id": "node-1753880814148",
+      "type": "custom",
+      "position": {
+        "x": 409.42289928470115,
+        "y": 170.11737325465475
+      },
+      "data": {
+        "label": "Identificação - oculto",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Pb6a492bd-2fa0-4cfd-9e96-b5d95b692a90",
+            "nodeId": "node-1753880814148",
+            "uid": "name",
+            "titulo": "Nome do paciente:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "B",
+            "options": []
+          },
+          {
+            "id": "P1314b455-ed50-4e8d-acff-f37945b73741",
+            "nodeId": "node-1753880814148",
+            "uid": "sex",
+            "titulo": "Sexo ",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "2877f3bb-1a0d-4313-93fc-e896447623f6",
+                "id": "male",
+                "label": "Masculino",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c934fa10-252a-4aec-acc3-7dff940db6d9",
+                "id": "female",
+                "label": "Feminino",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P3283569f-bfd7-40ba-a58e-6069d84d8a9b",
+            "nodeId": "node-1753880814148",
+            "uid": "birth",
+            "titulo": "Data de nascimento",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "D",
+            "options": [],
+            "naSelecionado": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "type": "summary",
+      "position": {
+        "x": 959.7978178199639,
+        "y": 179.35884060665924
+      },
+      "data": {
+        "label": "Idade ",
+        "condicao": "",
+        "descricao": "<p>age </p>",
+        "condicional": "visivel",
+        "clinicalExpressions": [
+          {
+            "id": "expr-7e1ceea5-3c64-4886-ab15-e783e0206b74",
+            "name": "age",
+            "formula": "datedif(today(), birth).years >= 65 ",
+            "description": "responde true se idade maior que 65 e false se menor que 65 ",
+            "template": "<p></p>"
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "node-1753881578053",
+      "type": "custom",
+      "position": {
+        "x": 1634.5405405827362,
+        "y": 159.56806247067522
+      },
+      "data": {
+        "label": "Informações iniciais",
+        "condicao": "",
+        "descricao": "<p></p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P3f59dd6a-0e46-4678-b0ba-24761b6e706a",
+            "nodeId": "node-1753881578053",
+            "uid": "topografia_itu",
+            "titulo": "Topografia da Infecção do Trato Urinário:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "9b6d60aa-30d1-4267-80d5-3ea320001348",
+                "id": "itu_alta_com_alarme",
+                "label": "Alta com sinais de alarme (deterioração clínica, alterações de SSVV, disfunção orgânica ou sinais de sepse)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e4a0a6fd-64f7-4f00-9670-619540251ac6",
+                "id": "itu_alta_sem_alarme",
+                "label": "Alta sem sinais de alarme",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "7ec55b13-ee8d-47c8-ba76-508eabd35ec8",
+                "id": "itu_baixa",
+                "label": "Baixa",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P63bc6208-b57b-42d7-821c-813fce8f3afc",
+            "nodeId": "node-1753881578053",
+            "uid": "fatores_risco_agravantes",
+            "titulo": "Condições agravantes e fatores de risco",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "fb1ab211-05c4-4124-9a3f-1622adeb2463",
+                "id": "nenhuma_anterior",
+                "label": "Nenhuma das anteriores ",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "01815b8b-9260-4db8-9e93-aa8883bc0345",
+                "id": "itu_recorrente",
+                "label": "Paciente com critérios de ITU recorrente(2º ITU em 6 meses ou 3º ITU em menos de 1 ano)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c28a85ee-3f73-454f-ae50-21394be9427a",
+                "id": "dm_insulinodependente",
+                "label": "Diabetes Mellitus insulino-dependente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "527be20f-d44a-4f68-89be-a0eb1df46624",
+                "id": "doenca_renal_cronica",
+                "label": "Doença renal crônica (DRC)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "adbec6d9-2f83-4260-a9e0-9384e6ac819a",
+                "id": "obesidade_morbida",
+                "label": "Obesidade mórbida (IMC >= 40 kg/m2)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c3a2ee10-4728-42bd-9335-0c1eec5b5fa2",
+                "id": "uso_imunossupressores",
+                "label": "Uso de imunossupressores",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "46db231b-ac07-4021-b15b-c45df77a1f98",
+                "id": "tx_previo",
+                "label": "Transplante prévio",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "75ab5c91-8809-4424-bd34-feefde6d09bc",
+                "id": "neoplasia_historia",
+                "label": "Neoplasia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "b8e191f0-2565-41f9-bfb2-3ba35ddde475",
+                "id": "uso_svd",
+                "label": "Uso de sonda vesical de demora",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "fe1ccd21-e36e-430e-9f38-a8b9feaa6efb",
+                "id": "pielo_obstrutiva",
+                "label": "Suspeita de pielonefrite obstrutiva",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P74e84676-725e-4321-b67b-fb36f21f5727",
+            "nodeId": "node-1753881578053",
+            "uid": "investigacao_prostatite ",
+            "titulo": "Suspeita de prostatite? ",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "'male' in sex",
+            "select": "E",
+            "options": [
+              {
+                "iid": "dbf1ca20-58a8-43f0-af13-90213d2855be",
+                "id": "Ausência de suspeita ",
+                "label": "Sem sinais ou sintomas de prostatite ",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "059b6b21-ec6b-495c-a04d-c33c80e9549e",
+                "id": "dor_pelvica",
+                "label": "Dor pélvica ou perineal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "48cdb823-2dee-46c6-926d-5d13a7f65014",
+                "id": "dor_ao_toque",
+                "label": "Dor intensa a palpação prostática ou exame de toque",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e07c96fe-a480-4b03-9849-12654afda845",
+                "id": "sintomas_sistêmicos",
+                "label": "Sintomas sistêmicos(febre, calafrios, queda do estado geral)",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-1753908375868",
+      "type": "custom",
+      "position": {
+        "x": 2059.735328016899,
+        "y": 160.36208164746927
+      },
+      "data": {
+        "label": "Reavaliação",
+        "condicao": "'female' in sex",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P96275264-10ec-472b-afe8-fc5252cb7467",
+            "nodeId": "node-1753908375868",
+            "uid": "alteracoes_laboratoriais_mulher",
+            "titulo": "Alterações exames complementares",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "99ac3cee-2f5d-4c84-988c-67e0f913d60d",
+                "id": "laboratorio_dentro_normalidade",
+                "label": " Sem alterações relevantes",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "ef7836ef-48d5-4604-a586-f252d69ebc3d",
+                "id": "exames_nao_realizados",
+                "label": "Não realizado",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "b570a058-df75-4d74-b606-6354e4154948",
+                "id": "infeccao_sem_sepse",
+                "label": "Sugestivo de infecção baixa sem sepse",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "b0f109d0-d37f-4455-b517-734f11db7c87",
+                "id": "infeccao_alta_sem_sepse",
+                "label": "Sugestivo de infecção alta sem sepse",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "53ad52c5-bcda-4562-bf24-8c19f49227d2",
+                "id": "infeccao_alta_com_sepse",
+                "label": "Sugestivo de infecção alta com sepse",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P64bf2c40-1979-44d6-9223-4b9688a95fe2",
+            "nodeId": "node-1753908375868",
+            "uid": "definicao_clinica_mulher",
+            "titulo": "Definição clínica:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "c5fa7101-504f-4342-9c0c-6c769b25cb5a",
+                "id": "def_infeccao_alta_com_sepse",
+                "label": "Infecção alta com sepse (indica cti) ",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "39564a56-e3f4-46ef-9e71-a4f4fddfebcd",
+                "id": "def_infeccao_alta_sem_sepse_cti",
+                "label": "Infecção alta sem sepse com indicação de CTI ",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e882c291-01ee-442f-9dca-81ac8be54b1f",
+                "id": "def_infeccao_alta_sem_sepse_quarto",
+                "label": "Infecção alta sem sepse com indicação de quarto/enfermaria",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "92009a7a-ab5e-4a18-83b9-00dcffb103c1",
+                "id": "def_infeccao_alta_sem_sepse_ambulatorial",
+                "label": "Infecção alta sem sepse com indicação de alta",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "f30178fa-b74d-4f7f-8691-2c412c11fb17",
+                "id": "def_infeccao_baixa",
+                "label": "Infecção baixa",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary-11cf0a66-2114-422a-a709-ce1fb704392f",
+      "type": "summary",
+      "position": {
+        "x": 5293.689436446002,
+        "y": 141.5782159953991
+      },
+      "data": {
+        "label": "Lista de problemas ativos ",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "oculto",
+        "clinicalExpressions": [
+          {
+            "id": "expr-df347ec5-e336-401c-8369-e06255f0e71a",
+            "name": "Lista de problemas ativos",
+            "formula": "",
+            "description": "",
+            "template": "<p>Print topografia_itu</p><p>If sex == 'male' Print alteracoes_laboratoriais_homem</p><p>If sex == 'female'Print alteracoes_laboratoriais_mulher</p><p>If fator_de_risco_mdr_expressao == true print fatores_de_risco_mdr</p>"
+          },
+          {
+            "id": "expr-a90f50a9-571d-4c54-9b46-f177941d368c",
+            "name": "",
+            "formula": "",
+            "description": "",
+            "template": ""
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "a6355aba-7a79-434d-b98f-7a9b72e7915a",
+      "type": "summary",
+      "position": {
+        "x": 5976.580859939703,
+        "y": 177.461084214322
+      },
+      "data": {
+        "label": "Plano terapêutico",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "clinicalExpressions": [
+          {
+            "id": "expr-a05f2ec9-5c25-4de4-af65-bfbba724b9be",
+            "name": "plano_quarto",
+            "formula": "selected_only(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_quarto') or selected_only(definicao_clinica_mulher, 'def_infeccao_alta_com_sepse', 'def_infeccao_alta_sem_sepse_quarto')",
+            "description": "",
+            "template": "<p>Meta 1: Melhora sintomática em até 2 dias</p><p>Prazo 1: 48 horas</p><p></p><p>Meta 2: Garantir 2 medidas de prevenção de recorrência</p><p>Prazo: Na alta hospitalar </p><p></p><p>Meta 3: Progressão para via oral e alta precoce </p><p>Prazo: 48-72h</p>"
+          },
+          {
+            "id": "expr-1b6091ff-e7e0-44a6-96d3-153f05712130",
+            "name": "plano_cti ",
+            "formula": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti')",
+            "description": "",
+            "template": "<p>Meta 1: Melhora sintomática em até 2 dias</p><p>Prazo 1: 48 horas</p><p></p><p>Meta 2: Garantir 2 medidas de prevenção de recorrência</p><p>Prazo: Na alta hospitalar </p><p></p><p>Meta 3: Descalonamento e progressão para quarto</p><p>Prazo: 72 horas</p>"
+          },
+          {
+            "id": "expr-6e299cd7-f9a5-4403-a5ab-a789f1f63740",
+            "name": "plano_cti_sepse",
+            "formula": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_com_sepse')",
+            "description": "",
+            "template": "<p>Meta 1: Melhora da disfunção orgânica em até 3 dias</p><p>Prazo 1: 72 horas</p><p></p><p>Meta 2: Garantir 3 medidas de prevenção de recorrência</p><p>Prazo: Na alta hospitalar </p><p></p><p>Meta 3: Descalonamento progressão para quarto </p><p>Prazo 3: 72-96 horas</p>"
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "conduta-1753921998110",
+      "type": "conduct",
+      "position": {
+        "x": 6848.837187897928,
+        "y": 124.43677501716077
+      },
+      "data": {
+        "label": "Conduta - ambulatorial",
+        "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_baixa', 'def_infeccao_alta_sem_sepse_ambulatorial')",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "pausa",
+        "condutaDataNode": {
+          "orientacao": [
+            {
+              "id": "ab606840-6429-4ae5-817e-2bdda53c3613",
+              "nome": "Orientações sobre ITU ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p><strong>GUIA DE ORIENTAÇÕES DE CUIDADO</strong></p><p><strong>Orientações de Alta</strong></p><p><strong>Informações sobre a doença</strong></p><p>As Infecções do Trato Urinário (ITU) ocorrem pela presença de uma bacterianos rins, ureteres, bexiga (cistite) e uretra. São muito comuns, especialmente nas mulheres e idosos. Seus sintomas incluem, principalmente, dor ou ardência ao urinar, mas podem variar de acordo com a região afetada. Outras alterações possíveis são mudança na cor e no cheiro da urina, aumento na vontade de urinar e com pouca quantidade de saída, dor lombar ou na barriga e febre. O diagnóstico é baseado na história dos seus sintomas e no exame físico. Exames laboratoriais e de imagem são solicitados somente nos casos complicados, de duvidado médico ou suspeita de outro diagnóstico, por exemplo, “pedras” nos rins.</p><p><strong>Instruções para casa:</strong></p><ol><li><p>Beba bastante água: Beber bastante água ajuda a diluir a urina;</p></li><li><p>Evite bebidas alcoólicas e cafeína, pois podem irritar a bexiga e agravar os sintomas de cistite;</p></li><li><p>Limpe a área genital adequadamente após urinar ou evacuar;</p></li><li><p>Urine com frequência: as bactérias presentes na bexiga são eliminadas é há o alívio da sensação de dor e ardência;</p></li><li><p>Use roupas íntimas de algodão, mantenha a região genital seca e arejada, evitando a proliferação de bactérias;</p></li><li><p>Evite-o uso de produtos irritantes: produtos de higiene pessoal, como sabonetes, desodorantes e perfumes, podem irritar a região genital e agravar os sintomas de cistite;</p></li><li><p>Aplique calor local: Bolsa de água quente ou uma compressa quente abaixo da cicatriz do umbigo alivia a dor e o desconforto causados pela cistite.</p></li></ol><p><strong>Quando devo retornar ao médico?</strong></p><p>Se caso apresentar piora ou não melhorar dos sintomas dentro de 72 horas, retorne imediatamente:</p><ol><li><p>Parada ou diminuição da urina;</p></li><li><p>Piora ou não melhora dos sintomas dentro de 72 horas;</p></li><li><p>Aparecimento de dor lombar ou piora da dor;</p></li><li><p>Aparecimento ou persistência de febre por mais de 48 horas após o início do antibiótico.</p></li></ol>"
+            }
+          ],
+          "exame": [],
+          "medicamento": [
+            {
+              "id": "6804e6cc-d170-44cb-b4c7-a1d741cb62da",
+              "nome": "Nitrofurantoína ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(alteracoes_laboratoriais, 'infeccao_sem_sepse', 'laboratorio_dentro_normalidade')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Nitrofurantoína 100mg",
+              "posologia": "<p>Tomar 01 comprimido de 6/6 h por 05 dias.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "56b801ca-b909-47ee-9f14-ca24ef199f2f",
+              "nome": "Fosfomicina 3 g",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Fosfomicina 3g",
+              "posologia": "<p>Diluir 01 sachê em 70 ml de água e tomar 30 minutos após a última refeição e antes de deitar.</p>",
+              "mensagemMedico": "",
+              "via": ""
+            },
+            {
+              "id": "b5873386-1420-4288-909e-7b61d261ea97",
+              "nome": "Cefuroxima ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "500 mg ",
+              "posologia": "<p>Tomar 01 comprimido de 12/12h por 7 dias</p>",
+              "mensagemMedico": "",
+              "via": "oral"
+            },
+            {
+              "id": "f1030cb1-46a5-4eb0-8a96-64bc741dfe7e",
+              "nome": "Ciprofloxacino",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ciprofloxacino 500 mg",
+              "posologia": "<p>Tomar 01 comprimido de 12/12 horas por 14 dias</p>",
+              "mensagemMedico": "",
+              "via": "oral"
+            },
+            {
+              "id": "98247d62-1778-4718-9dff-1703829c7210",
+              "nome": "Levofloxacino",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Levofloxacino 750 mg ",
+              "posologia": "<p>Tomar 01 comprimido 750 mg VO por dia durante 05 dias.</p>",
+              "mensagemMedico": "",
+              "via": "oral"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "3d1ec4f6-dd8f-4a81-b68c-61398f84632e",
+              "nome": "ITU sem sinais de alarme nos exames complementares",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any('def_infeccao_baixa',def_infeccao_alta_sem_sepse_ambulatorial)",
+              "conteudo": "<p>Seu paciente possui uma <strong>ITU sem sinais de alarme laboratoriais ou de imagem.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Alta com antibiótico oral conforme sugerido na conduta abaixo;</p><p>Orientação de retorno em caso de piora clínica, persistência de febre ou qualquer outro sinal de alarme;</p><p>Encaminhamento para seguimento ambulatorial.</p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c5bf3dcc-545a-4404-9d5d-97ca996561d4",
+      "type": "custom",
+      "position": {
+        "x": 2523.1735191137313,
+        "y": 162.38549758871386
+      },
+      "data": {
+        "label": "Reavaliação",
+        "condicao": "'male' in sex",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "a20cabcc-5610-4d18-a396-24d19dab1349",
+            "nodeId": "node-1753908375868",
+            "uid": "alteracoes_laboratoriais_homem",
+            "titulo": "Alterações exames complementares",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "66b31caf-721a-4a0a-aebd-6e3b16aeaf65",
+                "id": "laboratorio_dentro_normalidade",
+                "label": " Sem alterações relevantes",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "dfa6f1da-bfad-46ac-9629-d997bb9936fa",
+                "id": "exames_nao_realizados",
+                "label": "Não realizado",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "4a50087a-c964-4f34-8b53-f5144f76b059",
+                "id": "infeccao_sem_sepse",
+                "label": "Sugestivo de infecção baixa sem sepse",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "a46b040c-c822-40db-b917-850ce822680a",
+                "id": "infeccao_alta_sem_sepse",
+                "label": "Sugestivo de infecção alta sem sepse",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c199bee8-828c-49f0-ab79-d898ff2db297",
+                "id": "infeccao_alta_com_sepse",
+                "label": "Sugestivo de infecção alta com sepse",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "ef0f42c3-e35f-43a9-90f6-91a3f2196933",
+                "id": "prostatite",
+                "label": "Prostatite ",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "4d0ad3e9-56c9-4b28-82ad-ab7752230afa",
+            "nodeId": "node-1753908375868",
+            "uid": "definicao_clinica_homem",
+            "titulo": "Definição clínica:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "d8b223df-35b0-4325-a012-b855c855778e",
+                "id": "def_infeccao_alta_com_sepse",
+                "label": "Infecção alta com sepse (indica cti) ",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "6f0fc112-cee1-4b47-adeb-cd0ad3705b39",
+                "id": "def_infeccao_alta_sem_sepse_cti",
+                "label": "Infecção alta sem sepse com indicação de CTI ",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "121d2351-128f-4214-bdfe-3b5ee0e54b2f",
+                "id": "def_infeccao_alta_sem_sepse_quarto",
+                "label": "Infecção alta sem sepse com indicação de quarto/enfermaria",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "098b9a69-6fea-4096-a45c-6db6a249fcb0",
+                "id": "def_infeccao_alta_sem_sepse_ambulatorial",
+                "label": "Infecção alta sem sepse com indicação de alta",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "67560628-0338-4d7a-9a6e-3fa5b4a3d443",
+                "id": "def_infeccao_baixa",
+                "label": "Infecção baixa",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "a7837997-38ff-4809-a37b-ef6edb0a1c2a",
+                "id": "def_infeccao_baixa_indica_internacao",
+                "label": "Infecção baixa com indicação de internação",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "7c999b9d-169a-400e-acec-1bd8334a079d",
+      "type": "summary",
+      "position": {
+        "x": 4542.021662793077,
+        "y": 148.42822357442063
+      },
+      "data": {
+        "label": "Resumo do atendimento",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "oculto",
+        "clinicalExpressions": [
+          {
+            "id": "expr-ba3c0009-14d3-444a-987f-dc2d1b7790eb",
+            "name": "resumo_itu",
+            "formula": "",
+            "description": "",
+            "template": "<p>Paciente de {{age}} anos, sexo {{sex}} .</p><p></p><p><strong>Protocolo institucional de Infecção do Trato Urinário - ITU</strong></p><p></p><p>\"Evolução clínica:</p><p>Paciente estável etc..\" se [ ] Paciente estável.. marcado em P1</p><p></p><p>\"Indicação de internação:</p><p>[ ] outras opções \" se [ ] outras opções marcadas em P1</p><p></p><p>Outras respostas na ordem de preenchimento.</p><p>+ campo abertos SE preenchido.</p><p></p><p></p><p></p><p>*<strong>Em caso de AIH ou evolução em prontuário, recomendamos copiar o resumo acima para facilitar</strong></p>"
+          },
+          {
+            "id": "expr-4ab750bf-38a6-4175-bbe1-b511b543484e",
+            "name": "resumo_itu_alta_ambulatorial",
+            "formula": "",
+            "description": "",
+            "template": ""
+          },
+          {
+            "id": "expr-c56709f8-76ab-4da9-b9e8-9685915ad289",
+            "name": "resumo_itu_alta_quarto",
+            "formula": "",
+            "description": "",
+            "template": ""
+          },
+          {
+            "id": "expr-a295577b-25ac-4209-bcc9-d000c336c4e7",
+            "name": "resumo_itu_alta_sepse",
+            "formula": "",
+            "description": "",
+            "template": ""
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "cdf597c4-e5a0-441a-993b-7ce82689712c",
+      "type": "custom",
+      "position": {
+        "x": 2989.4469429621977,
+        "y": 135.19420509889216
+      },
+      "data": {
+        "label": "Fatores de risco para germes multi droga resistentes",
+        "condicao": "selected_any (topografia_itu, 'itu_alta_sem_alarme, itu_alta_com_alarme) or selected_any (alteracoes_laboratoriais, 'infeccao_alta_sem_sepse', 'infeccao_alta_com_sepse') or ('uso_imunossupressores' in fatores_risco_agravantes)",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "1b6000ae-07aa-4646-b2d8-73c309d9717f",
+            "nodeId": "node-1753918229314",
+            "uid": "fatores_de_risco_mdr",
+            "titulo": "Paciente apresenta alguns dos fatores de risco para microorganismos multirresistentes?",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "5266942a-5899-4a2a-a363-c8cd36078df4",
+                "id": "nenhum_dos_abaixo",
+                "label": "Nenhum dos abaixo",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "61688725-71e0-45fe-abff-b5ccde37bc52",
+                "id": "uso_antibiotico_antipseudomonas",
+                "label": "Uso de antibiótico anti-pseudomonas < 30 dias",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "43a1b36b-543e-4f72-b37f-c79d94a8a937",
+                "id": "uso_antibiotico_endovenoso",
+                "label": "Uso de antibiótico endovenoso nos últimos 90 dias",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "60447390-2bf4-4bbf-ba08-5c69b4c3871e",
+                "id": "internacao_recente_uti",
+                "label": "Internação recente em UTI",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "082f5a00-dc87-496e-87cf-97e1f02b67a3",
+                "id": "uso_dispositivos_invasivos",
+                "label": "Uso de dispositivos invasivos previamente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "074f714c-6ebe-42c5-8e6d-8fb8542c809d",
+                "id": "hemodialise",
+                "label": "Hemodiálise",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "f0dcc1bb-0bc3-47bc-b39f-42d09dd79e53",
+                "id": "doenca_prostatica",
+                "label": "Doença prostática",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "d04f8101-fa33-491d-a351-d3270f950cbf",
+                "id": "tres_episodios_itu_ultimo_ano",
+                "label": "> 3 episódios de ITU no último ano",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "2cfcbc1a-0365-4dc8-af06-f681a1016041",
+                "id": "paciente_institucionalizado",
+                "label": "Paciente institucionalizado",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "conduta-1753923847028",
+      "type": "conduct",
+      "position": {
+        "x": 7909.68556104713,
+        "y": 142.8370396950656
+      },
+      "data": {
+        "label": "Conduta internação",
+        "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse', 'def_infeccao_alta_sem_sepse_quarto', 'def_infeccao_baixa_indica_internacao') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse', 'def_infeccao_alta_sem_sepse_quarto', 'def_infeccao_baixa_indica_internacao')",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "pausa",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [],
+          "medicamento": [
+            {
+              "id": "c832bc5d-1390-4c50-88d3-136eb3cdc07d",
+              "nome": "Cefuroxima ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Cefuroxima 750 mg",
+              "posologia": "<p>Administrar 750 mg EV de 8/8 h</p>",
+              "mensagemMedico": "",
+              "via": "Venoso"
+            },
+            {
+              "id": "025dbc27-b56a-4e7d-b67b-84c3d0c09253",
+              "nome": "Ampicilina-Sulbactam",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ampicilina-sulbactam 4,5 g",
+              "posologia": "<p>Aplicar 4,5 g EV de 6/6 h</p>",
+              "mensagemMedico": "",
+              "via": "venoso"
+            },
+            {
+              "id": "ce53c374-5a42-4f3c-8bcd-ae4fd33f8740",
+              "nome": "Ceftriaxone ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ceftriaxone 1g ",
+              "posologia": "<p>Aplicar 1 g EV de 12/12 h</p>",
+              "mensagemMedico": "",
+              "via": "venoso"
+            },
+            {
+              "id": "73b08f84-8fec-439b-bcfb-922253262a32",
+              "nome": "Ciprofloxacino",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ciprofloxacino 400 mg ",
+              "posologia": "<p>Aplicar 400 mg EV de 12/12 horas</p>",
+              "mensagemMedico": "",
+              "via": "venoso"
+            },
+            {
+              "id": "05f7d711-33f6-4a09-be2f-518f88b311fb",
+              "nome": "Piperacilina- tazobactam ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(fator_de_risco_mdr_expressao == true) and selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Piperacilina-tazobactam 4,5 g ",
+              "posologia": "<p>Aplicar 4,5 g EV de 6/6 horas </p>",
+              "mensagemMedico": "",
+              "via": "venoso"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "dbaf401b-c3b2-46e0-8897-9862415c08a9",
+              "nome": "ITU com internação",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem,'def_infeccao_alta_sem_sepse_quarto', 'def_infeccao_baixa_indica_internacao') or selected_any(definicao_clinica_mulher,'def_infeccao_alta_sem_sepse_quarto','def_infeccao_baixa_indica_internacao')",
+              "conteudo": "<p>Seu paciente possui alterações e imagem, laboratoriais e/ou clínicas que denotam maior gravidade, portanto, <strong>indicado internação hospitalar.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Internação hospitalar em quarto;</p><p>Antibioticoterapia recomendada: ceftriaxona 1g/dia;</p><p></p><p>Em caso de ITU obstrutiva, contato breve com urologia para desobstrução na urgência;</p>",
+              "observacao": ""
+            },
+            {
+              "id": "322f076f-d9ea-4e29-a25a-2e88bc2f200e",
+              "nome": "ITU com internação em CTI",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher, 'def_infeccao_alta_sem_sepse_cti', 'def_infeccao_alta_com_sepse')",
+              "conteudo": "<p>Seu paciente possui alterações e imagem, laboratoriais e/ou clínicas que denotam maior gravidade, portanto, <strong>indicada internação hospitalar em CTI.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Internação hospitalar;</p><p>Antibioticoterapia recomendada: ceftriaxona 1g/dia;</p><p>Em caso de ITU obstrutiva, contato breve com urologia para desobstrução na urgência;</p>",
+              "observacao": ""
+            },
+            {
+              "id": "da4697e6-e030-4a7f-848b-cef580ea69be",
+              "nome": "ITU com internação em CTI e cobertura MDR",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(fator_de_risco_mdr_expressao == true) and selected_any(definicao_clinica_homem, 'def_infeccao_alta_sem_sepse_cti') or selected_any(definicao_clinica_mulher,'def_infeccao_alta_sem_sepse_cti') ",
+              "conteudo": "<p>Seu paciente possui alterações e imagem, laboratoriais e/ou clínicas que denotam maior gravidade, portanto, <strong>indicada internação hospitalar em CTI com cobertura para microorganismos gram negativos multirresistentes.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Internação hospitalar;</p><p>Antibioticoterapia recomendada: ceftriaxona 1g/dia;</p><p>Em caso de ITU obstrutiva, contato breve com urologia para desobstrução na urgência;</p>",
+              "observacao": ""
+            },
+            {
+              "id": "cdcd948d-689e-488d-8ce7-5de6ae9186e8",
+              "nome": "",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(definicao_clinica_homem,'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher,'def_infeccao_alta_com_sepse')",
+              "conteudo": "<p>Seu paciente possui SEPSE, <strong>indicada internação hospitalar em CTI.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Internação hospitalar;</p><p>Em caso de ITU obstrutiva, contato breve com urologia para desobstrução na urgência;</p>",
+              "observacao": ""
+            },
+            {
+              "id": "62087b48-89ab-4c5b-8d51-8a5facc4f162",
+              "nome": "",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(fator_de_risco_mdr_expressao == true) and selected_any(definicao_clinica_homem,'def_infeccao_alta_com_sepse') or selected_any(definicao_clinica_mulher,'def_infeccao_alta_com_sepse')",
+              "conteudo": "<p>Seu paciente possui SEPSE, <strong>indicada internação hospitalar em CTI. Indicado cobertura para  microorganismos gram negativos multirresistentes.</strong></p><p></p><p><strong>Plano terapêutico:</strong></p><p>Internação hospitalar;</p><p>Em caso de ITU obstrutiva, contato breve com urologia para desobstrução na urgência;</p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "summary-7633ca7e-8914-46c1-9a10-e93a13bf5efa",
+      "type": "summary",
+      "position": {
+        "x": 3909.867023322163,
+        "y": 182.44052261493644
+      },
+      "data": {
+        "label": "Processamento Clínico",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "oculto",
+        "clinicalExpressions": [
+          {
+            "id": "expr-836a4eb5-63cd-4a27-bd52-ca3ce676cb48",
+            "name": "fator_de_risco_mdr_expressao",
+            "formula": "'nenhum_dos_abaixo' not in fatores_de_risco_mdr",
+            "description": "individualiza os pacientes com fatores de risco para germes mdr",
+            "template": ""
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "enode-1753880814148-summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "source": "node-1753880814148",
+      "target": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "esummary-ca400528-7206-4500-acc5-bc9fcb1e68fa-node-1753881578053",
+      "source": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "target": "node-1753881578053",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "enode-1753881578053-node-1753908375868",
+      "source": "node-1753881578053",
+      "target": "node-1753908375868",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "esummary-11cf0a66-2114-422a-a709-ce1fb704392f-a6355aba-7a79-434d-b98f-7a9b72e7915a",
+      "source": "summary-11cf0a66-2114-422a-a709-ce1fb704392f",
+      "target": "a6355aba-7a79-434d-b98f-7a9b72e7915a",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "ea6355aba-7a79-434d-b98f-7a9b72e7915a-conduta-1753921998110",
+      "source": "a6355aba-7a79-434d-b98f-7a9b72e7915a",
+      "target": "conduta-1753921998110",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "enode-1753908375868-c5bf3dcc-545a-4404-9d5d-97ca996561d4",
+      "source": "node-1753908375868",
+      "target": "c5bf3dcc-545a-4404-9d5d-97ca996561d4",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "ec5bf3dcc-545a-4404-9d5d-97ca996561d4-cdf597c4-e5a0-441a-993b-7ce82689712c",
+      "source": "c5bf3dcc-545a-4404-9d5d-97ca996561d4",
+      "target": "cdf597c4-e5a0-441a-993b-7ce82689712c",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "ecdf597c4-e5a0-441a-993b-7ce82689712c-summary-7633ca7e-8914-46c1-9a10-e93a13bf5efa",
+      "source": "cdf597c4-e5a0-441a-993b-7ce82689712c",
+      "target": "summary-7633ca7e-8914-46c1-9a10-e93a13bf5efa",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "esummary-7633ca7e-8914-46c1-9a10-e93a13bf5efa-7c999b9d-169a-400e-acec-1bd8334a079d",
+      "source": "summary-7633ca7e-8914-46c1-9a10-e93a13bf5efa",
+      "target": "7c999b9d-169a-400e-acec-1bd8334a079d",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "e7c999b9d-169a-400e-acec-1bd8334a079d-summary-11cf0a66-2114-422a-a709-ce1fb704392f",
+      "source": "7c999b9d-169a-400e-acec-1bd8334a079d",
+      "target": "summary-11cf0a66-2114-422a-a709-ce1fb704392f",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "econduta-1753921998110-conduta-1753923847028",
+      "source": "conduta-1753921998110",
+      "target": "conduta-1753923847028",
+      "label": "Nova conexão",
+      "data": {
+        "rule": "Regra nova"
+      }
+    }
+  ]
+};

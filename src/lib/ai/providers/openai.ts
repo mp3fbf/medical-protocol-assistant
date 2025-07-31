@@ -9,11 +9,11 @@ import type {
   AICompletionResponse,
 } from "./types";
 
-// Reasonable timeout configurations that work with Node.js
+// Timeout configurations optimized for different models
 const TIMEOUT_CONFIGS = {
   standard: 300000, // 5 minutes for standard requests
   large: 600000, // 10 minutes for large context requests
-  o3: 7200000, // 2 hours for O3 model requests
+  o3: 10800000, // 3 hours for O3 model requests (they can be slow)
   research: 600000, // 10 minutes for research requests
 };
 
@@ -25,12 +25,14 @@ const RETRY_CONFIG = {
   backoffMultiplier: 1,
 };
 
-console.log("[OpenAI Provider] Timeout configurations:", {
-  standard: `${TIMEOUT_CONFIGS.standard / 1000 / 60} minutes`,
-  large: `${TIMEOUT_CONFIGS.large / 1000 / 60} minutes`,
-  o3: `${TIMEOUT_CONFIGS.o3 / 1000 / 60} minutes`,
-  research: `${TIMEOUT_CONFIGS.research / 1000 / 60} minutes`,
-});
+// Only log timeout config once on startup
+if (process.env.NODE_ENV !== 'production') {
+  console.log("[OpenAI Provider] Timeout configurations:", {
+    standard: `${TIMEOUT_CONFIGS.standard / 1000 / 60} minutes`,
+    large: `${TIMEOUT_CONFIGS.large / 1000 / 60} minutes`,
+    o3: `${TIMEOUT_CONFIGS.o3 / 1000 / 60} minutes`,
+  });
+}
 
 export class OpenAIProvider implements AIProvider {
   name = "openai";
@@ -242,19 +244,29 @@ export class OpenAIProvider implements AIProvider {
 
           chunkCount++;
 
-          // Log EVERY SINGLE CHUNK for O3 debugging
-          if (model === "o3" || chunkCount % 10 === 0) {
+          // Log chunks less frequently to reduce noise
+          if (model !== "o3" && chunkCount % 10 === 0) {
             console.log(
-              `[OpenAI] Stream alive - chunk ${chunkCount}, ${timeSinceLastChunk}ms since last chunk, total time: ${(Date.now() - startTime) / 1000}s`,
+              `[OpenAI] Stream alive - chunk ${chunkCount}, total time: ${(Date.now() - startTime) / 1000}s`,
+            );
+          } else if (model === "o3" && chunkCount % 100 === 0) {
+            // For O3, log less frequently
+            console.log(
+              `[OpenAI] O3 chunk ${chunkCount}, ${(Date.now() - startTime) / 1000}s elapsed`,
             );
           }
 
-          // Alert if we're approaching any timeout
+          // Alert only for non-O3 models or if approaching actual timeout
           const elapsed = Date.now() - startTime;
-          if (elapsed > 50000 && elapsed < 70000) {
-            // Near 60 seconds
+          if (model !== "o3" && elapsed > 50000 && elapsed < 70000) {
+            // Near 60 seconds - only warn for fast models
             console.warn(
               `[OpenAI] WARNING: Approaching 60s mark - ${elapsed / 1000}s elapsed`,
+            );
+          } else if (model === "o3" && elapsed > 300000 && chunkCount % 100 === 0) {
+            // For O3, only log every 5 minutes
+            console.log(
+              `[OpenAI] O3 Progress: ${(elapsed / 1000 / 60).toFixed(1)} minutes elapsed, still processing...`,
             );
           }
 

@@ -8,27 +8,27 @@
 import http from "http";
 import https from "https";
 
-// ABSOLUTELY MASSIVE TIMEOUT VALUES - NO LIMITS!
+// Maximum safe timeout for Node.js (24.8 days to avoid int32 overflow)
+const MAX_SAFE_TIMEOUT = 2147483647; // Max int32 value in ms
+
 export const HTTP_TIMEOUTS = {
-  SOCKET_TIMEOUT: 2592000000, // 30 DAYS!
-  KEEP_ALIVE_TIMEOUT: 2592000000, // 30 DAYS!
-  REQUEST_TIMEOUT: 2592000000, // 30 DAYS!
-  IDLE_TIMEOUT: 2592000000, // 30 DAYS!
-  HEADERS_TIMEOUT: 2592000000, // 30 DAYS!
+  SOCKET_TIMEOUT: MAX_SAFE_TIMEOUT, // ~24.8 days
+  KEEP_ALIVE_TIMEOUT: MAX_SAFE_TIMEOUT, // ~24.8 days
+  REQUEST_TIMEOUT: MAX_SAFE_TIMEOUT, // ~24.8 days
+  IDLE_TIMEOUT: MAX_SAFE_TIMEOUT, // ~24.8 days
+  HEADERS_TIMEOUT: MAX_SAFE_TIMEOUT, // ~24.8 days
 };
 
-console.log("[HTTP CONFIG] MASSIVE TIMEOUTS ENABLED:", {
-  days: HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60 / 60 / 24,
-  hours: HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60 / 60,
-  minutes: HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60,
-  seconds: HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000,
+console.log("[HTTP CONFIG] Maximum safe timeouts configured:", {
+  days: (HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60 / 60 / 24).toFixed(1),
+  hours: Math.floor(HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60 / 60),
 });
 
 // Create custom HTTP agent with maximum timeouts
 export const httpAgent = new http.Agent({
   keepAlive: true,
   keepAliveMsecs: 5000, // Send keep-alive every 5 seconds - ULTRA AGGRESSIVE!
-  timeout: HTTP_TIMEOUTS.SOCKET_TIMEOUT,
+  timeout: MAX_SAFE_TIMEOUT,
   maxSockets: Infinity,
   maxFreeSockets: 256,
   scheduling: "fifo",
@@ -38,7 +38,7 @@ export const httpAgent = new http.Agent({
 export const httpsAgent = new https.Agent({
   keepAlive: true,
   keepAliveMsecs: 5000, // Send keep-alive every 5 seconds - ULTRA AGGRESSIVE!
-  timeout: HTTP_TIMEOUTS.SOCKET_TIMEOUT,
+  timeout: MAX_SAFE_TIMEOUT,
   maxSockets: Infinity,
   maxFreeSockets: 256,
   scheduling: "fifo",
@@ -57,14 +57,10 @@ if (
 ) {
   // Log configuration
   console.log(
-    "[HTTP CONFIG] Global HTTP/HTTPS agents configured with MASSIVE timeouts:",
+    "[HTTP CONFIG] Global HTTP/HTTPS agents configured",
   );
-  console.log(`- Socket timeout: ${HTTP_TIMEOUTS.SOCKET_TIMEOUT}ms (30 DAYS!)`);
-  console.log(
-    `- Keep-alive timeout: ${HTTP_TIMEOUTS.KEEP_ALIVE_TIMEOUT}ms (30 DAYS!)`,
-  );
-  console.log(`- Max sockets: Infinity (NO LIMITS!)`);
-  console.log(`- Keep-alive interval: 5 seconds (ULTRA AGGRESSIVE!)`);
+  console.log(`- Socket timeout: ${(HTTP_TIMEOUTS.SOCKET_TIMEOUT / 1000 / 60).toFixed(0)} minutes`);
+  console.log(`- Keep-alive interval: 5 seconds`);
 
   // Additional server configuration if running in server context
   if ((global as any).server) {

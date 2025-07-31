@@ -1,0 +1,809 @@
+{
+  "metadata": {
+    "company": "uvs",
+    "name": "itu",
+    "version": "2"
+  },
+  "nodes": [
+    {
+      "id": "node-1753880814148",
+      "type": "custom",
+      "position": {
+        "x": 409.42289928470115,
+        "y": 170.11737325465475
+      },
+      "data": {
+        "label": "Identificação - oculto",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P1314b455-ed50-4e8d-acff-f37945b73741",
+            "nodeId": "node-1753880814148",
+            "uid": "sex",
+            "titulo": "Sexo ",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "2877f3bb-1a0d-4313-93fc-e896447623f6",
+                "id": "male",
+                "label": "Masculino",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c934fa10-252a-4aec-acc3-7dff940db6d9",
+                "id": "female",
+                "label": "Feminino",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P3283569f-bfd7-40ba-a58e-6069d84d8a9b",
+            "nodeId": "node-1753880814148",
+            "uid": "birth",
+            "titulo": "Data de nascimento",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "D",
+            "options": [],
+            "naSelecionado": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "type": "summary",
+      "position": {
+        "x": 959.7978178199639,
+        "y": 179.35884060665924
+      },
+      "data": {
+        "label": "Idade ",
+        "condicao": "",
+        "descricao": "<p>age </p>",
+        "condicional": "visivel",
+        "clinicalExpressions": [
+          {
+            "id": "expr-7e1ceea5-3c64-4886-ab15-e783e0206b74",
+            "name": "age",
+            "formula": "datedif(today(), birth).years >= 65 ",
+            "description": "responde true se idade maior que 65 e false se menor que 65 ",
+            "template": "<p></p>"
+          }
+        ],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "node-1753881578053",
+      "type": "custom",
+      "position": {
+        "x": 1675.0787672764088,
+        "y": -42.55149564754902
+      },
+      "data": {
+        "label": "Informações iniciais",
+        "condicao": "",
+        "descricao": "<p></p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P3f59dd6a-0e46-4678-b0ba-24761b6e706a",
+            "nodeId": "node-1753881578053",
+            "uid": "topografia_itu",
+            "titulo": "Topografia da Infecção do Trato Urinário:",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "F",
+            "options": [
+              {
+                "iid": "9b6d60aa-30d1-4267-80d5-3ea320001348",
+                "id": "itu_alta_com_alarme",
+                "label": "Alta com sinais de alarme (deterioração clínica, alterações de SSVV, disfunção orgânica ou sinais de sepse)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e4a0a6fd-64f7-4f00-9670-619540251ac6",
+                "id": "itu_alta_sem_alarme",
+                "label": "Alta sem sinais de alarme",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "7ec55b13-ee8d-47c8-ba76-508eabd35ec8",
+                "id": "itu_baixa",
+                "label": "Baixa",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P63bc6208-b57b-42d7-821c-813fce8f3afc",
+            "nodeId": "node-1753881578053",
+            "uid": "fatores_risco_agravantes",
+            "titulo": "Condições agravantes e fatores de risco",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "fb1ab211-05c4-4124-9a3f-1622adeb2463",
+                "id": "nenhuma_anterior",
+                "label": "Nenhuma das anteriores ",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "01815b8b-9260-4db8-9e93-aa8883bc0345",
+                "id": "itu_recorrente",
+                "label": "Paciente com critérios de ITU recorrente(2º ITU em 6 meses ou 3º ITU em menos de 1 ano)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c28a85ee-3f73-454f-ae50-21394be9427a",
+                "id": "dm_insulinodependente",
+                "label": "Diabetes Mellitus insulino-dependente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "527be20f-d44a-4f68-89be-a0eb1df46624",
+                "id": "doenca_renal_cronica",
+                "label": "Doença renal crônica (DRC)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "adbec6d9-2f83-4260-a9e0-9384e6ac819a",
+                "id": "obesidade_morbida",
+                "label": "Obesidade mórbida (IMC >= 40 kg/m2)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c3a2ee10-4728-42bd-9335-0c1eec5b5fa2",
+                "id": "uso_imunossupressores",
+                "label": "Uso de imunossupressores",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "46db231b-ac07-4021-b15b-c45df77a1f98",
+                "id": "tx_previo",
+                "label": "Transplante prévio",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "75ab5c91-8809-4424-bd34-feefde6d09bc",
+                "id": "neoplasia_historia",
+                "label": "Neoplasia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "b8e191f0-2565-41f9-bfb2-3ba35ddde475",
+                "id": "uso_svd",
+                "label": "Uso de sonda vesical de demora",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "fe1ccd21-e36e-430e-9f38-a8b9feaa6efb",
+                "id": "pielo_obstrutiva",
+                "label": "Suspeita de pielonefrite obstrutiva",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "P74e84676-725e-4321-b67b-fb36f21f5727",
+            "nodeId": "node-1753881578053",
+            "uid": "investigacao_prostatite ",
+            "titulo": "Suspeita de prostatite? ",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "'male' in sex",
+            "select": "E",
+            "options": [
+              {
+                "iid": "dbf1ca20-58a8-43f0-af13-90213d2855be",
+                "id": "Ausência de suspeita ",
+                "label": "Sem sinais ou sintomas de prostatite ",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "059b6b21-ec6b-495c-a04d-c33c80e9549e",
+                "id": "dor_pelvica",
+                "label": "Dor pélvica ou perineal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "48cdb823-2dee-46c6-926d-5d13a7f65014",
+                "id": "dor_ao_toque",
+                "label": "Dor intensa a palpação prostática ou exame de toque",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e07c96fe-a480-4b03-9849-12654afda845",
+                "id": "sintomas_sistêmicos",
+                "label": "Sintomas sistêmicos(febre, calafrios, queda do estado geral)",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "conduta-1753883548016",
+      "type": "conduct",
+      "position": {
+        "x": 2174.052707112844,
+        "y": 234.31478223705085
+      },
+      "data": {
+        "label": "Conduta - direta",
+        "condicao": "'female' in sex and 'itu_baixa' in topografia_itu and selected_any( fatores_risco_agravantes, 'itu_recorrente', 'nenhuma_anterior')",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [
+            {
+              "id": "64b00786-0da8-4b9f-ad9e-8d23f89aea75",
+              "nome": "Orientações sobre ITU",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p><strong>GUIA DE ORIENTAÇÕES DE CUIDADO</strong></p><p></p><p><strong>Orientações de Alta</strong></p><p></p><p><strong>Informações sobre a doença</strong></p><p>As Infecções do Trato Urinário (ITU) ocorrem pela presença de uma bacterianos rins, ureteres, bexiga (cistite) e uretra. São muito comuns, especialmente nas mulheres e idosos. Seus sintomas incluem, principalmente, dor ou ardência ao urinar, mas podem variar de acordo com a região afetada. Outras alterações possíveis são mudança na cor e no cheiro da urina, aumento na vontade de urinar e com pouca quantidade de saída, dor lombar ou na barriga e febre. O diagnóstico é baseado na história dos seus sintomas e no exame físico. Exames laboratoriais e de imagem são solicitados somente nos casos complicados, de duvidado médico ou suspeita de outro diagnóstico, por exemplo, “pedras” nos rins.</p><p></p><p><strong>Instruções para casa:</strong></p><ol><li><p>Beba bastante água: Beber bastante água ajuda a diluir a urina;</p></li><li><p>Evite bebidas alcoólicas e cafeína, pois podem irritar a bexiga e agravar os sintomas de cistite;</p></li><li><p>Limpe a área genital adequadamente após urinar ou evacuar;</p></li><li><p>Urine com frequência: as bactérias presentes na bexiga são eliminadas é há o alívio da sensação de dor e ardência;</p></li><li><p>Use roupas íntimas de algodão, mantenha a região genital seca e arejada, evitando a proliferação de bactérias;</p></li><li><p>Evite-o uso de produtos irritantes: produtos de higiene pessoal, como sabonetes, desodorantes e perfumes, podem irritar a região genital e agravar os sintomas de cistite;</p></li><li><p>Aplique calor local: Bolsa de água quente ou uma compressa quente abaixo da cicatriz do umbigo alivia a dor e o desconforto causados pela cistite.</p></li></ol><p></p><p><strong>Quando devo retornar ao médico?</strong></p><p>Se caso apresentar piora ou não melhorar dos sintomas dentro de 72 horas, retorne imediatamente:</p><ul><li><p>Parada ou diminuição da urina;</p></li><li><p>Piora ou não melhora dos sintomas dentro de 72 horas;</p></li><li><p>Aparecimento de dor lombar ou piora da dor;</p></li><li><p>Aparecimento ou persistência de febre por mais de 24 horas após o início do antibiótico.</p></li></ul>"
+            }
+          ],
+          "exame": [
+            {
+              "id": "ea4dd1bc-5a79-4256-8804-a2ded13bf559",
+              "nome": "Urocultura",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "age == true or 'itu_recorrente' in fatores_risco_agravantes",
+              "condicionalExame": "domiciliar",
+              "codigo": "",
+              "categoria": "",
+              "cid": "N39 ",
+              "indicacao": "ITU com fatores de risco para recorrencia ",
+              "alerta": "",
+              "material": "Urina"
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "25c66ea6-bd3c-4787-9cb8-56da4fdb4937",
+              "nome": "Nitrofurantoína",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "",
+              "nomeMed": "Nitrofurantoína 100 mg ",
+              "posologia": "<p>Tomar 01 comprimido de 6/6 horas por 5 dias </p>",
+              "mensagemMedico": "",
+              "via": "oral"
+            },
+            {
+              "id": "931d8a3a-1bd3-4684-b42c-1a35319b83a2",
+              "nome": "Fosfomicina ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "",
+              "nomeMed": "Fosfomicina 3 g ",
+              "posologia": "<p>Dissolver 01 envelope em 70 ml de água após 30 minutos da última refeição e antes de deitar, em dose única.</p>",
+              "mensagemMedico": "",
+              "via": "oral"
+            }
+          ],
+          "encaminhamento": [
+            {
+              "id": "6069e38c-6b14-4d27-86ed-ae15757eca83",
+              "nome": "Urologia",
+              "descricao": "<p>Paciente com ITU recorrente em avaliação no PS, solicito avaliação por especialidade.</p>",
+              "condicional": "visivel",
+              "condicao": "'itu_recorrente' in fatores_risco_agravantes",
+              "indicacao": "Itu recorrente",
+              "cid": "N39",
+              "destino": "Urologia"
+            }
+          ],
+          "mensagem": [
+            {
+              "id": "191da348-e576-476b-aa37-0ea6792860ea",
+              "nome": "Conduta se maior que 65 anos e ITU recorrente ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "age == true or 'itu_recorrente'",
+              "conteudo": "<p>Orientações do protocolo clínico para ITU baixa não complicada:</p><p></p><ul><li><p><strong>Alta</strong> com antibioticoterapia empírica associada a hidratação oral.</p></li><li><p><strong>Coleta de urocultura antes da alta nesses casos é de suma importância.</strong></p></li><li><p><strong>OFERECER GUIA DE ORIENTAÇÕES DE ALTA.</strong></p></li><li><p>No caso de ITU baixa não complicada, não há recomendação de coleta de sangue ou de exame de imagem.</p></li><li><p>Reavaliar em 48h por meio da linha de cuidado.</p></li></ul>",
+              "observacao": ""
+            },
+            {
+              "id": "db17e9f4-e66b-4675-a252-f11c7e4ade67",
+              "nome": "Conduta se menor que 65 anos e sem critérios para ITU recorrente ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "age == false and 'itu_recorrente'",
+              "conteudo": "<p>Orientações do protocolo clínico para ITU não complicada:</p><p></p><ul><li><p><strong>Alta</strong> com antibioticoterapia empírica.</p></li><li><p>Neste caso <strong>não é necessária coleta de nenhum exame.</strong></p></li><li><p><strong>OFERECER GUIA DE ORIENTAÇÕES DE ALTA.</strong></p></li><li><p>No caso de ITU baixa não complicada, não há recomendação de coleta de urina ou de exame de imagem.</p></li><li><p>Reavaliação e seguimento ambulatorial</p></li></ul><p></p><p>Considere <strong>sintomáticos por via oral, IM ou EV em bolus se necessário.</strong></p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "conduta-1753883718385",
+      "type": "conduct",
+      "position": {
+        "x": 3281.9376589903163,
+        "y": 198.8334014367793
+      },
+      "data": {
+        "label": "Conduta - reavaliação1",
+        "condicao": "('male' in sex or 'itu_alta_sem_alarme' in topografia_itu or selected_any(fatores_risco_agravantes, 'doenca_renal_cronica', 'dm_insulinodependente', 'obesidade_morbida', 'uso_imunossupressores', 'tx_previo', 'neoplasia_historia', 'uso_svd', 'pielo_obstrutiva')) and ('itu_alta_com_alarme' not in topografia_itu)",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "pausa",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "7a1fa212-4fe0-4ab1-a41a-41f87f1b53ab",
+              "nome": "Hemograma",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada?",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "75c420fb-6c5b-4a5b-9cb0-1f7f1862a074",
+              "nome": "PCR",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada?",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "551051b3-6ec0-4403-86ce-2e95f432556c",
+              "nome": "Creatinina ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório ",
+              "cid": "N39",
+              "indicacao": "ITU complicada?",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "bd867ddc-b59d-4ae5-af7b-fc30432d24a9",
+              "nome": "Ureia",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada?",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "cc43d661-e392-47a5-86a2-b20322db1616",
+              "nome": "Urina 1 ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "",
+              "alerta": "",
+              "material": "Urina"
+            },
+            {
+              "id": "fe407f49-4b79-4ca6-b6a9-ecd5410b1c57",
+              "nome": "Urocultura",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada?",
+              "alerta": "",
+              "material": "Urina"
+            },
+            {
+              "id": "fc427b53-a7e8-4326-a07f-7ec68bd34829",
+              "nome": "Tomografia computadorizada de abdome total",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'itu_alta_sem_alarme' in topografia_itu or 'pielo_obstrutiva' in fatores_risco_agravantes",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Imagem",
+              "cid": "N39",
+              "indicacao": "Infecção do trato urinário complicada?",
+              "alerta": "",
+              "material": ""
+            }
+          ],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "a6c30bb6-54d6-4cfb-b4dc-6dc02af1e52d",
+              "nome": "ITU com sinais de alarme ou fatores de risco",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'itu_alta_sem_alarme' not in topografia_itu and 'pielo_obstrutiva' not in fatores_risco_agravantes",
+              "conteudo": "<p>Orientações do protocolo clínico para ITU alta complicada:</p><p></p><p></p><p>Sugere-se realização de :</p><ul><li><p>Urina 1</p></li><li><p>Urocultura</p></li><li><p>Hemograma</p></li><li><p>Ureia</p></li><li><p>Creatinina</p></li><li><p>PCR</p><p></p><p><strong>Reavalie o paciente com protocolo após os exames.</strong></p></li></ul>",
+              "observacao": ""
+            },
+            {
+              "id": "c2114497-c7cc-46aa-9222-06858b1fca3c",
+              "nome": "ITU com sinais de alarme ou fatores de risco com necessidade de tomografia",
+              "descricao": "<p></p>",
+              "condicional": "visivel",
+              "condicao": "'itu_alta_sem_alarme' in topografia_itu or 'pielo_obstrutiva' in fatores_risco_agravantes",
+              "conteudo": "<p>Orientações do protocolo clínico para ITU alta complicada:</p><p></p><p></p><p>Sugere-se realização de :</p><ul><li><p>Urina 1</p></li><li><p>Urocultura</p></li><li><p>Hemograma</p></li><li><p>Ureia</p></li><li><p>Creatinina</p></li><li><p>PCR</p></li></ul><p></p><p><strong>Indicações de TC de abdome se suspeita de Pielonefrite conforme protocolo.</strong></p><ul><li><p></p></li></ul><p></p><p><strong>Reavalie o paciente com protocolo após os exames.</strong></p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "conduta-1753885114094",
+      "type": "conduct",
+      "position": {
+        "x": 4420.208792058746,
+        "y": 170.80324669151017
+      },
+      "data": {
+        "label": "Conduta - reavaliação2",
+        "condicao": "'itu_alta_com_alarme' in topografia_itu",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "pausa",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "fbc78f2f-7c6d-4e5a-9321-649cb608b57d",
+              "nome": "Hemograma",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "cb870f37-eca6-4320-9ff6-8e8e4678119e",
+              "nome": "PCR",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "92425d0b-5d7d-46c2-b853-74a6b259576b",
+              "nome": "Ureia ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "4e6707d2-3c8d-4ff0-a53f-e2eef96a846f",
+              "nome": "Creatinina ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "7f12c625-85ce-460f-9be5-79c4983674f5",
+              "nome": "Sódio",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "2f8c268f-e493-47e9-954e-6c9a1fffa29b",
+              "nome": "Potássio",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "N39",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "df7c252b-dbdd-4ecd-8705-b5de69ecf62d",
+              "nome": "Bilirrubina total e frações",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "2c670d50-7a0b-4bc2-9a50-dea27aa9ce36",
+              "nome": "TAP",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "03e6c0e4-385a-4e75-a3b2-bf4516ab9c06",
+              "nome": "Gasometria venosa ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "30f7ef77-cf77-4ce0-9abd-c6c902f7c84d",
+              "nome": "Urina 1 ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "19832d5c-4b7a-4d2e-94b8-ff9c50d7d705",
+              "nome": "Urocultura ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Laboratório",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "79f8a73a-9593-4cd0-9ee2-0b1641bd40f2",
+              "nome": "Tomografia de abdome total ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "",
+              "categoria": "Imagem ",
+              "cid": "",
+              "indicacao": "ITU complicada com sinais de alarme",
+              "alerta": "",
+              "material": ""
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "191b8c66-8482-498c-9a36-846dc3c0fd5c",
+              "nome": "Ceftriaxone",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ceftriaxone 1 g",
+              "posologia": "<p>1 g de 12/12 horas</p>",
+              "mensagemMedico": "",
+              "via": "Venoso"
+            },
+            {
+              "id": "55f76c07-4ffe-4034-a505-eb554f027279",
+              "nome": "Cefuroxima  ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Cefuroxima 750 mg ",
+              "posologia": "<p>750 mg de 8/8 horas</p>",
+              "mensagemMedico": "",
+              "via": "Venoso"
+            },
+            {
+              "id": "2ea9afb0-6b36-4fad-8801-6429023fe614",
+              "nome": "Ampicilina-Sulbactam ",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Antibiótico",
+              "nomeMed": "Ampicilina-Sulbactam 4,5g",
+              "posologia": "<p>4,5 g de 6/6 horas</p>",
+              "mensagemMedico": "",
+              "via": "venoso"
+            },
+            {
+              "id": "c35ad4f2-2ece-4d9f-862a-5d433a0abd3c",
+              "nome": "Soro fisiológico",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": "",
+              "categoria": "Expansão volêmica",
+              "nomeMed": "Soro fisiológico 500 ml ",
+              "posologia": "<p>Aplicar 20 mg/kg em bolus</p>",
+              "mensagemMedico": "",
+              "via": "Venoso"
+            }
+          ],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "65c4cf61-1f9a-482f-b885-99b98c7db937",
+              "nome": "ITU com alto risco",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p>Orientações do protocolo clínico:</p><p></p><p>Recomenda-se <strong>suporte clínico, hidratação venosa com Ringer Lactato ou Soro Fisiológico 0,9% se necessário e início de antibioticoterapia empírica.</strong></p><p></p><p><strong>Considerar abertura do protocolo de sepse:</strong></p><ul><li><p>- Hemograma;</p></li><li><p>- Hemocultura 2 pares;</p></li><li><p>- PCR;</p></li><li><p>- Bilirrubina total;</p></li><li><p>- TGO;</p></li><li><p>- TGP;</p></li><li><p>- Lactato arterial;</p></li><li><p>- Gasometria arterial;</p></li><li><p>- Ureia;</p></li><li><p>- Creatinina;</p></li><li><p>- Sódio;</p></li><li><p>- Potássio;</p></li><li><p>- TTPA;</p></li><li><p>- TAP;</p></li><li><p>- Urina 1;</p></li><li><p>- Urocultura.</p></li></ul><p></p><p><strong>Solicite Tomografia de Abdome</strong></p><p></p><p><strong>Avaliar indicação de internação em UTI:</strong></p><ol><li><p>Pielonefrite complicada ou sinais de sepse</p></li><li><p>Pacientes imunossuprimidos</p></li><li><p>Pacientes com comorbidades descompensadas</p></li><li><p>Pacientes incapazes de tomar medicação oral</p></li><li><p>Pacientes com agentes multi-resistentes identificados em cultura, que necessitem de antibioticoterapia endovenosa</p></li></ol><p><strong><br></strong></p><p><strong>Reavalie o paciente com protocolo após os exames.</strong></p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "enode-1753880814148-summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "source": "node-1753880814148",
+      "target": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "esummary-ca400528-7206-4500-acc5-bc9fcb1e68fa-node-1753881578053",
+      "source": "summary-ca400528-7206-4500-acc5-bc9fcb1e68fa",
+      "target": "node-1753881578053",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "enode-1753881578053-conduta-1753883548016",
+      "source": "node-1753881578053",
+      "target": "conduta-1753883548016",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "econduta-1753883548016-conduta-1753883718385",
+      "source": "conduta-1753883548016",
+      "target": "conduta-1753883718385",
+      "data": {
+        "rule": "Regra nova"
+      }
+    },
+    {
+      "id": "econduta-1753883718385-conduta-1753885114094",
+      "source": "conduta-1753883718385",
+      "target": "conduta-1753885114094",
+      "data": {
+        "rule": "Regra nova"
+      }
+    }
+  ]
+};

@@ -33,6 +33,7 @@ export const JSON_RESPONSE_FORMAT = { type: "json_object" } as const;
 // API Timeouts (in milliseconds)
 export const OPENAI_API_TIMEOUT_MS = 7200000; // 2 hours - sufficient for O3
 export const DEEPRESEARCH_API_TIMEOUT_MS = 600000; // 10 minutes
+export const O3_MODEL_TIMEOUT_MS = 10800000; // 3 hours for O3 models
 
 // Retry Configuration
 export const DEFAULT_API_RETRY_ATTEMPTS = 0; // No retries for O3

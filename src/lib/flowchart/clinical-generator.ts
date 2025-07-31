@@ -235,10 +235,26 @@ export async function generateClinicalFlowchart(
     "9": protocolContent["9"], // Monitorização
   };
 
-  const userPrompt = createClinicalFlowchartGenerationUserPrompt(
+  // Preprocess protocol to extract medical content
+  options?.progressCallback?.("🔍 Extraindo conteúdo médico do protocolo...");
+  const preprocessed = preprocessProtocol(protocolCondition, protocolContent);
+  
+  // Log extracted content for debugging
+  console.log("[Clinical Generator] Extracted medical content:", {
+    medications: preprocessed.extractedContent.medications.length,
+    exams: preprocessed.extractedContent.exams.length,
+    orientations: preprocessed.extractedContent.orientations.length,
+    conducts: preprocessed.extractedContent.conducts.length
+  });
+
+  // Create base prompt and enhance with extracted content
+  let userPrompt = createClinicalFlowchartGenerationUserPrompt(
     protocolCondition,
     relevantSections,
   );
+  
+  // Add extracted content to prompt
+  userPrompt += generateEnhancedPrompt(preprocessed);
 
   try {
     options?.progressCallback?.(
@@ -554,6 +570,41 @@ export async function generateClinicalFlowchart(
       }
       return isValid;
     });
+
+    // Check if flowchart has medical content
+    const hasContent = hasAnyMedicalContent(validated as ClinicalFlowchart);
+    
+    if (!hasContent) {
+      options?.progressCallback?.("⚠️ Fluxograma sem conteúdo médico detectado. Enriquecendo...");
+      
+      // Enrich flowchart with extracted content
+      const enrichmentResult = enrichFlowchartContent(
+        validated as ClinicalFlowchart,
+        preprocessed.extractedContent
+      );
+      
+      console.log("[Clinical Generator] Enrichment result:", {
+        nodesEnriched: enrichmentResult.statistics.nodesEnriched,
+        medicationsAdded: enrichmentResult.statistics.medicationsAdded,
+        examsAdded: enrichmentResult.statistics.examsAdded,
+        orientationsAdded: enrichmentResult.statistics.orientationsAdded
+      });
+      
+      validated = enrichmentResult.enrichedFlowchart;
+    }
+    
+    // Validate medical content
+    const validationResult = validateMedicalContent(
+      validated as ClinicalFlowchart,
+      preprocessed.extractedContent
+    );
+    
+    if (!validationResult.isValid) {
+      console.warn("[Clinical Generator] Validation warnings:", validationResult.warnings);
+      console.error("[Clinical Generator] Validation errors:", validationResult.errors);
+    }
+    
+    console.log("[Clinical Generator] Validation statistics:", validationResult.statistics);
 
     options?.progressCallback?.("✅ Estrutura clínica gerada com sucesso!");
 
