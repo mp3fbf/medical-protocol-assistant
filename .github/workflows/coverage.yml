@@ -86,7 +86,7 @@ jobs:
 
       - name: Upload HTML Coverage Report as Artifact
         if: always() # Always upload, even if previous steps fail
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-report-html
           path: coverage/ # Upload the entire coverage directory
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload LCOV Report as Artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-report-lcov
           path: coverage/lcov.info # Specifically upload lcov.info
