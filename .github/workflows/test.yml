@@ -102,7 +102,7 @@ jobs:
           # It's already set in the job's env.
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() # Upload on success or failure
         with:
           name: playwright-report
